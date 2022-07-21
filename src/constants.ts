@@ -26,9 +26,9 @@ export const MessagesRequireUseMemo = {
   "jsx-usememo-deps":
     "JSX should be wrapped in useMemo() when used as a hook dependency",
   "function-usecallback-props":
-    "Function definition should be wrapped in useMemo() or be static when used as a prop",
+    "Function definition should be wrapped in useCallback() or be static when used as a prop",
   "function-usecallback-deps":
-    "Function definition should be wrapped in useMemo() or be static when used as a hook dependency",
+    "Function definition should be wrapped in useCallback() or be static when used as a hook dependency",
   "unknown-usememo-props":
     "Unknown value may need to be wrapped in useMemo() when used as a prop",
   "unknown-usememo-deps":
