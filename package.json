@@ -1,5 +1,5 @@
 {
-  "name": "eslint-plugin-react-usememo",
+  "name": "@arthurgeron/eslint-plugin-react-usememo",
   "version": "0.0.1",
   "description": "",
   "main": "dist/index.js",
