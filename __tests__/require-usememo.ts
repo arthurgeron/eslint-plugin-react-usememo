@@ -1,4 +1,4 @@
-import { RuleTester } from "eslint";
+import { Rule, RuleTester } from "eslint";
 import rule from "../require-usememo";
 
 const ruleTester = new RuleTester({
@@ -8,7 +8,7 @@ const ruleTester = new RuleTester({
   },
 });
 
-ruleTester.run("useMemo", rule, {
+ruleTester.run("useMemo", rule as Rule.RuleModule, {
   valid: [
     {
       code: `const Component = () => {
@@ -87,6 +87,14 @@ ruleTester.run("useMemo", rule, {
       code: `const Component = () => {
         const myInstance = new Object();
         return <Child prop={myInstance} />;
+      }`,
+      errors: [{ messageId: "instance-usememo-props" }],
+    },
+    {
+      code: `const Component = () => {
+        const firstInstance = React.useMemo(() => new Object(), []);
+        const second = new Object();
+        return <Child prop={firstInstance || second} />;
       }`,
       errors: [{ messageId: "instance-usememo-props" }],
     },
