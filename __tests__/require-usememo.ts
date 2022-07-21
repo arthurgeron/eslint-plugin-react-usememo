@@ -142,5 +142,13 @@ ruleTester.run("useMemo", rule, {
       options: [{ strict: true }],
       errors: [{ messageId: "unknown-usememo-props" }],
     },
+    {
+      code: `const Component = () => {
+        let myObject;
+        myObject = {};
+        return <Child prop={myObject} />;
+      }`,
+      errors: [{ messageId: "usememo-const" }],
+    },
   ],
 });
