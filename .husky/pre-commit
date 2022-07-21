@@ -1,7 +1,6 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-npx eslint
 yarn deadCode 'src/*' # find unused exports
 yarn test
 yarn build
