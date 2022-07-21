@@ -1,5 +1,5 @@
-import { RuleTester } from "eslint";
-import rule from "../require-usememo";
+import { Rule, RuleTester } from "eslint";
+import rule from "src/require-usememo";
 
 const ruleTester = new RuleTester({
   parser: require.resolve("@typescript-eslint/parser"),
@@ -8,7 +8,7 @@ const ruleTester = new RuleTester({
   },
 });
 
-ruleTester.run("useCallback", rule, {
+ruleTester.run("useCallback", rule as Rule.RuleModule , {
   valid: [
     {
       code: `const Component = () => {
@@ -26,6 +26,13 @@ ruleTester.run("useCallback", rule, {
       code: `const Component = () => {
         const myFn = function() {};
         return <div prop={myFn} />;
+      }`,
+    },
+    {
+      code: `
+      const myFn = function() {console.log('hi');};
+      const Component = () => {
+        return <Child prop={myFn} />;
       }`,
     },
     {
@@ -93,6 +100,21 @@ ruleTester.run("useCallback", rule, {
     {
       code: `const Component = () => {
         return <Child prop={() => []} />;
+      }`,
+      errors: [{ messageId: "function-usecallback-props" }],
+    },
+    {
+      code: `const Component = () => {
+        const myFn = function() {};
+        return <Child prop={myFn} />;
+      }`,
+      errors: [{ messageId: "function-usecallback-props" }],
+    },
+    {
+      code: `const Component = () => {
+        const myFn1 = () => [];
+        const myFn2 = React.useCallback(() => [], []);
+        return <Child prop={myFn2 || myFn1} />;
       }`,
       errors: [{ messageId: "function-usecallback-props" }],
     },

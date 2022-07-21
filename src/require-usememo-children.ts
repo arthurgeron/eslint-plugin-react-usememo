@@ -6,30 +6,11 @@ import {
   isComplexComponent,
   MemoStatus,
 } from "./common";
-
-const componentNameRegex = /^[^a-z]/;
-const hookNameRegex = /^use[A-Z0-9].*$/;
-
-const messages = {
-  "object-usememo-children":
-    "Object literal should be wrapped in React.useMemo() when used as children",
-  "array-usememo-children":
-    "Array literal should be wrapped in React.useMemo() when used as children",
-  "instance-usememo-children":
-    "Object instantiation should be wrapped in React.useMemo() when used as children",
-  "jsx-usememo-children":
-    "JSX should be wrapped in React.useMemo() when used as children",
-  "function-usecallback-children":
-    "Function definition should be wrapped in React.useCallback() when used as children",
-  "unknown-usememo-children":
-    "Unknown value may need to be wrapped in React.useMemo() when used as children",
-  "usememo-const":
-    "useMemo/useCallback return value should be assigned to a const to prevent reassignment",
-};
+import { MessagesRequireUseMemoChildren } from "./constants";
 
 const rule: Rule.RuleModule = {
   meta: {
-    messages,
+    messages: MessagesRequireUseMemoChildren,
     schema: [
       {
         type: "object",
@@ -39,7 +20,7 @@ const rule: Rule.RuleModule = {
     ],
   },
   create: (context) => {
-    function report(node: Rule.Node, messageId: keyof typeof messages) {
+    function report(node: Rule.Node, messageId: keyof typeof MessagesRequireUseMemoChildren) {
       context.report({ node, messageId: messageId as string });
     }
 

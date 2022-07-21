@@ -3,7 +3,7 @@ import { TSESTree } from "@typescript-eslint/types";
 
 const componentNameRegex = /^[^a-z]/;
 
-export function isComplexComponent(node: TSESTree.JSXOpeningElement) {
+export function isComplexComponent(node: TSESTree.JSXOpeningElement | TSESTree.JSXIdentifier ) {
   if (node.type !== "JSXOpeningElement") return false;
   if (node.name.type !== "JSXIdentifier") return false;
   return componentNameRegex.test(node.name.name);
@@ -53,6 +53,10 @@ function getIdentifierMemoStatus(
   if (node.type !== "VariableDeclarator") return MemoStatus.Memoized;
   if (node.parent.kind === "let") {
     context.report({ node, messageId: "usememo-const" });
+    if (!node.init) {
+      // Rely on usememo-const reported error to fail this identifier
+      return MemoStatus.Memoized;
+    }
   }
   return getExpressionMemoStatus(context, node.init);
 }

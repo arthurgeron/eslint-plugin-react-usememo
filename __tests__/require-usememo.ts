@@ -1,5 +1,5 @@
-import { RuleTester } from "eslint";
-import rule from "../require-usememo";
+import { Rule, RuleTester } from "eslint";
+import rule from "src/require-usememo";
 
 const ruleTester = new RuleTester({
   parser: require.resolve("@typescript-eslint/parser"),
@@ -8,7 +8,7 @@ const ruleTester = new RuleTester({
   },
 });
 
-ruleTester.run("useMemo", rule, {
+ruleTester.run("useMemo", rule as Rule.RuleModule, {
   valid: [
     {
       code: `const Component = () => {
@@ -92,6 +92,14 @@ ruleTester.run("useMemo", rule, {
     },
     {
       code: `const Component = () => {
+        const firstInstance = React.useMemo(() => new Object(), []);
+        const second = new Object();
+        return <Child prop={firstInstance || second} />;
+      }`,
+      errors: [{ messageId: "instance-usememo-props" }],
+    },
+    {
+      code: `const Component = () => {
         let myObject = useMemo({});
         myObject = {a: 'b'};
         return <Child prop={myObject} />;
@@ -141,6 +149,14 @@ ruleTester.run("useMemo", rule, {
       }`,
       options: [{ strict: true }],
       errors: [{ messageId: "unknown-usememo-props" }],
+    },
+    {
+      code: `const Component = () => {
+        let myObject;
+        myObject = {};
+        return <Child prop={myObject} />;
+      }`,
+      errors: [{ messageId: "usememo-const" }],
     },
   ],
 });
