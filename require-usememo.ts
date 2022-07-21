@@ -7,7 +7,8 @@ import {
   MemoStatus,
 } from "./common";
 
-const hookNameRegex = /^use[A-Z0-9].*$/;
+type NodeType = TSESTree.JSXAttribute &
+Rule.NodeParentExtension;
 
 function isHook(node: TSESTree.Node) {
   if (node.type === "Identifier") {
@@ -69,43 +70,58 @@ const rule: Rule.RuleModule = {
       context.report({ node, messageId: messageId as string });
     }
 
+    function process(node: NodeType, expression: NodeType['value']['expression']) {
+      switch(expression.type) {
+        case 'JSXEmptyExpression':
+          process(node, expression.expression);
+          return;
+        case 'LogicalExpression':
+          !expression.left ? true :  process(node, expression.left);
+          !expression.right ? true :  process(node, expression.right);
+          return;
+        case 'JSXEmptyExpression':
+          return;
+        default:
+          switch (getExpressionMemoStatus(context, expression)) {
+            case MemoStatus.UnmemoizedObject:
+              report(node, "object-usememo-props");
+              return;
+            case MemoStatus.UnmemoizedArray:
+              report(node, "array-usememo-props");
+              return;
+            case MemoStatus.UnmemoizedNew:
+              report(node, "instance-usememo-props");
+              return;
+            case MemoStatus.UnmemoizedFunction:
+              report(node, "function-usecallback-props");
+              return;
+            case MemoStatus.UnmemoizedFunctionCall:
+            case MemoStatus.UnmemoizedOther:
+              if (context.options?.[0]?.strict) {
+                report(node, "unknown-usememo-props");
+              }
+              return;
+            case MemoStatus.UnmemoizedJSX:
+              report(node, "jsx-usememo-props");
+              return;
+          }
+          return;
+      } 
+    }
+
     return {
       JSXAttribute: (node: ESTree.Node & Rule.NodeParentExtension) => {
-        const { parent, value } = (node as unknown) as TSESTree.JSXAttribute &
-          Rule.NodeParentExtension;
+        const { parent, value } = (node as unknown) as NodeType;
         if (value === null) return;
         if (!isComplexComponent(parent)) return;
         if (value.type === "JSXExpressionContainer") {
           const { expression } = value;
-          if (expression.type !== "JSXEmptyExpression") {
-            switch (getExpressionMemoStatus(context, expression)) {
-              case MemoStatus.UnmemoizedObject:
-                report(node, "object-usememo-props");
-                break;
-              case MemoStatus.UnmemoizedArray:
-                report(node, "array-usememo-props");
-                break;
-              case MemoStatus.UnmemoizedNew:
-                report(node, "instance-usememo-props");
-                break;
-              case MemoStatus.UnmemoizedFunction:
-                report(node, "function-usecallback-props");
-                break;
-              case MemoStatus.UnmemoizedFunctionCall:
-              case MemoStatus.UnmemoizedOther:
-                if (context.options?.[0]?.strict) {
-                  report(node, "unknown-usememo-props");
-                }
-                break;
-              case MemoStatus.UnmemoizedJSX:
-                report(node, "jsx-usememo-props");
-                break;
-            }
-          }
+          process(node, expression);
         }
       },
 
-      CallExpression: (node) => {
+      CallExpression: (node: TSESTree.CallExpression &
+        Rule.NodeParentExtension) => {
         const { callee } = (node as unknown) as TSESTree.CallExpression &
           Rule.NodeParentExtension;
         if (!isHook(callee)) return;
