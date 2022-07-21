@@ -8,9 +8,6 @@ import {
 } from "./common";
 import { MessagesRequireUseMemoChildren } from "./constants";
 
-const componentNameRegex = /^[^a-z]/;
-const hookNameRegex = /^use[A-Z0-9].*$/;
-
 const rule: Rule.RuleModule = {
   meta: {
     messages: MessagesRequireUseMemoChildren,
