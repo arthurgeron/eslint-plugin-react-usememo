@@ -6,6 +6,7 @@ import {
   isComplexComponent,
   MemoStatus,
 } from "./common";
+import { ValidExpressions } from "./constants";
 
 type NodeType = TSESTree.JSXAttribute &
 Rule.NodeParentExtension;
@@ -134,7 +135,7 @@ const rule: Rule.RuleModule = {
           dependencies.type === "ArrayExpression"
         ) {
           for (const dep of dependencies.elements) {
-            if (dep !== null && dep.type === "Identifier") {
+            if (dep !== null && ValidExpressions[dep.type]) {
               switch (getExpressionMemoStatus(context, dep)) {
                 case MemoStatus.UnmemoizedObject:
                   report(node, "object-usememo-deps");
