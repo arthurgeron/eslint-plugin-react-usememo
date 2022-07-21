@@ -12,7 +12,7 @@ Rule.NodeParentExtension;
 
 function isHook(node: TSESTree.Node) {
   if (node.type === "Identifier") {
-    return hookNameRegex.test(node.name);
+    return node.name[0] === 'u' && node.name[1] === 's' && node.name[2] === 'e';
   } else if (
     node.type === "MemberExpression" &&
     !node.computed &&
