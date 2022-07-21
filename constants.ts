@@ -1,4 +1,4 @@
-export const ValidExpressions = {
+export const ValidExpressions: Record<string, boolean> = {
   'ArrowFunctionExpression': true,
   'ObjectExpression': true,
   'ArrayExpression': true,

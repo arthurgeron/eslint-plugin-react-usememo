@@ -3,7 +3,7 @@ import { TSESTree } from "@typescript-eslint/types";
 
 const componentNameRegex = /^[^a-z]/;
 
-export function isComplexComponent(node: TSESTree.JSXOpeningElement) {
+export function isComplexComponent(node: TSESTree.JSXOpeningElement | TSESTree.JSXIdentifier ) {
   if (node.type !== "JSXOpeningElement") return false;
   if (node.name.type !== "JSXIdentifier") return false;
   return componentNameRegex.test(node.name.name);

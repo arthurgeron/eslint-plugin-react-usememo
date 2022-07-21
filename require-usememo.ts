@@ -1,15 +1,15 @@
 import { Rule } from "eslint";
-import * as ESTree from "estree";
 import { TSESTree } from "@typescript-eslint/types";
+import { ValidExpressions } from './constants';
 import {
   getExpressionMemoStatus,
   isComplexComponent,
   MemoStatus,
 } from "./common";
-import { ValidExpressions } from "./constants";
 
-type NodeType = TSESTree.JSXAttribute &
-Rule.NodeParentExtension;
+type ExpressionTypes = TSESTree.ArrowFunctionExpression | TSESTree.JSXExpressionContainer | TSESTree.Expression | TSESTree.ObjectExpression | TSESTree.ArrayExpression | TSESTree.Identifier | TSESTree.LogicalExpression | TSESTree.JSXEmptyExpression;
+
+type NodeType = TSESTree.MethodDefinitionComputedName;
 
 function isHook(node: TSESTree.Node) {
   if (node.type === "Identifier") {
@@ -55,9 +55,14 @@ const messages = {
     "useMemo/useCallback return value should be assigned to a const to prevent reassignment",
 };
 
-const rule: Rule.RuleModule = {
+const rule: {meta: Rule.RuleModule['meta'], create: (context: Rule.RuleContext) => void } = {
   meta: {
+    type: 'problem',
     messages,
+    docs: {
+      description: 'Detects shallow comparison fails in React',
+      recommended: true,
+    },
     schema: [
       {
         type: "object",
@@ -66,24 +71,27 @@ const rule: Rule.RuleModule = {
       },
     ],
   },
-  create: (context) => {
-    function report(node: Rule.Node, messageId: keyof typeof messages) {
-      context.report({ node, messageId: messageId as string });
+  create: (context: Rule.RuleContext) => {
+    function report(node: NodeType, messageId: keyof typeof messages) {
+      context.report({ node: node as unknown as Rule.Node, messageId: messageId as string });
     }
 
-    function process(node: NodeType, expression: NodeType['value']['expression']) {
-      switch(expression.type) {
+    function process(node: NodeType, _expression?: ExpressionTypes) {
+
+      const expression = _expression ?? (node.value && Object.prototype.hasOwnProperty.call(node.value, 'expression') ? (node.value as unknown as TSESTree.JSXExpressionContainer).expression : node.value ) ;
+
+      switch(expression?.type) {
         case 'JSXEmptyExpression':
-          process(node, expression.expression);
+          process(node, (expression as TSESTree.JSXEmptyExpression));
           return;
         case 'LogicalExpression':
-          !expression.left ? true :  process(node, expression.left);
-          !expression.right ? true :  process(node, expression.right);
+          !expression.left ? true :  process(node, (expression as TSESTree.LogicalExpression).left);
+          !expression.right ? true :  process(node, (expression as TSESTree.LogicalExpression).right);
           return;
         case 'JSXEmptyExpression':
           return;
         default:
-          switch (getExpressionMemoStatus(context, expression)) {
+          switch (getExpressionMemoStatus(context, expression as TSESTree.Expression)) {
             case MemoStatus.UnmemoizedObject:
               report(node, "object-usememo-props");
               return;
@@ -111,32 +119,29 @@ const rule: Rule.RuleModule = {
     }
 
     return {
-      JSXAttribute: (node: ESTree.Node & Rule.NodeParentExtension) => {
-        const { parent, value } = (node as unknown) as NodeType;
+      JSXAttribute: (node: NodeType) => {
+        const { parent, value } = node;
         if (value === null) return;
-        if (!isComplexComponent(parent)) return;
-        if (value.type === "JSXExpressionContainer") {
-          const { expression } = value;
-          process(node, expression);
+        if (parent && !isComplexComponent(parent as TSESTree.JSXIdentifier)) return;
+        if ((value.type as string) === "JSXExpressionContainer") {
+          process(node);
         }
       },
 
-      CallExpression: (node: TSESTree.CallExpression &
+      CallExpression: (node: TSESTree.CallExpression & TSESTree.JSXExpressionContainer &
         Rule.NodeParentExtension) => {
-        const { callee } = (node as unknown) as TSESTree.CallExpression &
-          Rule.NodeParentExtension;
+        const { callee } = node;
         if (!isHook(callee)) return;
-        const {
-          arguments: [, dependencies],
-        } = (node as unknown) as TSESTree.CallExpression &
-          Rule.NodeParentExtension;
+
+        const [, dependencies] = (node as TSESTree.CallExpression).arguments;
+
         if (
           dependencies !== undefined &&
           dependencies.type === "ArrayExpression"
         ) {
           for (const dep of dependencies.elements) {
             if (dep !== null && ValidExpressions[dep.type]) {
-              switch (getExpressionMemoStatus(context, dep)) {
+              switch (getExpressionMemoStatus(context, dep as TSESTree.Expression)) {
                 case MemoStatus.UnmemoizedObject:
                   report(node, "object-usememo-deps");
                   break;
