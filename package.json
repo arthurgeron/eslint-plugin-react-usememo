@@ -1,9 +1,9 @@
 {
-  "name": "eslint-plugin-react-memo",
-  "version": "0.0.3",
+  "name": "eslint-plugin-react-usememo",
+  "version": "0.0.1",
   "description": "",
   "main": "dist/index.js",
-  "author": "Stefano J. Attardi <github@attardi.org>",
+  "author": "Stefano J. Attardi <github@attardi.org> & Arthur Geron <github@arthurgeron.org",
   "repository": {
     "type": "git",
     "url": "https://github.com/steadicat/eslint-plugin-react-memo.git"
