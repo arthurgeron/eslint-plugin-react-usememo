@@ -1,6 +1,6 @@
 import { Rule } from "eslint";
 import { TSESTree } from "@typescript-eslint/types";
-import { Messages, ValidExpressions } from './constants';
+import { MessagesRequireUseMemo, ValidExpressions } from './constants';
 import {
   getExpressionMemoStatus,
   isComplexComponent,
@@ -29,7 +29,7 @@ function isHook(node: TSESTree.Node) {
 const rule: {meta: Rule.RuleModule['meta'], create: (context: Rule.RuleContext) => void } = {
   meta: {
     type: 'problem',
-    messages: Messages,
+    messages: MessagesRequireUseMemo,
     docs: {
       description: 'Detects shallow comparison fails in React',
       recommended: true,
@@ -43,7 +43,7 @@ const rule: {meta: Rule.RuleModule['meta'], create: (context: Rule.RuleContext) 
     ],
   },
   create: (context: Rule.RuleContext) => {
-    function report(node: NodeType, messageId: keyof typeof Messages) {
+    function report(node: NodeType, messageId: keyof typeof MessagesRequireUseMemo) {
       context.report({ node: node as unknown as Rule.Node, messageId: messageId as string });
     }
 

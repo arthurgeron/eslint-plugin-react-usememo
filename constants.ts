@@ -8,7 +8,7 @@ export const ValidExpressions: Record<string, boolean> = {
 }
 
 
-export const Messages = {
+export const MessagesRequireUseMemo = {
   "object-usememo-props":
     "Object literal should be wrapped in useMemo() or be static when used as a prop",
   "object-usememo-deps":
@@ -33,6 +33,23 @@ export const Messages = {
     "Unknown value may need to be wrapped in useMemo() when used as a prop",
   "unknown-usememo-deps":
     "Unknown value may need to be wrapped in useMemo() when used as a hook dependency",
+  "usememo-const":
+    "useMemo/useCallback return value should be assigned to a const to prevent reassignment",
+};
+
+export const MessagesRequireUseMemoChildren = {
+  "object-usememo-children":
+    "Object literal should be wrapped in React.useMemo() when used as children",
+  "array-usememo-children":
+    "Array literal should be wrapped in React.useMemo() when used as children",
+  "instance-usememo-children":
+    "Object instantiation should be wrapped in React.useMemo() when used as children",
+  "jsx-usememo-children":
+    "JSX should be wrapped in React.useMemo() when used as children",
+  "function-usecallback-children":
+    "Function definition should be wrapped in React.useCallback() when used as children",
+  "unknown-usememo-children":
+    "Unknown value may need to be wrapped in React.useMemo() when used as children",
   "usememo-const":
     "useMemo/useCallback return value should be assigned to a const to prevent reassignment",
 };
