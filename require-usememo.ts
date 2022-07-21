@@ -1,6 +1,6 @@
 import { Rule } from "eslint";
 import { TSESTree } from "@typescript-eslint/types";
-import { ValidExpressions } from './constants';
+import { Messages, ValidExpressions } from './constants';
 import {
   getExpressionMemoStatus,
   isComplexComponent,
@@ -26,39 +26,10 @@ function isHook(node: TSESTree.Node) {
   }
 }
 
-const messages = {
-  "object-usememo-props":
-    "Object literal should be wrapped in React.useMemo() when used as a prop",
-  "object-usememo-deps":
-    "Object literal should be wrapped in React.useMemo() when used as a hook dependency",
-  "array-usememo-props":
-    "Array literal should be wrapped in React.useMemo() when used as a prop",
-  "array-usememo-deps":
-    "Array literal should be wrapped in React.useMemo() when used as a hook dependency",
-  "instance-usememo-props":
-    "Object instantiation should be wrapped in React.useMemo() when used as a prop",
-  "instance-usememo-deps":
-    "Object instantiation should be wrapped in React.useMemo() when used as a hook dependency",
-  "jsx-usememo-props":
-    "JSX should be wrapped in React.useMemo() when used as a prop",
-  "jsx-usememo-deps":
-    "JSX should be wrapped in React.useMemo() when used as a hook dependency",
-  "function-usecallback-props":
-    "Function definition should be wrapped in React.useCallback() when used as a prop",
-  "function-usecallback-deps":
-    "Function definition should be wrapped in React.useCallback() when used as a hook dependency",
-  "unknown-usememo-props":
-    "Unknown value may need to be wrapped in React.useMemo() when used as a prop",
-  "unknown-usememo-deps":
-    "Unknown value may need to be wrapped in React.useMemo() when used as a hook dependency",
-  "usememo-const":
-    "useMemo/useCallback return value should be assigned to a const to prevent reassignment",
-};
-
 const rule: {meta: Rule.RuleModule['meta'], create: (context: Rule.RuleContext) => void } = {
   meta: {
     type: 'problem',
-    messages,
+    messages: Messages,
     docs: {
       description: 'Detects shallow comparison fails in React',
       recommended: true,
@@ -72,7 +43,7 @@ const rule: {meta: Rule.RuleModule['meta'], create: (context: Rule.RuleContext) 
     ],
   },
   create: (context: Rule.RuleContext) => {
-    function report(node: NodeType, messageId: keyof typeof messages) {
+    function report(node: NodeType, messageId: keyof typeof Messages) {
       context.report({ node: node as unknown as Rule.Node, messageId: messageId as string });
     }
 
