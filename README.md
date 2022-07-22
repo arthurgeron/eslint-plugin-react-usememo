@@ -22,12 +22,12 @@ npm install @arthurgeron/eslint-plugin-react-usememo --save-dev
 
 To enable the plugin add the following to the `plugin` property  your `eslintrc` file:
 ```json
-plugins: ["@arthurgeron/react-usememo"],
+"plugins": ["@arthurgeron/react-usememo"],
 ```
 
 Then enable any rules as you like, example:
 ```json
-rules: {
+"rules": {
     "@arthurgeron/react-usememo/require-usememo": [2],
 },
 ```
