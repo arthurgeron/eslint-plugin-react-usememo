@@ -43,6 +43,7 @@ const rule: {meta: Rule.RuleModule['meta'], create: (context: Rule.RuleContext) 
     ],
   },
   create: (context: Rule.RuleContext) => {
+    let isClass = false;
     function report(node: NodeType, messageId: keyof typeof MessagesRequireUseMemo) {
       context.report({ node: node as unknown as Rule.Node, messageId: messageId as string });
     }
@@ -64,24 +65,27 @@ const rule: {meta: Rule.RuleModule['meta'], create: (context: Rule.RuleContext) 
         default:
           switch (getExpressionMemoStatus(context, expression as TSESTree.Expression)) {
             case MemoStatus.UnmemoizedObject:
-              report(node, "object-usememo-props");
+              report(node, isClass ? "object-class-memo-props" : "object-usememo-props");
               return;
             case MemoStatus.UnmemoizedArray:
-              report(node, "array-usememo-props");
+              report(node, isClass ? "array-class-memo-props" : "array-usememo-props");
               return;
             case MemoStatus.UnmemoizedNew:
-              report(node, "instance-usememo-props");
+              report(node, isClass ?  "instance-class-memo-props" : "instance-usememo-props");
               return;
             case MemoStatus.UnmemoizedFunction:
-              report(node, "function-usecallback-props");
+              report(node, isClass ? 'instance-class-memo-props'  : "function-usecallback-props");
               return;
             case MemoStatus.UnmemoizedFunctionCall:
             case MemoStatus.UnmemoizedOther:
               if (context.options?.[0]?.strict) {
-                report(node, "unknown-usememo-props");
+                report(node, isClass ? "unknown-class-memo-props" : "unknown-usememo-props");
               }
               return;
             case MemoStatus.UnmemoizedJSX:
+              if (isClass) {
+                return;
+              }
               report(node, "jsx-usememo-props");
               return;
           }
@@ -99,11 +103,14 @@ const rule: {meta: Rule.RuleModule['meta'], create: (context: Rule.RuleContext) 
         }
       },
 
+      ClassDeclaration: () => {
+        isClass = true;
+      },
+
       CallExpression: (node: TSESTree.CallExpression & TSESTree.JSXExpressionContainer &
         Rule.NodeParentExtension) => {
         const { callee } = node;
         if (!isHook(callee)) return;
-
         const [, dependencies] = (node as TSESTree.CallExpression).arguments;
 
         if (
