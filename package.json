@@ -30,6 +30,7 @@
   "scripts": {
     "test": "./node_modules/.bin/jest",
     "build": "rm -rf dist && rollup -c",
+    "prepare": "husky install",
     "prepublish:public": "npm run build",
     "publish:public": "npm publish --access public",
     "deadCode": "./node_modules/.bin/ts-prune --error --ignore"
