@@ -87,7 +87,7 @@ jobs:
           path: node_modules
           key: ${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}
 
-      - name: Run tests
+      - name: Run build
         run: yarn build
 
   deadcode:
