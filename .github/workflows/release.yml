@@ -145,6 +145,6 @@ jobs:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
       - name: Tag release
-      uses: Klemensas/action-autotag@stable
-      with:
-        GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        uses: Klemensas/action-autotag@stable
+        with:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
