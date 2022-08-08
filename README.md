@@ -1,6 +1,6 @@
 # eslint-plugin-react-usememo
 
-Enforce that all function components are wrapped in `React.memo`, and that all props and deps are wrapped in `useMemo`/`useCallback` so they don’t break memo or cause unecessary expensive re-renders in children (e.g. React Native's FlatLists, useEffect, useMemo).
+Enforce that functions or complex objects that can generate unecessary renders or side-effects are wrapped in `useMemo` or `useCallback`, allow for devs to enforce that functional components be wrapped in `memo` programatically, and that all props and deps are wrapped in `useMemo`/`useCallback`; The intended outcome is that component's tree and/or expensive lifecycles (e.g. React Native's FlatLists, useEffect, useMemo, etc) only re-calculate or render again when really necessary, controlling expensive expressions and bringing out the best scalability and performance that your application can get.
 
 ## Rationale
 [Why we memo all the things](https://attardi.org/why-we-memo-all-the-things/).   
