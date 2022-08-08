@@ -10,17 +10,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Use Node.js 14.x
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: 14.x
           cache: 'yarn'
           cache-dependency-path: '**/yarn.lock'
 
       - name: Cache node modules
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: cache
         with:
           path: node_modules
@@ -40,21 +40,27 @@ jobs:
     needs: install
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Use Node.js 14.x
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: 14.x
           cache: 'yarn'
           cache-dependency-path: '**/yarn.lock'
 
       - name: Restore node_modules
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: restore-build
         with:
           path: node_modules
           key: ${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}
+
+      - name: Restore jest cache
+        uses: actions/cache@v3
+        with:
+          path: .jest-cache
+          key: ${{ runner.os }}-${{ hashFiles('**/.jest-cache/**') }}
 
       - name: Run tests
         run: yarn test
@@ -65,23 +71,23 @@ jobs:
     needs: install
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Use Node.js 14.x
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: 14.x
           cache: 'yarn'
           cache-dependency-path: '**/yarn.lock'
 
       - name: Restore node_modules
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: restore-build
         with:
           path: node_modules
           key: ${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}
 
-      - name: Run tests
+      - name: Run build
         run: yarn build
 
   deadcode:
@@ -90,17 +96,17 @@ jobs:
     needs: install
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Use Node.js 14.x
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: 14.x
           cache: 'yarn'
           cache-dependency-path: '**/yarn.lock'
 
       - name: Restore node_modules
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: restore-build
         with:
           path: node_modules
@@ -115,17 +121,19 @@ jobs:
     needs: [test, build, deadcode]
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Use Node.js 14.x
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: 14.x
           cache: 'yarn'
           cache-dependency-path: '**/yarn.lock'
+          registry-url: 'https://registry.npmjs.org'
+          scope: '@arthurgeron'
 
       - name: Restore node_modules
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: restore-build
         with:
           path: node_modules
@@ -135,3 +143,8 @@ jobs:
         run: yarn publish:public
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+
+      - name: Tag release
+      uses: Klemensas/action-autotag@stable
+      with:
+        GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"

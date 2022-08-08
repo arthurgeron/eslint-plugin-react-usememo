@@ -2,3 +2,5 @@
 /dist/
 .vscode
 yarn-error.log
+.jest-cache
+coverage

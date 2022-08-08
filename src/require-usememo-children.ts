@@ -20,17 +20,22 @@ const rule: Rule.RuleModule = {
     ],
   },
   create: (context) => {
+    let isClass = false;
     function report(node: Rule.Node, messageId: keyof typeof MessagesRequireUseMemoChildren) {
       context.report({ node, messageId: messageId as string });
     }
 
     return {
+      ClassDeclaration: () => {
+        isClass = true;
+      },
+
       JSXElement: (node: ESTree.Node & Rule.NodeParentExtension) => {
         const {
           children,
           openingElement,
         } = (node as unknown) as TSESTree.JSXElement & Rule.NodeParentExtension;
-        if (!isComplexComponent(openingElement)) return;
+        if (isClass || !isComplexComponent(openingElement)) return;
 
         for (const child of children) {
           if (child.type === "JSXElement" || child.type === "JSXFragment") {

@@ -11,14 +11,20 @@ export const ValidExpressions: Record<string, boolean> = {
 export const MessagesRequireUseMemo = {
   "object-usememo-props":
     "Object literal should be wrapped in useMemo() or be static when used as a prop",
+  "object-class-memo-props":
+    "Object literal should com from state or be static when used as a prop",
   "object-usememo-deps":
     "Object literal should be wrapped in useMemo() or be static when used as a hook dependency",
   "array-usememo-props":
     "Array literal should be wrapped in useMemo() or be static when used as a prop",
+  "array-class-memo-props":
+    "Array literal should be from state and declared in state, constructor, getDerivedStateFromProps or statically when used as a prop",
   "array-usememo-deps":
     "Array literal should be wrapped in useMemo() or be static when used as a hook dependency",
   "instance-usememo-props":
     "Object instantiation should be wrapped in useMemo() or be static when used as a prop",
+  "instance-class-memo-props":
+    "Object instantiation should be done in state, constructor, getDerivedStateFromProps or statically when used as a prop",
   "instance-usememo-deps":
     "Object instantiation should be wrapped in useMemo() or be static when used as a hook dependency",
   "jsx-usememo-props":
@@ -27,10 +33,14 @@ export const MessagesRequireUseMemo = {
     "JSX should be wrapped in useMemo() when used as a hook dependency",
   "function-usecallback-props":
     "Function definition should be wrapped in useCallback() or be static when used as a prop",
+  "function-class-props":
+    "Function definition should declared as a class property or statically when used as a prop",
   "function-usecallback-deps":
     "Function definition should be wrapped in useCallback() or be static when used as a hook dependency",
   "unknown-usememo-props":
     "Unknown value may need to be wrapped in useMemo() when used as a prop",
+  "unknown-class-memo-props":
+    "Unknown value should be declared in state, constructor, getDerivedStateFromProps or statically when used as a prop",
   "unknown-usememo-deps":
     "Unknown value may need to be wrapped in useMemo() when used as a hook dependency",
   "usememo-const":

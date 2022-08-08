@@ -26,7 +26,53 @@ ruleTester.run("useMemo", rule as Rule.RuleModule, {
       code: `const Component = () => {
       const myArray = React.useMemo(() => new Object(), []);
       return <Child prop={myArray} />;
-    }`,
+      }`
+    },
+    {
+      code: `
+      const myArray = new Object();
+      class Component {
+        render() {
+          return <Child prop={myArray} />;
+        }
+      }`,
+    },
+    {
+      code: `class Component {
+        constructor(props){
+          super(props);
+          this.state = {
+            myData: new Object(),
+          };
+        }
+        render() {
+          const {myData} = this.state;
+          return <Child prop={myData} />;
+        }
+      }`,
+    },
+    {
+      code: `class Component {
+        constructor(props){
+          super(props);
+          this.state = {
+            myArray: [],
+          };
+        }
+        render() {
+          const {myArray} = this.state;
+          return <Child prop={myArray} />;
+        }
+      }`,
+    },
+    {
+      code: `
+      const myArray = [];
+      class Component {
+        render() {
+          return <Child prop={myArray} />;
+        }
+      }`,
     },
     {
       code: `const Component = () => {
@@ -38,6 +84,14 @@ ruleTester.run("useMemo", rule as Rule.RuleModule, {
       code: `const Component = () => {
         const myArray = [];
         return <div prop={myArray} />;
+      }`,
+    },
+    {
+      code: `class Component {
+        render() {
+          const myArray = [];
+          return <div prop={myArray} />;
+        }
       }`,
     },
     {
@@ -91,6 +145,15 @@ ruleTester.run("useMemo", rule as Rule.RuleModule, {
       errors: [{ messageId: "instance-usememo-props" }],
     },
     {
+      code: `class Component {
+        render() {
+          const myInstance = new Object();
+          return <Child prop={myInstance} />;
+        }
+      }`,
+      errors: [{ messageId: "instance-class-memo-props" }],
+    },
+    {
       code: `const Component = () => {
         const firstInstance = React.useMemo(() => new Object(), []);
         const second = new Object();
@@ -113,10 +176,26 @@ ruleTester.run("useMemo", rule as Rule.RuleModule, {
       errors: [{ messageId: "object-usememo-props" }],
     },
     {
+      code: `class Component {
+        render() {
+          return <Child prop={{}} />;
+        }
+      }`,
+      errors: [{ messageId: "object-class-memo-props" }],
+    },
+    {
       code: `const Component = () => {
         return <Child prop={[]} />;
       }`,
       errors: [{ messageId: "array-usememo-props" }],
+    },
+    {
+      code: `class Component {
+        render() {
+          return <Child prop={[]} />;
+        }
+      }`,
+      errors: [{ messageId: "array-class-memo-props" }],
     },
     {
       code: `const Component = () => {
@@ -133,6 +212,16 @@ ruleTester.run("useMemo", rule as Rule.RuleModule, {
       }`,
       options: [{ strict: true }],
       errors: [{ messageId: "unknown-usememo-props" }],
+    },
+    {
+      code: `class Component {
+        render() {
+          const myArray = lodash.memoize([]);
+          return <Child prop={myArray} />;
+        }
+      }`,
+      options: [{ strict: true }],
+      errors: [{ messageId: "unknown-class-memo-props" }],
     },
     {
       code: `const Component = () => {

@@ -29,10 +29,27 @@ ruleTester.run("useCallback", rule as Rule.RuleModule , {
       }`,
     },
     {
+      code: `class Component {
+        render() {
+          const myFn = function() {};
+          return <div prop={myFn} />;
+        }
+      }`,
+    },
+    {
       code: `
-      const myFn = function() {console.log('hi');};
+      const myFn = function() {};
       const Component = () => {
         return <Child prop={myFn} />;
+      }`,
+    },
+    {
+      code: `
+      const myFn = function() {};
+      class Component {
+        render() {
+          return <Child prop={myFn} />;
+        }
       }`,
     },
     {
@@ -53,6 +70,15 @@ ruleTester.run("useCallback", rule as Rule.RuleModule , {
       const myFn1 = useCallback(() => [], []);
       const myFn2 = React.useCallback(() => myFn1, [myFn1]);
       return <Child prop={myFn2} />;
+      }`,
+    },
+    {
+      code: `
+      class Component {
+        myFn() {}
+        render() {
+          return <Child prop={this.myFn} />;
+        }
       }`,
     },
     {
@@ -104,6 +130,14 @@ ruleTester.run("useCallback", rule as Rule.RuleModule , {
       errors: [{ messageId: "function-usecallback-props" }],
     },
     {
+      code: `class Component {
+        return () {
+          return <Child prop={() => []} />;
+        }
+      }`,
+      errors: [{ messageId: "instance-class-memo-props" }],
+    },
+    {
       code: `const Component = () => {
         const myFn = function() {};
         return <Child prop={myFn} />;
@@ -133,6 +167,16 @@ ruleTester.run("useCallback", rule as Rule.RuleModule , {
       }`,
       options: [{ strict: true }],
       errors: [{ messageId: "unknown-usememo-props" }],
+    },
+    {
+      code: `class Component {
+        render() {
+          const myFn = lodash.memoize(() => []);
+          return <Child prop={myFn} />;
+        }
+      }`,
+      options: [{ strict: true }],
+      errors: [{ messageId: "unknown-class-memo-props" }],
     },
     {
       code: `const Component = () => {
