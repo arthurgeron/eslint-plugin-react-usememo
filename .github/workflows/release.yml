@@ -129,6 +129,8 @@ jobs:
           node-version: 14.x
           cache: 'yarn'
           cache-dependency-path: '**/yarn.lock'
+          registry-url: 'https://registry.npmjs.org'
+          scope: '@arthurgeron'
 
       - name: Restore node_modules
         uses: actions/cache@v3
