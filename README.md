@@ -3,7 +3,6 @@
 Enforce that functions or complex objects that can generate unecessary renders or side-effects are wrapped in `useMemo` or `useCallback`, allow for devs to enforce that functional components be wrapped in `memo` programatically, and that all props and deps are wrapped in `useMemo`/`useCallback`; The intended outcome is that component's tree and/or expensive lifecycles (e.g. React Native's FlatLists, useEffect, useMemo, etc) only re-calculate or render again when really necessary, controlling expensive expressions and bringing out the best scalability and performance that your application can get.
 
 ## Rationale
-[Why we memo all the things](https://attardi.org/why-we-memo-all-the-things/).   
 React Native's own [docs](https://reactnative.dev/docs/0.61/optimizing-flatlist-configuration#avoid-anonymous-function-on-renderitem) state how it's important to use static or memoized as props for complex children (FlatList on that case), that applies even more broadly when we are talking about custom components (the Components you've created), it might not seem necessary at first but you'll be making a bet that the component in question will never grow to use `memo` or those props in hooks (i.e. useEffect, useMemo, useCallback), you'll only notice once your solution starts freezing and dropping frames, that's why using the `require-usememo` rule is recommended.
 
 
