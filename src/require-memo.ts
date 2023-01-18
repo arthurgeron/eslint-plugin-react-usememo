@@ -1,8 +1,7 @@
 import { Rule } from "eslint";
+import { isComponentName } from './common';
 import * as ESTree from "estree";
 import * as path from "path";
-
-const componentNameRegex = /^[^a-z]/;
 
 function isMemoCallExpression(node: Rule.Node) {
   if (node.type !== "CallExpression") return false;
@@ -46,7 +45,7 @@ function checkFunction(
   if (currentNode.type === "VariableDeclarator") {
     const { id } = currentNode;
     if (id.type === "Identifier") {
-      if (componentNameRegex.test(id.name)) {
+      if (isComponentName(id?.name)) {
         context.report({ node, messageId: "memo-required" });
       }
     }
@@ -54,12 +53,12 @@ function checkFunction(
     node.type === "FunctionDeclaration" &&
     currentNode.type === "Program"
   ) {
-    if (node.id !== null && componentNameRegex.test(node.id.name)) {
+    if (node.id !== null &&isComponentName(node.id.name)) {
       context.report({ node, messageId: "memo-required" });
     } else {
       if (context.getFilename() === "<input>") return;
       const filename = path.basename(context.getFilename());
-      if (componentNameRegex.test(filename)) {
+      if (isComponentName(filename)) {
         context.report({ node, messageId: "memo-required" });
       }
     }

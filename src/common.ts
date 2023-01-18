@@ -20,6 +20,11 @@ export enum MemoStatus {
   UnmemoizedOther,
 }
 
+export function isComponentName(name: string) {
+  // All components are PascalCased, thoroughly checking for this only adds processing time and opens more chance to bugs/issues.
+  return name?.[0] === name?.[0]?.toUpperCase()
+}
+
 function isCallExpression(
   node: TSESTree.CallExpression,
   name: "useMemo" | "useCallback"
