@@ -66,6 +66,7 @@ const rule: Rule.RuleModule  = {
           return;
       } 
     }
+
     function JSXAttribute<T extends Rule.Node | TSESTree.MethodDefinitionComputedName>(node: T) {
       const { parent, value } = node as TSESTree.MethodDefinitionComputedName;
       if (value === null) return null;
@@ -84,8 +85,12 @@ const rule: Rule.RuleModule  = {
       },
 
       FunctionDeclaration: (node) => {
-        if(node.id && getIsHook(node.id as TSESTree.Identifier)) {
-          isHook = true;
+        isHook = !!node.id && getIsHook(node.id as TSESTree.Identifier);
+      },
+
+      ReturnStatement(node) {
+        if (isHook && node.argument) {
+          process(node as unknown as TSESTree.MethodDefinitionComputedName, node.argument as ExpressionTypes);
         }
       },
 

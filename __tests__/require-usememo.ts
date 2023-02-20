@@ -133,6 +133,18 @@ ruleTester.run("useMemo", rule as Rule.RuleModule, {
         return <Child prop={myComplexString} />;
       }`,
     },
+    {
+      code: `function useTest() {
+        const myBool = false;
+        return myBool;
+      }`,
+    },
+    {
+      code: `function useTesty() {
+        const myString = '';
+        return myString;
+      }`,
+    },
   ],
   invalid: [
     {
@@ -258,6 +270,34 @@ ruleTester.run("useMemo", rule as Rule.RuleModule, {
         return <Child prop={myObject} />;
       }`,
       errors: [{ messageId: "usememo-const" }],
+    },
+    {
+      code: `function useTest() {
+        const myObject = {};
+        return myObject;
+      }`,
+      errors: [{ messageId: "object-usememo-props" }],
+    },
+    {
+      code: `function useTest() {
+        const myObject = {};
+        return {x: myObject };
+      }`,
+      errors: [{ messageId: "object-usememo-props" }],
+    },
+    {
+      code: `function useTest() {
+        const myFunction = () => {};
+        return myFunction;
+      }`,
+      errors: [{ messageId: "function-usecallback-props" }],
+    },
+    {
+      code: `function useTest() {
+        function myFunction(){ };
+        return myFunction;
+      }`,
+      errors: [{ messageId: "function-usecallback-props" }],
     },
   ],
 });
