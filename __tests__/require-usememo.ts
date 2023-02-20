@@ -117,6 +117,18 @@ ruleTester.run("useMemo", rule as Rule.RuleModule, {
     },
     {
       code: `const Component = () => {
+        const myBool = false;
+        return <Child prop={myArray} />;
+      }`,
+    },
+    {
+      code: `const Component = () => {
+        const myString = 'test';
+        return <Child prop={myArray} />;
+      }`,
+    },
+    {
+      code: `const Component = () => {
         const myComplexString = css\`color: red;\`;
         return <Child prop={myComplexString} />;
       }`,

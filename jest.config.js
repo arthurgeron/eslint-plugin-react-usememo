@@ -1,6 +1,7 @@
 module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
+
   moduleNameMapper: {
     "src/(.*)": "<rootDir>/src/$1"
   },
@@ -10,6 +11,16 @@ module.exports = {
   collectCoverage: true,
   collectCoverageFrom: [
     '<rootDir>/src/*',
+    '<rootDir>/src/**/*',
+    '!<rootDir>/src/index.{js,ts}',
   ],
   cacheDirectory: '.jest-cache',
+  coverageThreshold: {
+    global: {
+      branches: 78,
+      functions: 80,
+      lines: 80,
+      statements: 75,
+    },
+  },
 };
