@@ -1,11 +1,11 @@
 import { Rule } from "eslint";
 import { TSESTree } from "@typescript-eslint/types";
-import { MessagesRequireUseMemo, ValidExpressions } from './constants';
+import { MessagesRequireUseMemo, ValidExpressions } from '../constants';
 import {
   getExpressionMemoStatus,
   isComplexComponent,
   MemoStatus,
-} from "./common";
+} from "../common";
 
 type ExpressionTypes = TSESTree.ArrowFunctionExpression | TSESTree.JSXExpressionContainer | TSESTree.Expression | TSESTree.ObjectExpression | TSESTree.ArrayExpression | TSESTree.Identifier | TSESTree.LogicalExpression | TSESTree.JSXEmptyExpression;
 
