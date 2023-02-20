@@ -1,23 +1,21 @@
 import { Rule } from "eslint";
 import { TSESTree } from "@typescript-eslint/types";
-import { MessagesRequireUseMemo, ValidExpressions } from '../constants';
+import { ValidExpressions, jsxEmptyExpressionClassData, jsxEmptyExpressionData, callExpressionData  } from './constants';
+import { MessagesRequireUseMemo  } from '../constants';
 import {
   getExpressionMemoStatus,
   isComplexComponent,
-  MemoStatus,
 } from "../common";
+import type {ExpressionTypes, NodeType, Node, ExpressionData} from './types';
+import { checkForErrors } from './utils';
 
-type ExpressionTypes = TSESTree.ArrowFunctionExpression | TSESTree.JSXExpressionContainer | TSESTree.Expression | TSESTree.ObjectExpression | TSESTree.ArrayExpression | TSESTree.Identifier | TSESTree.LogicalExpression | TSESTree.JSXEmptyExpression;
-
-type NodeType = TSESTree.MethodDefinitionComputedName;
-
-function isHook(node: TSESTree.Node) {
+function getIsHook(node: TSESTree.Node | TSESTree.Identifier) {
   if (node.type === "Identifier") {
     return node.name[0] === 'u' && node.name[1] === 's' && node.name[2] === 'e';
   } else if (
     node.type === "MemberExpression" &&
     !node.computed &&
-    isHook(node.property)
+    getIsHook(node.property)
   ) {
     const obj = node.object;
     return obj.type === "Identifier" && obj.name === "React";
@@ -26,7 +24,7 @@ function isHook(node: TSESTree.Node) {
   }
 }
 
-const rule: {meta: Rule.RuleModule['meta'], create: (context: Rule.RuleContext) => void } = {
+const rule: Rule.RuleModule  = {
   meta: {
     type: 'problem',
     messages: MessagesRequireUseMemo,
@@ -42,9 +40,10 @@ const rule: {meta: Rule.RuleModule['meta'], create: (context: Rule.RuleContext) 
       },
     ],
   },
-  create: (context: Rule.RuleContext) => {
+  create: (context: Rule.RuleContext): Rule.RuleListener => {
     let isClass = false;
-    function report(node: NodeType, messageId: keyof typeof MessagesRequireUseMemo) {
+    let isHook = false;
+    function report<T extends Rule.NodeParentExtension | TSESTree.MethodDefinitionComputedName>(node: T, messageId: keyof typeof MessagesRequireUseMemo) {
       context.report({ node: node as unknown as Rule.Node, messageId: messageId as string });
     }
 
@@ -63,54 +62,37 @@ const rule: {meta: Rule.RuleModule['meta'], create: (context: Rule.RuleContext) 
         case 'JSXEmptyExpression':
           return;
         default:
-          switch (getExpressionMemoStatus(context, expression as TSESTree.Expression)) {
-            case MemoStatus.UnmemoizedObject:
-              report(node, isClass ? "object-class-memo-props" : "object-usememo-props");
-              return;
-            case MemoStatus.UnmemoizedArray:
-              report(node, isClass ? "array-class-memo-props" : "array-usememo-props");
-              return;
-            case MemoStatus.UnmemoizedNew:
-              report(node, isClass ?  "instance-class-memo-props" : "instance-usememo-props");
-              return;
-            case MemoStatus.UnmemoizedFunction:
-              report(node, isClass ? 'instance-class-memo-props'  : "function-usecallback-props");
-              return;
-            case MemoStatus.UnmemoizedFunctionCall:
-            case MemoStatus.UnmemoizedOther:
-              if (context.options?.[0]?.strict) {
-                report(node, isClass ? "unknown-class-memo-props" : "unknown-usememo-props");
-              }
-              return;
-            case MemoStatus.UnmemoizedJSX:
-              if (isClass) {
-                return;
-              }
-              report(node, "jsx-usememo-props");
-              return;
-          }
+          checkForErrors(isClass ? jsxEmptyExpressionClassData : jsxEmptyExpressionData, getExpressionMemoStatus(context, expression as TSESTree.Expression),context, node, report);
           return;
       } 
     }
+    function JSXAttribute<T extends Rule.Node | TSESTree.MethodDefinitionComputedName>(node: T) {
+      const { parent, value } = node as TSESTree.MethodDefinitionComputedName;
+      if (value === null) return null;
+      if (parent && !isComplexComponent(parent as TSESTree.JSXIdentifier)) return null;
+      if ((value.type as string) === "JSXExpressionContainer") {
+        process(node as TSESTree.MethodDefinitionComputedName);
+      }
+      return null;
+    }
 
     return {
-      JSXAttribute: (node: NodeType) => {
-        const { parent, value } = node;
-        if (value === null) return;
-        if (parent && !isComplexComponent(parent as TSESTree.JSXIdentifier)) return;
-        if ((value.type as string) === "JSXExpressionContainer") {
-          process(node);
-        }
-      },
+      JSXAttribute: JSXAttribute,
 
       ClassDeclaration: () => {
         isClass = true;
       },
 
-      CallExpression: (node: TSESTree.CallExpression & TSESTree.JSXExpressionContainer &
-        Rule.NodeParentExtension) => {
+      FunctionDeclaration: (node) => {
+        if(node.id && getIsHook(node.id as TSESTree.Identifier)) {
+          isHook = true;
+        }
+      },
+
+
+      CallExpression: (node) => {
         const { callee } = node;
-        if (!isHook(callee)) return;
+        if (!getIsHook(callee as TSESTree.Node)) return;
         const [, dependencies] = (node as TSESTree.CallExpression).arguments;
 
         if (
@@ -119,29 +101,7 @@ const rule: {meta: Rule.RuleModule['meta'], create: (context: Rule.RuleContext) 
         ) {
           for (const dep of dependencies.elements) {
             if (dep !== null && ValidExpressions[dep.type]) {
-              switch (getExpressionMemoStatus(context, dep as TSESTree.Expression)) {
-                case MemoStatus.UnmemoizedObject:
-                  report(node, "object-usememo-deps");
-                  break;
-                case MemoStatus.UnmemoizedArray:
-                  report(node, "array-usememo-deps");
-                  break;
-                case MemoStatus.UnmemoizedNew:
-                  report(node, "instance-usememo-deps");
-                  break;
-                case MemoStatus.UnmemoizedFunction:
-                  report(node, "function-usecallback-deps");
-                  break;
-                case MemoStatus.UnmemoizedFunctionCall:
-                case MemoStatus.UnmemoizedOther:
-                  if (context.options?.[0]?.strict) {
-                    report(node, "unknown-usememo-deps");
-                  }
-                  break;
-                case MemoStatus.UnmemoizedJSX:
-                  report(node, "jsx-usememo-deps");
-                  break;
-              }
+              checkForErrors(callExpressionData, getExpressionMemoStatus(context, dep as TSESTree.Expression), context, node, report);
             }
           }
         }
