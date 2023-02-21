@@ -31,7 +31,7 @@ const rule: Rule.RuleModule  = {
       context.report({ node: node as unknown as Rule.Node, messageId: messageId as string });
     }
 
-    function process(node: NodeType, _expression?: ExpressionTypes) {
+    function process(node: NodeType, _expression?: ExpressionTypes, expressionData?: ExpressionData) {
 
       const expression = _expression ?? (node.value && Object.prototype.hasOwnProperty.call(node.value, 'expression') ? (node.value as unknown as TSESTree.JSXExpressionContainer).expression : node.value ) ;
 
@@ -43,7 +43,7 @@ const rule: Rule.RuleModule  = {
         case 'JSXEmptyExpression':
           return;
         default:
-          checkForErrors(isClass ? jsxEmptyExpressionClassData : jsxEmptyExpressionData, getExpressionMemoStatus(context, expression as TSESTree.Expression),context, node, report);
+          checkForErrors(expressionData || (isClass ? jsxEmptyExpressionClassData : jsxEmptyExpressionData), getExpressionMemoStatus(context, expression as TSESTree.Expression),context, node, report);
           return;
       } 
     }
