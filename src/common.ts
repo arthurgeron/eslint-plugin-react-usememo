@@ -55,6 +55,8 @@ function getIdentifierMemoStatus(
   const variable = context.getScope().variables.find((v) => v.name === name);
   if (variable === undefined) return MemoStatus.Memoized;
   const [{ node }] = variable.defs;
+  
+  if (node.type === "FunctionDeclaration") return MemoStatus.UnmemoizedFunction;
   if (node.type !== "VariableDeclarator") return MemoStatus.Memoized;
   if (node.parent.kind === "let") {
     context.report({ node, messageId: "usememo-const" });
