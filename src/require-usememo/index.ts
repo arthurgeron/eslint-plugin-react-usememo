@@ -7,22 +7,7 @@ import {
   isComplexComponent,
 } from "../common";
 import type {ExpressionTypes, NodeType, Node, ExpressionData} from './types';
-import { checkForErrors } from './utils';
-
-function getIsHook(node: TSESTree.Node | TSESTree.Identifier) {
-  if (node.type === "Identifier") {
-    return node.name[0] === 'u' && node.name[1] === 's' && node.name[2] === 'e';
-  } else if (
-    node.type === "MemberExpression" &&
-    !node.computed &&
-    getIsHook(node.property)
-  ) {
-    const obj = node.object;
-    return obj.type === "Identifier" && obj.name === "React";
-  } else {
-    return false;
-  }
-}
+import { checkForErrors, getIsHook } from './utils';
 
 const rule: Rule.RuleModule  = {
   meta: {
