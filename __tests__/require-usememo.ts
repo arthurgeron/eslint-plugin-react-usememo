@@ -313,6 +313,14 @@ ruleTester.run("useMemo", rule as Rule.RuleModule, {
         const myObject = {};
         return {x: myObject };
       }`,
+      errors: [{ messageId: "object-usememo-hook" }],
+    },
+    {
+      code: `
+      const myObject = {};
+      function useTest() {
+        return {x: myObject };
+      }`,
       options: [{ checkHookReturnObject: true }],
       errors: [{ messageId: "object-usememo-hook" }],
     },
@@ -321,7 +329,6 @@ ruleTester.run("useMemo", rule as Rule.RuleModule, {
         function x() {}
         return {x};
       }`,
-      options: [{ checkHookReturnObject: true }],
       errors: [{ messageId: "function-usecallback-hook" }],
     },
     {

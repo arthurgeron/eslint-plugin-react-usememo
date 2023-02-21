@@ -68,10 +68,12 @@ const rule: Rule.RuleModule  = {
         if (node.parent.parent.type === 'FunctionDeclaration' && getIsHook(node.parent.parent.id as TSESTree.Identifier) && node.argument) {
             if (node.argument.type === 'ObjectExpression' ) {
               if (context.options?.[0]?.checkHookReturnObject) {
-                (node.argument as TSESTree.ObjectExpression)?.properties.forEach((_node) => {
-                  process(_node as unknown as TSESTree.MethodDefinitionComputedName, undefined, hookReturnExpressionData);
-                })
+                context.report({ node, messageId: "object-usememo-hook" });
+                return;
               }
+              const objExp = (node.argument as TSESTree.ObjectExpression);
+              objExp?.properties.forEach((_node) => 
+                process(_node as unknown as TSESTree.MethodDefinitionComputedName, (_node as TSESTree.Property).value as any , hookReturnExpressionData))
               return; 
             }
           process(node as unknown as TSESTree.MethodDefinitionComputedName, node.argument as ExpressionTypes, hookReturnExpressionData);
