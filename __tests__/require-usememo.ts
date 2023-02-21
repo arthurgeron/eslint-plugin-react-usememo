@@ -75,6 +75,15 @@ ruleTester.run("useMemo", rule as Rule.RuleModule, {
       }`,
     },
     {
+      code: `
+      function test() {}
+      class Component {
+        render() {
+          return <Child prop={test} />;
+        }
+      }`,
+    },
+    {
       code: `const Component = () => {
         const myObject = {};
         return <div prop={myObject} />;
@@ -110,6 +119,20 @@ ruleTester.run("useMemo", rule as Rule.RuleModule, {
       }`,
     },
     {
+      code: `
+      function test() {}
+      const Component = () => {
+        return <Child prop={test} />;
+      }`,
+    },
+    {
+      code: `
+      function test() {}
+      function Component() {
+        return <Child prop={test} />;
+      }`,
+    },
+    {
       code: `const Component = () => {
         const myArray = lodash.memoize([]);
         return <Child prop={myArray} />;
@@ -117,8 +140,39 @@ ruleTester.run("useMemo", rule as Rule.RuleModule, {
     },
     {
       code: `const Component = () => {
+        const myBool = false;
+        return <Child prop={myArray} />;
+      }`,
+    },
+    {
+      code: `const Component = () => {
+        const myString = 'test';
+        return <Child prop={myArray} />;
+      }`,
+    },
+    {
+      code: `const Component = () => {
         const myComplexString = css\`color: red;\`;
         return <Child prop={myComplexString} />;
+      }`,
+    },
+    {
+      code: `function useTest() {
+        const myBool = false;
+        return myBool;
+      }`,
+    },
+    {
+      code: `
+      const x = {};
+      function useTest() {
+        return {x};
+      }`,
+    },
+    {
+      code: `function useTesty() {
+        const myString = '';
+        return myString;
       }`,
     },
   ],
@@ -246,6 +300,50 @@ ruleTester.run("useMemo", rule as Rule.RuleModule, {
         return <Child prop={myObject} />;
       }`,
       errors: [{ messageId: "usememo-const" }],
+    },
+    {
+      code: `function useTest() {
+        const myObject = {};
+        return myObject;
+      }`,
+      errors: [{ messageId: "object-usememo-hook" }],
+    },
+    {
+      code: `function useTest() {
+        const myObject = {};
+        return {x: myObject };
+      }`,
+      errors: [{ messageId: "object-usememo-hook" }],
+    },
+    {
+      code: `
+      const myObject = {};
+      function useTest() {
+        return {x: myObject };
+      }`,
+      options: [{ checkHookReturnObject: true }],
+      errors: [{ messageId: "object-usememo-hook" }],
+    },
+    {
+      code: `function useTest() {
+        function x() {}
+        return {x};
+      }`,
+      errors: [{ messageId: "function-usecallback-hook" }],
+    },
+    {
+      code: `function useTest() {
+        const myFunction = () => {};
+        return myFunction;
+      }`,
+      errors: [{ messageId: "function-usecallback-hook" }],
+    },
+    {
+      code: `function useTest() {
+        function myFunction(){ };
+        return myFunction;
+      }`,
+      errors: [{ messageId: "function-usecallback-hook" }],
     },
   ],
 });
