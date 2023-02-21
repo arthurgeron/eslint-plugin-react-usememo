@@ -38,7 +38,8 @@ Requires complex values (objects, arrays, functions, and JSX) that get passed pr
 
 Options:
 
-- `{strict: true}`: Fails even in cases where it is difficult to determine if the value in question is a primitive (string or number) or a complex value (object, array, etc.).
+- `{strict: true}`: Fails even in cases where it is difficult to determine if the value in question is a primitive (string or number) or a complex value (object, array, etc.);
+- `{checkHookReturnObject: true}`: Will require Object Expressions passed in return statements (e.g. `return {someFunc}`) to also be memoised (e.g. `return useMemo(() => ({someFunc}), [someFunc])`); Disabled by default.
 
 ### Function Components
 #### **Incorrect**
@@ -183,6 +184,16 @@ function useData() {
   return { getData, otherData};
 }
 ```
+#### **Incorrect** (checkHookReturnObject: true)
+```JavaScript
+  function getData() {
+    // Doing something
+  }
+function useData() {
+  
+  return { getData };
+}
+```
 
 #### **Correct**
 ```JavaScript
@@ -193,6 +204,17 @@ function getData() { // Or declare inside hook with useCallback
 
 function useData() {
   return useMemo(() => ({ getData, otherData}), []); // The return object itself can be used in dependency arrays
+}
+```
+
+#### **Correct** (checkHookReturnObject: true)
+```JavaScript
+  function getData() {
+    // Doing something
+  }
+function useData() {
+  
+  return useMemo(() => ({ getData }), []);
 }
 ```
 
@@ -222,7 +244,8 @@ Requires complex values (objects, arrays, functions, and JSX) that get passed as
 
 Options:
 
-- `{strict: true}`: Fails even in cases where it is difficult to determine if the value in question is a primitive (string or number) or a complex value (object, array, etc.).
+- `{strict: true}`: Fails even in cases where it is difficult to determine if the value in question is a primitive (string or number) or a complex value (object, 
+array, etc.).
 
 ## **Incorrect**
 ```JavaScript

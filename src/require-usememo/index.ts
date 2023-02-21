@@ -20,7 +20,7 @@ const rule: Rule.RuleModule  = {
     schema: [
       {
         type: "object",
-        properties: { strict: { type: "boolean" } },
+        properties: { strict: { type: "boolean" }, checkHookReturnObject: { type: "boolean" } },
         additionalProperties: false,
       },
     ],
@@ -34,7 +34,6 @@ const rule: Rule.RuleModule  = {
     function process(node: NodeType, _expression?: ExpressionTypes, expressionData?: ExpressionData) {
 
       const expression = _expression ?? (node.value && Object.prototype.hasOwnProperty.call(node.value, 'expression') ? (node.value as unknown as TSESTree.JSXExpressionContainer).expression : node.value ) ;
-
       switch(expression?.type) {
         case 'LogicalExpression':
           !expression.left ? true :  process(node, (expression as TSESTree.LogicalExpression).left);
@@ -67,6 +66,14 @@ const rule: Rule.RuleModule  = {
 
       ReturnStatement(node) {
         if (node.parent.parent.type === 'FunctionDeclaration' && getIsHook(node.parent.parent.id as TSESTree.Identifier) && node.argument) {
+            if (node.argument.type === 'ObjectExpression' ) {
+              if (context.options?.[0]?.checkHookReturnObject) {
+                (node.argument as TSESTree.ObjectExpression)?.properties.forEach((_node) => {
+                  process(_node as unknown as TSESTree.MethodDefinitionComputedName, undefined, hookReturnExpressionData);
+                })
+              }
+              return; 
+            }
           process(node as unknown as TSESTree.MethodDefinitionComputedName, node.argument as ExpressionTypes, hookReturnExpressionData);
         }
       },
