@@ -75,6 +75,15 @@ ruleTester.run("useMemo", rule as Rule.RuleModule, {
       }`,
     },
     {
+      code: `
+      function test() {}
+      class Component {
+        render() {
+          return <Child prop={test} />;
+        }
+      }`,
+    },
+    {
       code: `const Component = () => {
         const myObject = {};
         return <div prop={myObject} />;
@@ -107,6 +116,20 @@ ruleTester.run("useMemo", rule as Rule.RuleModule, {
       code: `const Component = () => {
         const myObject = memoize({});
         return <Child prop={myObject} />;
+      }`,
+    },
+    {
+      code: `
+      function test() {}
+      const Component = () => {
+        return <Child prop={test} />;
+      }`,
+    },
+    {
+      code: `
+      function test() {}
+      function Component() {
+        return <Child prop={test} />;
       }`,
     },
     {
@@ -276,28 +299,28 @@ ruleTester.run("useMemo", rule as Rule.RuleModule, {
         const myObject = {};
         return myObject;
       }`,
-      errors: [{ messageId: "object-usememo-props" }],
+      errors: [{ messageId: "object-usememo-hook" }],
     },
     {
       code: `function useTest() {
         const myObject = {};
         return {x: myObject };
       }`,
-      errors: [{ messageId: "object-usememo-props" }],
+      errors: [{ messageId: "object-usememo-hook" }],
     },
     {
       code: `function useTest() {
         const myFunction = () => {};
         return myFunction;
       }`,
-      errors: [{ messageId: "function-usecallback-props" }],
+      errors: [{ messageId: "function-usecallback-hook" }],
     },
     {
       code: `function useTest() {
         function myFunction(){ };
         return myFunction;
       }`,
-      errors: [{ messageId: "function-usecallback-props" }],
+      errors: [{ messageId: "function-usecallback-hook" }],
     },
   ],
 });

@@ -33,6 +33,16 @@ export const jsxEmptyExpressionData: ExpressionData = {
   [MemoStatus.UnmemoizedJSX.toString()]: "jsx-usememo-props",
 }
 
+export const hookReturnExpressionData: ExpressionData = {
+  [MemoStatus.UnmemoizedObject.toString()]: "object-usememo-hook",
+  [MemoStatus.UnmemoizedArray.toString()]: "array-usememo-hook",
+  [MemoStatus.UnmemoizedNew.toString()]: "instance-usememo-hook",
+  [MemoStatus.UnmemoizedFunction.toString()]: "function-usecallback-hook",
+  [MemoStatus.UnmemoizedFunctionCall.toString()]: "unknown-usememo-hook",
+  [MemoStatus.UnmemoizedOther.toString()]: "unknown-usememo-hook",
+  [MemoStatus.UnmemoizedJSX.toString()]: "jsx-usememo-hook",
+}
+
 export const callExpressionData: ExpressionData = {
   [MemoStatus.UnmemoizedObject.toString()]: "object-usememo-deps",
   [MemoStatus.UnmemoizedArray.toString()]: "array-usememo-deps",

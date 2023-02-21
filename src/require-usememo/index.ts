@@ -1,6 +1,6 @@
 import { Rule } from "eslint";
 import { TSESTree } from "@typescript-eslint/types";
-import { ValidExpressions, jsxEmptyExpressionClassData, jsxEmptyExpressionData, callExpressionData  } from './constants';
+import { ValidExpressions, jsxEmptyExpressionClassData, jsxEmptyExpressionData, callExpressionData, hookReturnExpressionData  } from './constants';
 import { MessagesRequireUseMemo  } from '../constants';
 import {
   getExpressionMemoStatus,
