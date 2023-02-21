@@ -52,9 +52,6 @@ const rule: Rule.RuleModule  = {
       const expression = _expression ?? (node.value && Object.prototype.hasOwnProperty.call(node.value, 'expression') ? (node.value as unknown as TSESTree.JSXExpressionContainer).expression : node.value ) ;
 
       switch(expression?.type) {
-        case 'JSXEmptyExpression':
-          process(node, (expression as TSESTree.JSXEmptyExpression));
-          return;
         case 'LogicalExpression':
           !expression.left ? true :  process(node, (expression as TSESTree.LogicalExpression).left);
           !expression.right ? true :  process(node, (expression as TSESTree.LogicalExpression).right);
