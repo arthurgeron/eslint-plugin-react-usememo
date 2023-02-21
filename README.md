@@ -40,7 +40,8 @@ Options:
 
 - `{strict: true}`: Fails even in cases where it is difficult to determine if the value in question is a primitive (string or number) or a complex value (object, array, etc.).
 
-## **Incorrect**
+### Function Components
+#### **Incorrect**
 ```JavaScript
 function Component() {
 
@@ -56,7 +57,25 @@ function Component() {
   return (<FlatList renderItem={renderItem} data={data ?? []} />);
 }
 ```
-## **Incorrect** (class component)
+#### **Correct**
+```JavaScript
+// Has no dynamic dependencies therefore should be static, will be declared only once.
+function renderItem({ item }) {
+  return <Text>item.name</Text>;
+}
+
+const EMPTY_ARRAY = [];
+
+function Component() {
+
+  const [data, setData] = useState(EMPTY_ARRAY);
+  
+  // Will only render again if data changes
+  return (<FlatList renderItem={renderItem} data={data ?? EMPTY_ARRAY} />);
+}
+```
+### Class Components
+#### **Incorrect**
 ```JavaScript
 class Component() {
 
@@ -93,24 +112,7 @@ class Component() {
 ```
 In the previous example there are two issues, a function and a object that will be dynamically redeclared each time the component renders, which will cause FlatList to keep re-rendering even when the input data hasn't changed.
 
-## **Correct**
-```JavaScript
-// Has no dynamic dependencies therefore should be static, will be declared only once.
-function renderItem({ item }) {
-  return <Text>item.name</Text>;
-}
-
-const EMPTY_ARRAY = [];
-
-function Component() {
-
-  const [data, setData] = useState(EMPTY_ARRAY);
-  
-  // Will only render again if data changes
-  return (<FlatList renderItem={renderItem} data={data ?? EMPTY_ARRAY} />);
-}
-```
-## **Correct** (class component)
+#### **Correct**
 ```JavaScript
 
 // Static therefore is only declared once
@@ -149,7 +151,7 @@ class Component() {
   }
 }
 ```
-## **Correct**
+#### **Correct**
 ```JavaScript
 const EMPTY_ARRAY = [];
 
@@ -165,6 +167,36 @@ function Component() {
   return (<FlatList renderItem={renderItem} data={data ?? EMPTY_ARRAY} />);
 }
 ```
+### Hooks
+Hooks return statements follow the same motto, they can and usually are used inside other hooks.
+
+#### **Incorrect**
+```JavaScript
+function useData() {
+
+  let otherData = {};
+  function getData() {
+    // Doing something
+  }
+  
+  
+  return { getData, otherData};
+}
+```
+
+#### **Correct**
+```JavaScript
+const otherData = {}; // Or declare inside hook with useMemo
+function getData() { // Or declare inside hook with useCallback
+  // Doing something
+}
+
+function useData() {
+  return useMemo(() => ({ getData, otherData}), []); // The return object itself can be used in dependency arrays
+}
+```
+
+
 ## `require-memo`
 
 Requires all function components to be wrapped in `React.memo()`.   
