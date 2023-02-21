@@ -27,7 +27,6 @@ const rule: Rule.RuleModule  = {
   },
   create: (context: Rule.RuleContext): Rule.RuleListener => {
     let isClass = false;
-    let isHook = false;
     function report<T extends Rule.NodeParentExtension | TSESTree.MethodDefinitionComputedName>(node: T, messageId: keyof typeof MessagesRequireUseMemo) {
       context.report({ node: node as unknown as Rule.Node, messageId: messageId as string });
     }
@@ -66,13 +65,9 @@ const rule: Rule.RuleModule  = {
         isClass = true;
       },
 
-      FunctionDeclaration: (node) => {
-        isHook = !!node.id && getIsHook(node.id as TSESTree.Identifier);
-      },
-
       ReturnStatement(node) {
-        if (isHook && node.argument) {
-          process(node as unknown as TSESTree.MethodDefinitionComputedName, node.argument as ExpressionTypes);
+        if (node.parent.parent.type === 'FunctionDeclaration' && getIsHook(node.parent.parent.id as TSESTree.Identifier) && node.argument) {
+          process(node as unknown as TSESTree.MethodDefinitionComputedName, node.argument as ExpressionTypes, hookReturnExpressionData);
         }
       },
 
