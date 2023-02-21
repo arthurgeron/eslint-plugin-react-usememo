@@ -310,6 +310,13 @@ ruleTester.run("useMemo", rule as Rule.RuleModule, {
     },
     {
       code: `function useTest() {
+        function x() {}
+        return {x};
+      }`,
+      errors: [{ messageId: "object-usememo-hook" }],
+    },
+    {
+      code: `function useTest() {
         const myFunction = () => {};
         return myFunction;
       }`,
