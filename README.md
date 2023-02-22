@@ -197,13 +197,12 @@ function useData() {
 
 #### **Correct**
 ```JavaScript
-const otherData = {}; // Or declare inside hook with useMemo
-function getData() { // Or declare inside hook with useCallback
-  // Doing something
-}
+  const otherData = {}; // Or declare inside hook with useMemo
 
 function useData() {
-  return useMemo(() => ({ getData, otherData}), []); // The return object itself can be used in dependency arrays
+  const getData = useCallback(() => { // Or declare statically
+  }, []);
+  return {getData, otherData};
 }
 ```
 
