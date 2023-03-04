@@ -2,9 +2,9 @@ export const MessagesRequireUseMemo = {
   "object-usememo-props":
     "Object literal should be wrapped in useMemo() or be static when used as a prop",
   "object-class-memo-props":
-    "Object literal should com from state or be static when used as a prop",
+    "Object literal should come from state or be static when used as a prop",
   "object-usememo-hook":
-    "Object literal should com from state or be static when returned from a hook",
+    "Object literal should come from state or be static when returned from a hook",
   "object-usememo-deps":
     "Object literal should be wrapped in useMemo() or be static when used as a hook dependency",
   "array-usememo-props":

@@ -1,5 +1,7 @@
 import { Rule } from "eslint";
 import { TSESTree } from "@typescript-eslint/types";
+import { ESNode } from "src/require-usememo/types";
+import { MemoStatus, MemoStatusToReport } from "src/types";
 
 const componentNameRegex = /^[^a-z]/;
 
@@ -9,17 +11,6 @@ export function isComplexComponent(node: TSESTree.JSXOpeningElement | TSESTree.J
   return componentNameRegex.test(node.name.name);
 }
 
-export enum MemoStatus {
-  Memoized,
-  UnmemoizedObject,
-  UnmemoizedArray,
-  UnmemoizedNew,
-  UnmemoizedFunction,
-  UnmemoizedFunctionCall,
-  UnmemoizedJSX,
-  UnmemoizedOther,
-  UnsafeLet
-}
 
 export function isComponentName(name: string) {
   // All components are PascalCased, thoroughly checking for this only adds processing time and opens more chance to bugs/issues.
@@ -52,15 +43,15 @@ function isCallExpression(
 function getIdentifierMemoStatus(
   context: Rule.RuleContext,
   { name }: TSESTree.Identifier
-): MemoStatus {
+): MemoStatusToReport {
   const variable = context.getScope().variables.find((v) => v.name === name);
-  if (variable === undefined) return MemoStatus.Memoized;
+  if (variable === undefined) return {status: MemoStatus.Memoized};
   const [{ node }] = variable.defs;
   
-  if (node.type === "FunctionDeclaration") return MemoStatus.UnmemoizedFunction;
-  if (node.type !== "VariableDeclarator") return MemoStatus.Memoized;
+  if (node.type === "FunctionDeclaration") return {node: node, status: MemoStatus.UnmemoizedFunction};
+  if (node.type !== "VariableDeclarator") return {node: node, status: MemoStatus.Memoized};
   if (node.parent.kind === "let") {
-    return MemoStatus.UnsafeLet;
+    return {node: node.parent, status: MemoStatus.UnsafeLet};
   }
   return getExpressionMemoStatus(context, node.init);
 }
@@ -68,32 +59,30 @@ function getIdentifierMemoStatus(
 export function getExpressionMemoStatus(
   context: Rule.RuleContext,
   expression: TSESTree.Expression
-): MemoStatus {
+): MemoStatusToReport {
   switch (expression.type) {
     case "ObjectExpression":
-      return MemoStatus.UnmemoizedObject;
+      return {node: expression, status: MemoStatus.UnmemoizedObject};
     case "ArrayExpression":
-      return MemoStatus.UnmemoizedArray;
+      return {node: expression, status: MemoStatus.UnmemoizedArray};
     case "NewExpression":
-      return MemoStatus.UnmemoizedNew;
+      return {node: expression, status: MemoStatus.UnmemoizedNew};
     case "FunctionExpression":
     case "ArrowFunctionExpression":
-      return MemoStatus.UnmemoizedFunction;
+      return {node: expression, status: MemoStatus.UnmemoizedFunction};
     case "JSXElement":
-      return MemoStatus.UnmemoizedJSX;
-    case "CallExpression":
-      if (
-        isCallExpression(expression, "useMemo") ||
-        isCallExpression(expression, "useCallback")
-      ) {
-        return MemoStatus.Memoized;
-      }
-      return MemoStatus.UnmemoizedFunctionCall;
+      return {node: expression, status: MemoStatus.UnmemoizedJSX};
+    case "CallExpression": {
+      const validCallExpression = isCallExpression(expression, "useMemo") ||
+      isCallExpression(expression, "useCallback");
+
+      return {node: expression, status: validCallExpression ? MemoStatus.Memoized : MemoStatus.UnmemoizedFunctionCall};
+    }
     case "Identifier":
       return getIdentifierMemoStatus(context, expression);
     case "BinaryExpression":
-      return MemoStatus.Memoized;
+      return {node: expression, status: MemoStatus.Memoized};
     default:
-      return MemoStatus.UnmemoizedOther;
+      return {node: expression, status: MemoStatus.UnmemoizedOther};
   }
 }

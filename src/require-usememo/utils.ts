@@ -1,10 +1,8 @@
 import { Rule } from "eslint";
 import { TSESTree } from "@typescript-eslint/types";
 import { MessagesRequireUseMemo } from '../constants';
-import {
-  MemoStatus,
-} from "../common";
 import type { ESNode, ExpressionData } from "./types";
+import { MemoStatusToReport } from "src/types";
 
 
 export function shouldIgnoreNode(node: ESNode, ignoredNames: Record<string,boolean | undefined> ) {
@@ -13,12 +11,12 @@ export function shouldIgnoreNode(node: ESNode, ignoredNames: Record<string,boole
           || !!ignoredNames[((node?.callee as TSESTree.MemberExpression)?.property as TSESTree.Identifier)?.name]
 }
 
-export function checkForErrors<T,Y extends Rule.NodeParentExtension | TSESTree.MethodDefinitionComputedName>(data: ExpressionData, expressionType: MemoStatus, context: Rule.RuleContext, node: Y | undefined, report: (node: Y, error: keyof typeof MessagesRequireUseMemo) => void) {
-  const errorName = data?.[expressionType.toString()];
+export function checkForErrors<T,Y extends Rule.NodeParentExtension | TSESTree.MethodDefinitionComputedName>(data: ExpressionData, statusData: MemoStatusToReport, context: Rule.RuleContext, node: Y | undefined, report: (node: Y, error: keyof typeof MessagesRequireUseMemo) => void) {
+  const errorName = data?.[statusData.status.toString()];
   if (errorName) {
     const strict = errorName.includes('unknown');
     if (!strict || (strict && context.options?.[0]?.strict)) {
-      report(node as Y, errorName);
+      report((statusData.node ?? node) as Y, errorName);
     }
 
   }

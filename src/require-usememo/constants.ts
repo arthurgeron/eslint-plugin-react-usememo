@@ -1,8 +1,5 @@
+import { MemoStatus } from 'src/types';
 import type { ExpressionData} from './types';
-import {
-  MemoStatus,
-} from "../common";
-
 
 export const ValidExpressions: Record<string, boolean> = {
   'ArrowFunctionExpression': true,

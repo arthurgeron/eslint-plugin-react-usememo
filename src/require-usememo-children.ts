@@ -4,9 +4,9 @@ import { TSESTree } from "@typescript-eslint/types";
 import {
   getExpressionMemoStatus,
   isComplexComponent,
-  MemoStatus,
 } from "./common";
 import { MessagesRequireUseMemoChildren } from "./constants";
+import { MemoStatus } from "src/types";
 
 const rule: Rule.RuleModule = {
   meta: {
@@ -45,7 +45,8 @@ const rule: Rule.RuleModule = {
           if (child.type === "JSXExpressionContainer") {
             const { expression } = child;
             if (expression.type !== "JSXEmptyExpression") {
-              switch (getExpressionMemoStatus(context, expression)) {
+              const statusData = getExpressionMemoStatus(context, expression);
+              switch (statusData.status) {
                 case MemoStatus.UnmemoizedObject:
                   report(node, "object-usememo-children");
                   break;
