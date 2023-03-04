@@ -65,7 +65,10 @@ const rule: Rule.RuleModule  = {
       },
 
       ReturnStatement(node) {
-        if (node.parent.parent.type === 'FunctionDeclaration' && getIsHook(node.parent.parent.id as TSESTree.Identifier) && node.argument) {
+        const functionDeclarationNode = node.parent?.parent?.type === 'FunctionDeclaration' && node?.parent?.parent?.id;
+        const anonFuncVariableDeclarationNode = node.parent?.parent?.type === 'ArrowFunctionExpression' && node?.parent?.parent?.parent?.type === 'VariableDeclarator' && node?.parent?.parent?.parent?.id;
+        const validNode = functionDeclarationNode || anonFuncVariableDeclarationNode;
+        if (validNode && getIsHook(validNode as TSESTree.Identifier) && node.argument) {
             if (node.argument.type === 'ObjectExpression' ) {
               if (context.options?.[0]?.checkHookReturnObject) {
                 context.report({ node, messageId: "object-usememo-hook" });
