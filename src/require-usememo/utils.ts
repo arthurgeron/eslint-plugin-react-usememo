@@ -4,7 +4,14 @@ import { MessagesRequireUseMemo } from '../constants';
 import {
   MemoStatus,
 } from "../common";
-import { ExpressionData } from "./types";
+import type { ESNode, ExpressionData } from "./types";
+
+
+export function shouldIgnoreNode(node: ESNode, ignoredNames: Record<string,boolean | undefined> ) {
+  return !!ignoredNames[(node as TSESTree.Node as TSESTree.Identifier)?.name]
+          || !!ignoredNames[(node.callee as TSESTree.Identifier).name]
+          || !!ignoredNames[((node?.callee as TSESTree.MemberExpression)?.property as TSESTree.Identifier)?.name]
+}
 
 export function checkForErrors<T,Y extends Rule.NodeParentExtension | TSESTree.MethodDefinitionComputedName>(data: ExpressionData, expressionType: MemoStatus, context: Rule.RuleContext, node: Y | undefined, report: (node: Y, error: keyof typeof MessagesRequireUseMemo) => void) {
   const errorName = data?.[expressionType.toString()];

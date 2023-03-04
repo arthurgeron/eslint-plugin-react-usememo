@@ -92,6 +92,12 @@ ruleTester.run("useCallback", rule as Rule.RuleModule , {
         const myFn = lodash.memoize(() => []);
         return <Child prop={myFn} />;
       }`,
+    },{
+      code:`const Component = () => {
+        const myFn1 = () => [];
+        const myFn2 = React.useCallback(() => myFn1, [myFn1]);
+        return <Child prop={myFn2} />;
+      }`,
     },
   ],
   invalid: [
@@ -180,11 +186,10 @@ ruleTester.run("useCallback", rule as Rule.RuleModule , {
     },
     {
       code: `const Component = () => {
-        const myFn1 = () => [];
-        const myFn2 = React.useCallback(() => myFn1, [myFn1]);
-        return <Child prop={myFn2} />;
+        const myFn = () => [];
+        return <Child prop={myFn} />;
       }`,
-      errors: [{ messageId: "function-usecallback-deps" }],
+      errors: [{ messageId: "function-usecallback-props" }],
     },
   ],
 });

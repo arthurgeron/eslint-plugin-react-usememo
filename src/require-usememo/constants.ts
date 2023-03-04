@@ -21,6 +21,7 @@ export const jsxEmptyExpressionClassData: ExpressionData = {
   [MemoStatus.UnmemoizedFunction.toString()]: 'instance-class-memo-props',
   [MemoStatus.UnmemoizedFunctionCall.toString()]: "unknown-class-memo-props",
   [MemoStatus.UnmemoizedOther.toString()]: "unknown-class-memo-props",
+  [MemoStatus.UnsafeLet.toString()]: "usememo-const",
 }
 
 export const jsxEmptyExpressionData: ExpressionData = {
@@ -31,6 +32,7 @@ export const jsxEmptyExpressionData: ExpressionData = {
   [MemoStatus.UnmemoizedFunctionCall.toString()]: "unknown-usememo-props",
   [MemoStatus.UnmemoizedOther.toString()]: "unknown-usememo-props",
   [MemoStatus.UnmemoizedJSX.toString()]: "jsx-usememo-props",
+  [MemoStatus.UnsafeLet.toString()]: "usememo-const",
 }
 
 export const hookReturnExpressionData: ExpressionData = {
@@ -41,6 +43,7 @@ export const hookReturnExpressionData: ExpressionData = {
   [MemoStatus.UnmemoizedFunctionCall.toString()]: "unknown-usememo-hook",
   [MemoStatus.UnmemoizedOther.toString()]: "unknown-usememo-hook",
   [MemoStatus.UnmemoizedJSX.toString()]: "jsx-usememo-hook",
+  [MemoStatus.UnsafeLet.toString()]: "usememo-const",
 }
 
 export const callExpressionData: ExpressionData = {
@@ -51,4 +54,27 @@ export const callExpressionData: ExpressionData = {
   [MemoStatus.UnmemoizedFunctionCall.toString()]: "unknown-usememo-deps",
   [MemoStatus.UnmemoizedOther.toString()]: "unknown-usememo-deps",
   [MemoStatus.UnmemoizedJSX.toString()]: "jsx-usememo-deps",
+  [MemoStatus.UnsafeLet.toString()]: "usememo-const",
+}
+
+export const defaultReactHookNames: Record<string, boolean | undefined> = {
+  "useContext": true,
+  "useState": true,
+  "useReducer": true,
+  "useRef": true,
+  "useLayoutEffect": true,
+  "useEffect": true,
+  "useImperativeHandle": true,
+  "useCallback": true,
+  "useMemo": true,
+  "useDebugValue": true,
+  "useDeferredValue": true,
+  "useTransition": true,
+  "useId": true,
+  "useInsertionEffect": true,
+  "useSyncExternalStore": true,
+  "useQuery": true,
+  "useMutation": true,
+  "useQueryClient": true,
+  "useInfiniteQuery": true,
 }

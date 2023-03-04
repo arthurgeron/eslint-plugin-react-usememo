@@ -18,6 +18,7 @@ export enum MemoStatus {
   UnmemoizedFunctionCall,
   UnmemoizedJSX,
   UnmemoizedOther,
+  UnsafeLet
 }
 
 export function isComponentName(name: string) {
@@ -59,11 +60,7 @@ function getIdentifierMemoStatus(
   if (node.type === "FunctionDeclaration") return MemoStatus.UnmemoizedFunction;
   if (node.type !== "VariableDeclarator") return MemoStatus.Memoized;
   if (node.parent.kind === "let") {
-    context.report({ node, messageId: "usememo-const" });
-    if (!node.init) {
-      // Rely on usememo-const reported error to fail this identifier
-      return MemoStatus.Memoized;
-    }
+    return MemoStatus.UnsafeLet;
   }
   return getExpressionMemoStatus(context, node.init);
 }

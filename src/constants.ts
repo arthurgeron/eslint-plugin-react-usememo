@@ -46,7 +46,7 @@ export const MessagesRequireUseMemo = {
   "unknown-usememo-deps":
     "Unknown value may need to be wrapped in useMemo() when used as a hook dependency",
   "usememo-const":
-    "useMemo/useCallback return value should be assigned to a const to prevent reassignment",
+    "useMemo/useCallback return value should be assigned to a `const` to prevent reassignment",
 };
 
 export const MessagesRequireUseMemoChildren = {
@@ -63,6 +63,6 @@ export const MessagesRequireUseMemoChildren = {
   "unknown-usememo-children":
     "Unknown value may need to be wrapped in React.useMemo() when used as children",
   "usememo-const":
-    "useMemo/useCallback return value should be assigned to a const to prevent reassignment",
+    "useMemo/useCallback return value should be assigned to a `const` to prevent reassignment",
 };
 

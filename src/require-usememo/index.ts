@@ -1,13 +1,13 @@
 import { Rule } from "eslint";
 import { TSESTree } from "@typescript-eslint/types";
-import { ValidExpressions, jsxEmptyExpressionClassData, jsxEmptyExpressionData, callExpressionData, hookReturnExpressionData  } from './constants';
-import { MessagesRequireUseMemo  } from '../constants';
+import { defaultReactHookNames, ValidExpressions, jsxEmptyExpressionClassData, jsxEmptyExpressionData, callExpressionData, hookReturnExpressionData  } from './constants';
+import { MessagesRequireUseMemo,  } from '../constants';
 import {
   getExpressionMemoStatus,
   isComplexComponent,
 } from "../common";
-import type {ExpressionTypes, NodeType, Node, ExpressionData} from './types';
-import { checkForErrors, getIsHook } from './utils';
+import type {ExpressionTypes, NodeType, ESNode, ExpressionData} from './types';
+import { checkForErrors, getIsHook, shouldIgnoreNode } from './utils';
 
 const rule: Rule.RuleModule  = {
   meta: {
@@ -20,15 +20,16 @@ const rule: Rule.RuleModule  = {
     schema: [
       {
         type: "object",
-        properties: { strict: { type: "boolean" }, checkHookReturnObject: { type: "boolean" } },
+        properties: { strict: { type: "boolean" }, checkHookReturnObject: { type: "boolean" }, checkHookCalls: { type: "boolean"}, ignoredHookCallsNames: {type: "object"} },
         additionalProperties: false,
       },
     ],
   },
   create: (context: Rule.RuleContext): Rule.RuleListener => {
     let isClass = false;
+
     function report<T extends Rule.NodeParentExtension | TSESTree.MethodDefinitionComputedName>(node: T, messageId: keyof typeof MessagesRequireUseMemo) {
-      context.report({ node: node as unknown as Rule.Node, messageId: messageId as string });
+        context.report( {node: node as Rule.Node, messageId} );
     }
 
     function process(node: NodeType, _expression?: ExpressionTypes, expressionData?: ExpressionData) {
@@ -71,7 +72,7 @@ const rule: Rule.RuleModule  = {
         if (validNode && getIsHook(validNode as TSESTree.Identifier) && node.argument) {
             if (node.argument.type === 'ObjectExpression' ) {
               if (context.options?.[0]?.checkHookReturnObject) {
-                context.report({ node, messageId: "object-usememo-hook" });
+                report(node, "object-usememo-hook" );
                 return;
               }
               const objExp = (node.argument as TSESTree.ObjectExpression);
@@ -86,16 +87,18 @@ const rule: Rule.RuleModule  = {
 
       CallExpression: (node) => {
         const { callee } = node;
-        if (!getIsHook(callee as TSESTree.Node)) return;
-        const [, dependencies] = (node as TSESTree.CallExpression).arguments;
-
+        const ignoredNames = { ...defaultReactHookNames, ...(context.options?.[0]?.ignoredHookCallsNames ?? {}) };
         if (
-          dependencies !== undefined &&
-          dependencies.type === "ArrayExpression"
+          context.options?.[0]?.checkHookCalls === false
+          || !getIsHook(callee as ESNode)
         ) {
-          for (const dep of dependencies.elements) {
-            if (dep !== null && ValidExpressions[dep.type]) {
-              checkForErrors(callExpressionData, getExpressionMemoStatus(context, dep as TSESTree.Expression), context, node, report);
+          return;
+        }
+
+        if(!shouldIgnoreNode(node as ESNode, ignoredNames)) {
+          for (const argument of node.arguments) {
+            if (argument.type !== 'SpreadElement') {
+              checkForErrors(callExpressionData, getExpressionMemoStatus(context, (argument as TSESTree.Expression)), context, node, report);
             }
           }
         }
