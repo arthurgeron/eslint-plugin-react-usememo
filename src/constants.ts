@@ -2,9 +2,9 @@ export const MessagesRequireUseMemo = {
   "object-usememo-props":
     "Object literal should be wrapped in useMemo() or be static when used as a prop",
   "object-class-memo-props":
-    "Object literal should com from state or be static when used as a prop",
+    "Object literal should come from state or be static when used as a prop",
   "object-usememo-hook":
-    "Object literal should com from state or be static when returned from a hook",
+    "Object literal should come from state or be static when returned from a hook",
   "object-usememo-deps":
     "Object literal should be wrapped in useMemo() or be static when used as a hook dependency",
   "array-usememo-props":
@@ -46,7 +46,7 @@ export const MessagesRequireUseMemo = {
   "unknown-usememo-deps":
     "Unknown value may need to be wrapped in useMemo() when used as a hook dependency",
   "usememo-const":
-    "useMemo/useCallback return value should be assigned to a const to prevent reassignment",
+    "useMemo/useCallback return value should be assigned to a `const` to prevent reassignment",
 };
 
 export const MessagesRequireUseMemoChildren = {
@@ -63,6 +63,6 @@ export const MessagesRequireUseMemoChildren = {
   "unknown-usememo-children":
     "Unknown value may need to be wrapped in React.useMemo() when used as children",
   "usememo-const":
-    "useMemo/useCallback return value should be assigned to a const to prevent reassignment",
+    "useMemo/useCallback return value should be assigned to a `const` to prevent reassignment",
 };
 

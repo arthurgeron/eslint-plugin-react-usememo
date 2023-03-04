@@ -18,7 +18,7 @@ ruleTester.run("useMemo", rule as Rule.RuleModule, {
     },
     {
       code: `const Component = () => {
-      const myArray = useMemo(() => [], []);
+      const myArray = React.useMemo(() => [], []);
       return <Child prop={myArray} />;
     }`,
     },
@@ -175,6 +175,55 @@ ruleTester.run("useMemo", rule as Rule.RuleModule, {
         return myString;
       }`,
     },
+    {
+      code: `function useTesty() {
+        const myBool = React.useMemo(() => !!{}, []);
+        return myBool;
+      }`,
+    },
+    {
+      code: `function useTesty() {
+        const x = {};
+        const myBool = React.useMemo(() => x, [x]);
+        return myBool;
+      }`,
+    },
+    {
+        code: `
+        function useTesty() {
+          const x = {};
+          return useData(x);
+        }`,
+        options: [{ checkHookReturnObject: true, checkHookCalls: false }],
+      },
+    {
+        code: `
+        function useTesty() {
+          const x = {};
+          return useData(x);
+        }`,
+        options: [{ checkHookReturnObject: true, ignoredHookCallsNames: {"useData": true} }],
+      },
+    {
+      code: `const Component = () => {
+        const myArray1 = [];
+        const myArray2 = React.useMemo(() => myArray1, [myArray1]);
+        return <Child prop={myArray2} />;
+      }`,
+    },
+    {
+      code: `function useTest() {
+        const y: boolean | undefined = false;
+        const x = useMemo(() => x, [y]);
+        return {x};
+      }`,
+    },
+    {
+      code: `function useTest({data}: {data: boolean | undefined}) {
+        const x = useMemo(() => !data, [data]);
+        return {x};
+      }`,
+    },
   ],
   invalid: [
     {
@@ -217,7 +266,7 @@ ruleTester.run("useMemo", rule as Rule.RuleModule, {
     },
     {
       code: `const Component = () => {
-        let myObject = useMemo({});
+        let myObject = React.useMemo(() => ({}), []);
         myObject = {a: 'b'};
         return <Child prop={myObject} />;
       }`,
@@ -279,14 +328,6 @@ ruleTester.run("useMemo", rule as Rule.RuleModule, {
     },
     {
       code: `const Component = () => {
-        const myArray1 = [];
-        const myArray2 = React.useMemo(() => myArray1, [myArray1]);
-        return <Child prop={myArray2} />;
-      }`,
-      errors: [{ messageId: "array-usememo-deps" }],
-    },
-    {
-      code: `const Component = () => {
         const myComplexString = css\`color: red;\`;
         return <Child prop={myComplexString} />;
       }`,
@@ -342,6 +383,31 @@ ruleTester.run("useMemo", rule as Rule.RuleModule, {
       code: `function useTest() {
         function myFunction(){ };
         return myFunction;
+      }`,
+      errors: [{ messageId: "function-usecallback-hook" }],
+    },
+    {
+      code: `
+      function useTesty() {
+        const x = {};
+        return useData(x);
+      }`,
+      options: [{ checkHookReturnObject: true, ignoredHookCallsNames: {"useOtherHook": true} }],
+      errors: [{ messageId: "object-usememo-deps" }],
+    },
+    {
+      code: `function useTest() {
+        let y = '';
+        const x = useMemo(() => '', []);
+        return {x, y};
+      }`,
+      errors: [{ messageId: "usememo-const" }],
+    },
+    {
+      code: `const useTest = () => {
+        const x: boolean | undefined = false;
+        function y() {}
+        return {x, y};
       }`,
       errors: [{ messageId: "function-usecallback-hook" }],
     },
