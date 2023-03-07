@@ -20,10 +20,29 @@ ruleTester.run("useMemo", rule as Rule.RuleModule, {
       code: `const Component = () => {
       const myArray = React.useMemo(() => [], []);
       return <Child prop={myArray} />;
+      }`
+    },
+    {
+      code: `
+      function Component({data}) {
+      return <Child prop={data} />;
+    }`,
+    },
+    {
+      code: `
+      function x() {}
+      function Component() {
+      return <Child prop={x} />;
     }`,
     },
     {
       code: `const Component = () => {
+      const myArray = React.useMemo(() => new Object(), []);
+      return <Child prop={myArray} />;
+      }`
+    },
+    {
+      code: `function Component() {
       const myArray = React.useMemo(() => new Object(), []);
       return <Child prop={myArray} />;
       }`
@@ -35,6 +54,13 @@ ruleTester.run("useMemo", rule as Rule.RuleModule, {
         render() {
           return <Child prop={myArray} />;
         }
+      }`,
+    },
+    {
+      code: `
+      const myArray = new Object();
+      function Component() {
+        return <Child prop={myArray} />;
       }`,
     },
     {

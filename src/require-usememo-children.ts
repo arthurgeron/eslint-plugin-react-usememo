@@ -46,7 +46,7 @@ const rule: Rule.RuleModule = {
             const { expression } = child;
             if (expression.type !== "JSXEmptyExpression") {
               const statusData = getExpressionMemoStatus(context, expression);
-              switch (statusData.status) {
+              switch (statusData?.status) {
                 case MemoStatus.UnmemoizedObject:
                   report(node, "object-usememo-children");
                   break;
