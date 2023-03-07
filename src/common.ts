@@ -2,6 +2,7 @@ import { Rule } from "eslint";
 import { TSESTree } from "@typescript-eslint/types";
 import { ESNode } from "src/require-usememo/types";
 import { MemoStatus, MemoStatusToReport } from "src/types";
+import { getIsHook } from "src/require-usememo/utils";
 
 const componentNameRegex = /^[^a-z]/;
 
@@ -44,10 +45,15 @@ function getIdentifierMemoStatus(
   context: Rule.RuleContext,
   { name }: TSESTree.Identifier
 ): MemoStatusToReport {
-  const variable = context.getScope().variables.find((v) => v.name === name);
-  if (variable === undefined) return {status: MemoStatus.Memoized};
-  const [{ node }] = variable.defs;
-  
+  const variableInScope = context.getScope().variables.find((v) => v.name === name);
+  if (variableInScope === undefined) return {status: MemoStatus.Memoized};
+  const [{ node }] = variableInScope.defs;
+  const isProps = node.id.type === 'Identifier' && (isComponentName(node.id.name) || getIsHook(node.id));
+  // Avoid assuming a Hook or Component's props to be unmemoized
+  if (isProps) {
+    return;
+  }
+
   if (node.type === "FunctionDeclaration") return {node: node, status: MemoStatus.UnmemoizedFunction};
   if (node.type !== "VariableDeclarator") return {node: node, status: MemoStatus.Memoized};
   if (node.parent.kind === "let") {

@@ -4,7 +4,7 @@ import { TSESTree } from "@typescript-eslint/types";
 export type MemoStatusToReport = {
   node?: Rule.RuleContext | TSESTree.Node,
   status: MemoStatus
-}
+} | undefined;
 
 export enum MemoStatus {
   Memoized,

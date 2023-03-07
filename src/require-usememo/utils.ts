@@ -12,6 +12,9 @@ export function shouldIgnoreNode(node: ESNode, ignoredNames: Record<string,boole
 }
 
 export function checkForErrors<T,Y extends Rule.NodeParentExtension | TSESTree.MethodDefinitionComputedName>(data: ExpressionData, statusData: MemoStatusToReport, context: Rule.RuleContext, node: Y | undefined, report: (node: Y, error: keyof typeof MessagesRequireUseMemo) => void) {
+  if (!statusData) {
+    return;
+  }
   const errorName = data?.[statusData.status.toString()];
   if (errorName) {
     const strict = errorName.includes('unknown');
