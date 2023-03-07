@@ -5,7 +5,7 @@ import * as path from "path";
 
 function isMemoCallExpression(node: Rule.Node) {
   if (node.type !== "CallExpression") return false;
-  if (node.callee.type === "MemberExpression") {
+  if (node.callee?.type === "MemberExpression") {
     const {
       callee: { object, property },
     } = node;
@@ -17,7 +17,7 @@ function isMemoCallExpression(node: Rule.Node) {
     ) {
       return true;
     }
-  } else if (node.callee.type === "Identifier" && node.callee.name === "memo") {
+  } else if (node.callee?.type === "Identifier" && node.callee?.name === "memo") {
     return true;
   }
 
@@ -53,7 +53,7 @@ function checkFunction(
     node.type === "FunctionDeclaration" &&
     currentNode.type === "Program"
   ) {
-    if (node.id !== null &&isComponentName(node.id.name)) {
+    if (node.id !== null &&isComponentName(node.id?.name)) {
       context.report({ node, messageId: "memo-required" });
     } else {
       if (context.getFilename() === "<input>") return;

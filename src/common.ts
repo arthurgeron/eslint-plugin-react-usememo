@@ -7,9 +7,9 @@ import { getIsHook } from "src/require-usememo/utils";
 const componentNameRegex = /^[^a-z]/;
 
 export function isComplexComponent(node: TSESTree.JSXOpeningElement | TSESTree.JSXIdentifier ) {
-  if (node.type !== "JSXOpeningElement") return false;
-  if (node.name.type !== "JSXIdentifier") return false;
-  return componentNameRegex.test(node.name.name);
+  if (node?.type !== "JSXOpeningElement") return false;
+  if (node?.name?.type !== "JSXIdentifier") return false;
+  return componentNameRegex.test(node?.name?.name);
 }
 
 
@@ -22,7 +22,7 @@ function isCallExpression(
   node: TSESTree.CallExpression,
   name: "useMemo" | "useCallback"
 ) {
-  if (node.callee.type === "MemberExpression") {
+  if (node?.callee?.type === "MemberExpression") {
     const {
       callee: { object, property },
     } = node;
@@ -34,7 +34,7 @@ function isCallExpression(
     ) {
       return true;
     }
-  } else if (node.callee.type === "Identifier" && node.callee.name === name) {
+  } else if (node?.callee?.type === "Identifier" && node.callee.name === name) {
     return true;
   }
 
@@ -48,7 +48,7 @@ function getIdentifierMemoStatus(
   const variableInScope = context.getScope().variables.find((v) => v.name === name);
   if (variableInScope === undefined) return {status: MemoStatus.Memoized};
   const [{ node }] = variableInScope.defs;
-  const isProps = node.id.type === 'Identifier' && (isComponentName(node.id.name) || getIsHook(node.id));
+  const isProps = node?.id?.type === 'Identifier' && (isComponentName(node.id.name) || getIsHook(node.id));
   // Avoid assuming a Hook or Component's props to be unmemoized
   if (isProps) {
     return;
@@ -56,7 +56,7 @@ function getIdentifierMemoStatus(
 
   if (node.type === "FunctionDeclaration") return {node: node, status: MemoStatus.UnmemoizedFunction};
   if (node.type !== "VariableDeclarator") return {node: node, status: MemoStatus.Memoized};
-  if (node.parent.kind === "let") {
+  if (node?.parent?.kind === "let") {
     return {node: node.parent, status: MemoStatus.UnsafeLet};
   }
   return getExpressionMemoStatus(context, node.init);
