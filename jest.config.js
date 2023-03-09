@@ -13,6 +13,7 @@ module.exports = {
     '<rootDir>/src/*',
     '<rootDir>/src/**/*',
     '!<rootDir>/src/index.{js,ts}',
+    '!<rootDir>/src/**/constants.{js,ts}',
   ],
   cacheDirectory: '.jest-cache',
   coverageThreshold: {
