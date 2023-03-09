@@ -57,7 +57,7 @@ function getIdentifierMemoStatus(
   const isFunctionParameter = node.id.name !== name;
   if (node.type === "FunctionDeclaration") return {node: node, status: isFunctionParameter ? MemoStatus.Memoized : MemoStatus.UnmemoizedFunction};
   if (node.type !== "VariableDeclarator") return {node: node, status: MemoStatus.Memoized};
-  if (node?.parent?.kind === "let") {
+  if (node?.parent?.kind === "let" && node?.init?.type === 'CallExpression' && getIsHook(node?.init?.callee)) {
     return {node: node.parent, status: MemoStatus.UnsafeLet};
   }
   return getExpressionMemoStatus(context, node.init);
