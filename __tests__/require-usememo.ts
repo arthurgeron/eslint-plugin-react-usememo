@@ -11,6 +11,19 @@ const ruleTester = new RuleTester({
 ruleTester.run("useMemo", rule as Rule.RuleModule, {
   valid: [
     {
+      code: `function renderItem({
+        field,
+        fieldState,
+      }) {
+        return (
+          <Child 
+          onBlur={field.onBlur}
+          inputRef={field.ref}
+          state={fieldState}
+          />);
+      }`,
+    },
+    {
       code: `const Component = () => {
       const myObject = React.useMemo(() => ({}), []);
       return <Child prop={myObject} />;
