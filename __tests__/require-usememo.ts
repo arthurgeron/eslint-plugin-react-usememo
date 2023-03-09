@@ -11,6 +11,36 @@ const ruleTester = new RuleTester({
 ruleTester.run("useMemo", rule as Rule.RuleModule, {
   valid: [
     {
+      code: `function renderItem({
+        field,
+        fieldState,
+      }) {
+        return (
+          <Child 
+          onBlur={field.onBlur}
+          inputRef={field.ref}
+          state={fieldState}
+          />);
+      }`,
+    },
+    {
+      code: `function Component() {
+      let myObject = 'hi';
+      return <Child prop={myObject} />;
+    }`,
+    },
+    {
+      code: `function Component({index = 0}) {
+      const isNotFirst = index > 0;
+      return <Child isNotFirst={isNotFirst} />;
+    }`,
+    },
+    {
+      code: `function Component() {
+        return <Child>{/* Empty Expression Should Not Error :) */}</Child>;
+      }`,
+    },
+    {
       code: `const Component = () => {
       const myObject = React.useMemo(() => ({}), []);
       return <Child prop={myObject} />;
@@ -250,6 +280,13 @@ ruleTester.run("useMemo", rule as Rule.RuleModule, {
         return {x};
       }`,
     },
+    {
+      code: `function useTest() {
+        let y = '';
+        const x = useMemo(() => '', []);
+        return {x, y};
+      }`,
+    },
   ],
   invalid: [
     {
@@ -366,6 +403,13 @@ ruleTester.run("useMemo", rule as Rule.RuleModule, {
         myObject = {};
         return <Child prop={myObject} />;
       }`,
+      errors: [{ messageId: "object-usememo-props" }],
+    },
+    {
+      code: `const Component = () => {
+        let myData = useMemo(() => '', []);
+        return <Child prop={myData} />;
+      }`,
       errors: [{ messageId: "usememo-const" }],
     },
     {
@@ -422,20 +466,19 @@ ruleTester.run("useMemo", rule as Rule.RuleModule, {
       errors: [{ messageId: "object-usememo-deps" }],
     },
     {
-      code: `function useTest() {
-        let y = '';
-        const x = useMemo(() => '', []);
-        return {x, y};
-      }`,
-      errors: [{ messageId: "usememo-const" }],
-    },
-    {
       code: `const useTest = () => {
         const x: boolean | undefined = false;
         function y() {}
         return {x, y};
       }`,
       errors: [{ messageId: "function-usecallback-hook" }],
+    },
+    {
+      code: `function Component() {
+      const component = <OtherChild />;
+      return <Child component={component} />;
+    }`,
+    errors: [{messageId: "jsx-usememo-props"}]
     },
   ],
 });

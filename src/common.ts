@@ -54,9 +54,10 @@ function getIdentifierMemoStatus(
     return;
   }
 
-  if (node.type === "FunctionDeclaration") return {node: node, status: MemoStatus.UnmemoizedFunction};
+  const isFunctionParameter = node.id.name !== name;
+  if (node.type === "FunctionDeclaration") return {node: node, status: isFunctionParameter ? MemoStatus.Memoized : MemoStatus.UnmemoizedFunction};
   if (node.type !== "VariableDeclarator") return {node: node, status: MemoStatus.Memoized};
-  if (node?.parent?.kind === "let") {
+  if (node?.parent?.kind === "let" && node?.init?.type === 'CallExpression' && getIsHook(node?.init?.callee)) {
     return {node: node.parent, status: MemoStatus.UnsafeLet};
   }
   return getExpressionMemoStatus(context, node.init);
@@ -66,7 +67,8 @@ export function getExpressionMemoStatus(
   context: Rule.RuleContext,
   expression: TSESTree.Expression
 ): MemoStatusToReport {
-  switch (expression.type) {
+  switch (expression?.type) {
+    case undefined:
     case "ObjectExpression":
       return {node: expression, status: MemoStatus.UnmemoizedObject};
     case "ArrayExpression":
