@@ -3,6 +3,7 @@
     "strict": true,
     "outDir": "dist",
     "moduleResolution": "node",
+    "esModuleInterop": true,
     "baseUrl": "./",
   },
 }

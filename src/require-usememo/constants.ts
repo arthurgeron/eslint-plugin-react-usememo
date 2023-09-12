@@ -1,5 +1,5 @@
 import { MemoStatus } from 'src/types';
-import type { ExpressionData} from './types';
+import type { ExpressionData, MemoErrorHookDictionary } from './types';
 
 export const ValidExpressions: Record<string, boolean> = {
   'ArrowFunctionExpression': true,
@@ -75,3 +75,11 @@ export const defaultReactHookNames: Record<string, boolean | undefined> = {
   "useQueryClient": true,
   "useInfiniteQuery": true,
 }
+
+export const messageIdToHookDict: MemoErrorHookDictionary = {
+  'function-usecallback-props': 'useCallback',
+  'function-usecallback-hook': 'useCallback',
+  'function-usecallback-deps': 'useCallback',
+  'object-usememo-props': 'useMemo',
+  'usememo-const': 'useMemo',
+};

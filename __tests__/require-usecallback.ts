@@ -92,11 +92,18 @@ ruleTester.run("useCallback", rule as Rule.RuleModule , {
         const myFn = lodash.memoize(() => []);
         return <Child prop={myFn} />;
       }`,
-    },{
+    },
+    {
       code:`const Component = () => {
         const myFn1 = () => [];
         const myFn2 = React.useCallback(() => myFn1, [myFn1]);
         return <Child prop={myFn2} />;
+      }`,
+    },
+    {
+      code: `const Component = () => {
+        const myFn = React.useMemo(() => function() {}, []);
+        return <Child prop={myFn} />;
       }`,
     },
   ],
@@ -106,6 +113,10 @@ ruleTester.run("useCallback", rule as Rule.RuleModule , {
         const myFn = function myFn() {};
         return <Child prop={myFn} />;
       }`,
+      output: `const Component = () => {
+        const myFn = React.useCallback(() => {}, []);
+        return <Child prop={myFn} />;
+      }`,
       errors: [{ messageId: "function-usecallback-props" }],
     },
     {
@@ -113,11 +124,21 @@ ruleTester.run("useCallback", rule as Rule.RuleModule , {
         const myFn = () => {};
         return <Child prop={myFn} />;
       }`,
+      output: `const Component = () => {
+        const myFn = React.useCallback(() => {}, []);
+        return <Child prop={myFn} />;
+      }`,
       errors: [{ messageId: "function-usecallback-props" }],
     },
     {
       code: `const Component = () => {
         let myFn = useCallback(() => ({}));
+        myFn = () => ({});
+        return <Child prop={myFn} />;
+      }`,
+      // Variable reassignment is not safe to fix, hence it's expected that the generated code will required further fixing
+      output: `const Component = () => {
+        const myFn = useCallback(() => ({}));
         myFn = () => ({});
         return <Child prop={myFn} />;
       }`,
@@ -145,14 +166,12 @@ ruleTester.run("useCallback", rule as Rule.RuleModule , {
     },
     {
       code: `const Component = () => {
-        const myFn = function() {};
-        return <Child prop={myFn} />;
-      }`,
-      errors: [{ messageId: "function-usecallback-props" }],
-    },
-    {
-      code: `const Component = () => {
         const myFn1 = () => [];
+        const myFn2 = React.useCallback(() => [], []);
+        return <Child prop={myFn2 || myFn1} />;
+      }`,
+      output: `const Component = () => {
+        const myFn1 = React.useCallback(() => [], []);
         const myFn2 = React.useCallback(() => [], []);
         return <Child prop={myFn2 || myFn1} />;
       }`,
@@ -186,7 +205,22 @@ ruleTester.run("useCallback", rule as Rule.RuleModule , {
     },
     {
       code: `const Component = () => {
+        const myFn = function test() {};
+        return <Child prop={myFn} />;
+      }`,
+      output: `const Component = () => {
+        const myFn = React.useCallback(() => {}, []);
+        return <Child prop={myFn} />;
+      }`,
+      errors: [{ messageId: "function-usecallback-props" }],
+    },
+    {
+      code: `const Component = () => {
         const myFn = () => [];
+        return <Child prop={myFn} />;
+      }`,
+      output: `const Component = () => {
+        const myFn = React.useCallback(() => [], []);
         return <Child prop={myFn} />;
       }`,
       errors: [{ messageId: "function-usecallback-props" }],

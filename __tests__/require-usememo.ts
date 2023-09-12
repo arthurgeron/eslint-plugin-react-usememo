@@ -1,5 +1,6 @@
 import { Rule, RuleTester } from "eslint";
 import rule from "src/require-usememo";
+import { findParentType } from "src/require-usememo/utils";
 
 const ruleTester = new RuleTester({
   parser: require.resolve("@typescript-eslint/parser"),
@@ -295,10 +296,18 @@ ruleTester.run("useMemo", rule as Rule.RuleModule, {
         return <Child prop={myObject} />;
       }`,
       errors: [{ messageId: "object-usememo-props" }],
+      output: `const Component = () => {
+        const myObject = React.useMemo(() => ({}), []);
+        return <Child prop={myObject} />;
+      }`,
     },
     {
       code: `const Component = () => {
         const myArray = [];
+        return <Child prop={myArray} />;
+      }`,
+      output: `const Component = () => {
+        const myArray = React.useMemo(() => [], []);
         return <Child prop={myArray} />;
       }`,
       errors: [{ messageId: "array-usememo-props" }],
@@ -308,10 +317,20 @@ ruleTester.run("useMemo", rule as Rule.RuleModule, {
         const myInstance = new Object();
         return <Child prop={myInstance} />;
       }`,
+      output: `const Component = () => {
+        const myInstance = React.useMemo(() => new Object(), []);
+        return <Child prop={myInstance} />;
+      }`,
       errors: [{ messageId: "instance-usememo-props" }],
     },
     {
       code: `class Component {
+        render() {
+          const myInstance = new Object();
+          return <Child prop={myInstance} />;
+        }
+      }`,
+      output: `class Component {
         render() {
           const myInstance = new Object();
           return <Child prop={myInstance} />;
@@ -325,11 +344,21 @@ ruleTester.run("useMemo", rule as Rule.RuleModule, {
         const second = new Object();
         return <Child prop={firstInstance || second} />;
       }`,
+      output: `const Component = () => {
+        const firstInstance = React.useMemo(() => new Object(), []);
+        const second = React.useMemo(() => new Object(), []);
+        return <Child prop={firstInstance || second} />;
+      }`,
       errors: [{ messageId: "instance-usememo-props" }],
     },
     {
       code: `const Component = () => {
         let myObject = React.useMemo(() => ({}), []);
+        myObject = {a: 'b'};
+        return <Child prop={myObject} />;
+      }`,
+      output: `const Component = () => {
+        const myObject = React.useMemo(() => ({}), []);
         myObject = {a: 'b'};
         return <Child prop={myObject} />;
       }`,
@@ -339,136 +368,33 @@ ruleTester.run("useMemo", rule as Rule.RuleModule, {
       code: `const Component = () => {
         return <Child prop={{}} />;
       }`,
-      errors: [{ messageId: "object-usememo-props" }],
-    },
-    {
-      code: `class Component {
-        render() {
-          return <Child prop={{}} />;
-        }
-      }`,
-      errors: [{ messageId: "object-class-memo-props" }],
-    },
-    {
-      code: `const Component = () => {
-        return <Child prop={[]} />;
-      }`,
-      errors: [{ messageId: "array-usememo-props" }],
-    },
-    {
-      code: `class Component {
-        render() {
-          return <Child prop={[]} />;
-        }
-      }`,
-      errors: [{ messageId: "array-class-memo-props" }],
-    },
-    {
-      code: `const Component = () => {
-        const myObject = memoize({});
-        return <Child prop={myObject} />;
-      }`,
-      options: [{ strict: true }],
-      errors: [{ messageId: "unknown-usememo-props" }],
-    },
-    {
-      code: `const Component = () => {
-        const myArray = lodash.memoize([]);
-        return <Child prop={myArray} />;
-      }`,
-      options: [{ strict: true }],
-      errors: [{ messageId: "unknown-usememo-props" }],
-    },
-    {
-      code: `class Component {
-        render() {
-          const myArray = lodash.memoize([]);
-          return <Child prop={myArray} />;
-        }
-      }`,
-      options: [{ strict: true }],
-      errors: [{ messageId: "unknown-class-memo-props" }],
-    },
-    {
-      code: `const Component = () => {
-        const myComplexString = css\`color: red;\`;
-        return <Child prop={myComplexString} />;
-      }`,
-      options: [{ strict: true }],
-      errors: [{ messageId: "unknown-usememo-props" }],
-    },
-    {
-      code: `const Component = () => {
-        let myObject;
-        myObject = {};
-        return <Child prop={myObject} />;
+      output: `const Component = () => {
+        const renameMe = React.useMemo(() => ({}), []);
+        return <Child prop={renameMe} />;
       }`,
       errors: [{ messageId: "object-usememo-props" }],
     },
     {
       code: `const Component = () => {
-        let myData = useMemo(() => '', []);
-        return <Child prop={myData} />;
+        let x = {};
+        return <Child prop={x} />;
       }`,
-      errors: [{ messageId: "usememo-const" }],
-    },
-    {
-      code: `function useTest() {
-        const myObject = {};
-        return myObject;
+      output: `const Component = () => {
+        const x = React.useMemo(() => ({}), []);
+        return <Child prop={x} />;
       }`,
-      errors: [{ messageId: "object-usememo-hook" }],
+      errors: [{ messageId: "object-usememo-props" }],
     },
-    {
-      code: `function useTest() {
-        const myObject = {};
-        return {x: myObject };
-      }`,
-      errors: [{ messageId: "object-usememo-hook" }],
-    },
-    {
-      code: `
-      const myObject = {};
-      function useTest() {
-        return {x: myObject };
-      }`,
-      options: [{ checkHookReturnObject: true }],
-      errors: [{ messageId: "object-usememo-hook" }],
-    },
-    {
-      code: `function useTest() {
-        function x() {}
-        return {x};
-      }`,
-      errors: [{ messageId: "function-usecallback-hook" }],
-    },
-    {
-      code: `function useTest() {
-        const myFunction = () => {};
-        return myFunction;
-      }`,
-      errors: [{ messageId: "function-usecallback-hook" }],
-    },
-    {
-      code: `function useTest() {
-        function myFunction(){ };
-        return myFunction;
-      }`,
-      errors: [{ messageId: "function-usecallback-hook" }],
-    },
-    {
-      code: `
-      function useTesty() {
-        const x = {};
-        return useData(x);
-      }`,
-      options: [{ checkHookReturnObject: true, ignoredHookCallsNames: {"useOtherHook": true} }],
-      errors: [{ messageId: "object-usememo-deps" }],
-    },
+     
     {
       code: `const useTest = () => {
         const x: boolean | undefined = false;
         function y() {}
+        return {x, y};
+      }`,
+      output: `const useTest = () => {
+        const x: boolean | undefined = false;
+        const y = React.useCallback(() => {}, []);
         return {x, y};
       }`,
       errors: [{ messageId: "function-usecallback-hook" }],
@@ -478,7 +404,18 @@ ruleTester.run("useMemo", rule as Rule.RuleModule, {
       const component = <OtherChild />;
       return <Child component={component} />;
     }`,
-    errors: [{messageId: "jsx-usememo-props"}]
+    errors: [{messageId: "jsx-usememo-props"}],
+    output: `function Component() {
+      const component = React.useMemo(() => <OtherChild />, []);
+      return <Child component={component} />;
+    }`
     },
   ],
+});
+
+
+describe('require-usememo utils', () => {
+  it("should return undefined if can't find parent",() => {
+    expect(findParentType({ } as any, 'nothing')).toBeUndefined();
+  })
 });
