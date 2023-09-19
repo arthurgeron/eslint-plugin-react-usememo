@@ -5,7 +5,7 @@ import { MessagesRequireUseMemo } from '../constants';
 import type { ESNode, ExpressionData, NodeType } from "./types";
 import { MemoStatusToReport } from "src/types";
 import { messageIdToHookDict } from "./constants";
-import { isVariableDeclaration } from "typescript";
+import { getVariableInScope } from "src/common";
 
 
 export function shouldIgnoreNode(node: ESNode, ignoredNames: Record<string,boolean | undefined> ) {
@@ -71,6 +71,17 @@ function fixFunction(node: TSESTree.FunctionDeclaration | TSESTree.FunctionExpre
   return fixedCode;
 }
 
+function getSafeVariableName(context: Rule.RuleContext, name: string) {
+  const tempVarPlaceholder = 'renameMe';
+  if (!getVariableInScope(context, name)) {
+    return name;
+  }
+  if (!getVariableInScope(context, `_${name}`)) {
+    return `_${name}`;
+  }
+  return tempVarPlaceholder;
+}
+
 // Eslint Auto-fix logic, functional components/hooks only
 export function fixBasedOnMessageId(node: Rule.Node, messageId: keyof typeof MessagesRequireUseMemo, fixer: Rule.RuleFixer, context: Rule.RuleContext) {
   const sourceCode = context.getSourceCode();
@@ -105,19 +116,20 @@ export function fixBasedOnMessageId(node: Rule.Node, messageId: keyof typeof Mes
       if ((isObjExpression || isCorrectableFunctionExpression) ) {
 
         const fixed = isCorrectableFunctionExpression ? fixFunction(node as TSESTree.FunctionExpression, context) : `React.useMemo(() => (${sourceCode.getText(node)}), [])`;
-
+        const parent = node.parent as unknown as TSESTree.JSXExpressionContainer;
         // Means we have a object expression declared directly in jsx
-        if ((node.parent as any).type === 'JSXExpressionContainer') {
-          const tempVarPlaceholder = 'renameMe';
+        if (parent.type === 'JSXExpressionContainer') {
+          const parentPropName = (parent?.parent as TSESTree.JSXAttribute)?.name?.name.toString();
+          const newVarName = getSafeVariableName(context, parentPropName);
           const returnStatement = findParentType(node, 'ReturnStatement') as TSESTree.ReturnStatement;
     
           if (returnStatement) {
             const indentationLevel = sourceCode.lines[returnStatement.loc.start.line - 1].search(/\S/);
             const indentation = ' '.repeat(indentationLevel);
             // Creates a declaration for the variable and inserts it before the return statement
-            fixes.push(fixer.insertTextBeforeRange(returnStatement.range,`const ${tempVarPlaceholder} = ${fixed};\n${indentation}`));
+            fixes.push(fixer.insertTextBeforeRange(returnStatement.range,`const ${newVarName} = ${fixed};\n${indentation}`));
             // Replaces the old inline object expression with the variable name
-            fixes.push(fixer.replaceText(node, tempVarPlaceholder));
+            fixes.push(fixer.replaceText(node, newVarName));
           }
         } else {
           fixes.push(fixer.replaceText(node, fixed));
@@ -150,5 +162,4 @@ export function fixBasedOnMessageId(node: Rule.Node, messageId: keyof typeof Mes
   } else {
     return fixer.replaceText(node, fixed) as Rule.Fix;
   }
-  return null;
 }

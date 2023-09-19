@@ -367,11 +367,49 @@ describe('Rule - Require-usememo', () =>  {
       },
       {
         code: `const Component = () => {
-          return <Child prop={{}} />;
+          return <Child userData={{}} />;
         }`,
         output: `const Component = () => {
+          const userData = React.useMemo(() => ({}), []);
+          return <Child userData={userData} />;
+        }`,
+        errors: [{ messageId: "object-usememo-props" }],
+      },
+      {
+        code: `const Component = () => {
+          const userData = undefined;
+          return <Child userData={{}} />;
+        }`,
+        output: `const Component = () => {
+          const userData = undefined;
+          const _userData = React.useMemo(() => ({}), []);
+          return <Child userData={_userData} />;
+        }`,
+        errors: [{ messageId: "object-usememo-props" }],
+      },
+      {
+        code: `const Component = () => {
+          const userData = undefined;
+          return <Child userData={{}} />;
+        }`,
+        output: `const Component = () => {
+          const userData = undefined;
+          const _userData = React.useMemo(() => ({}), []);
+          return <Child userData={_userData} />;
+        }`,
+        errors: [{ messageId: "object-usememo-props" }],
+      },
+      {
+        code: `const Component = () => {
+          const userData = undefined;
+          const _userData = undefined;
+          return <Child userData={{}} />;
+        }`,
+        output: `const Component = () => {
+          const userData = undefined;
+          const _userData = undefined;
           const renameMe = React.useMemo(() => ({}), []);
-          return <Child prop={renameMe} />;
+          return <Child userData={renameMe} />;
         }`,
         errors: [{ messageId: "object-usememo-props" }],
       },

@@ -39,16 +39,18 @@ To illustrate the autofix feature in action, below are some examples with input 
 Input:
 ```jsx
 const Component = () => {
-  return <Child prop={() => {}} />;
+  return <Child userData={() => {}} />;
 }
 ```
 Fixed output:
 ```jsx
 const Component = () => {
-  const renameMe = React.useCallback(() => ({}), []);
-  return <Child prop={renameMe} />;
+  const userData = React.useCallback(() => ({}), []);
+  return <Child userData={userData} />;
 }
 ```
+
+> If an expression is unnamed, it adopts the name of the property. Plus, it scans the scope to make sure the naming doesn't conflict with any existing variables. You can find more examples in our [tests](https://github.com/arthurgeron/eslint-plugin-react-usememo/__tests__/require-usememo.test.ts).
 
 #### Example 2
 Input:
