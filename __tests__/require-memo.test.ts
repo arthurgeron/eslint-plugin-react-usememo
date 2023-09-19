@@ -74,12 +74,6 @@ describe('Rule - Require-memo', () =>  {
         code: `function Component() { return <div />; }`,
         errors: [{ messageId: "memo-required" }],
       },
-      // {
-      //   filename: "dir/Component.js",
-      //   parserOptions: { ecmaVersion: 6, sourceType: "module" },
-      //   code: `export default function() { return <div /> };`,
-      //   errors: [{ messageId: "memo-required" }],
-      // },
     ],
   });
 });
