@@ -7,7 +7,7 @@ import {
   isComplexComponent,
 } from "../common";
 import type {ExpressionTypes, NodeType, ESNode, ExpressionData} from './types';
-import { checkForErrors, getIsHook, shouldIgnoreNode } from './utils';
+import { checkForErrors, fixBasedOnMessageId, getIsHook, shouldIgnoreNode } from './utils';
 
 const rule: Rule.RuleModule  = {
   meta: {
@@ -17,6 +17,7 @@ const rule: Rule.RuleModule  = {
       description: 'Detects shallow comparison fails in React',
       recommended: true,
     },
+    fixable: 'code',
     schema: [
       {
         type: "object",
@@ -29,7 +30,12 @@ const rule: Rule.RuleModule  = {
     let isClass = false;
 
     function report<T extends Rule.NodeParentExtension | TSESTree.MethodDefinitionComputedName>(node: T, messageId: keyof typeof MessagesRequireUseMemo) {
-        context.report( {node: node as Rule.Node, messageId} );
+        context.report( {node: node as Rule.Node, messageId , fix(fixer) {
+          if (isClass) {
+            return null;
+          }
+          return fixBasedOnMessageId(node as Rule.Node, messageId, fixer, context);
+        }} );
     }
 
     function process(node: NodeType, _expression?: ExpressionTypes, expressionData?: ExpressionData) {

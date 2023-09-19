@@ -41,11 +41,15 @@ function isCallExpression(
   return false;
 }
 
+export function getVariableInScope(context: Rule.RuleContext, name: string) {
+  return context.getScope().variables.find((variable) => variable.name === name);
+}
+
 function getIdentifierMemoStatus(
   context: Rule.RuleContext,
   { name }: TSESTree.Identifier
 ): MemoStatusToReport {
-  const variableInScope = context.getScope().variables.find((v) => v.name === name);
+  const variableInScope = getVariableInScope(context, name);
   if (variableInScope === undefined) return {status: MemoStatus.Memoized};
   const [{ node }] = variableInScope.defs;
   const isProps = node?.id?.type === 'Identifier' && (isComponentName(node.id.name) || getIsHook(node.id));
