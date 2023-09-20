@@ -102,7 +102,7 @@ export function fixBasedOnMessageId(node: Rule.Node, messageId: keyof typeof Mes
       const fixes: Array<Rule.Fix> = [];
 
       // Check if it is a hook being stored in let/var, change to const if so
-      if (variableDeclaration?.kind !== 'const') {
+      if (variableDeclaration && variableDeclaration.kind !== 'const') {
         const tokens = sourceCode.getTokens(variableDeclaration as ESTree.Node);
         const letKeywordToken = tokens?.[0];
         if (letKeywordToken?.value !== 'const') {
