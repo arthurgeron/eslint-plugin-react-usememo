@@ -12,7 +12,7 @@ describe('Rule - Require-usecallback', () =>  {
     valid: [
       {
         code: `const Component = () => {
-        const myFn = React.useCallback(function() {}, []);
+        const myFn = useCallback(function() {}, []);
         return <Child prop={myFn} />;
       }`,
       },
@@ -68,7 +68,7 @@ describe('Rule - Require-usecallback', () =>  {
       {
         code: `const Component = () => {
         const myFn1 = useCallback(() => [], []);
-        const myFn2 = React.useCallback(() => myFn1, [myFn1]);
+        const myFn2 = useCallback(() => myFn1, [myFn1]);
         return <Child prop={myFn2} />;
         }`,
       },
@@ -96,48 +96,56 @@ describe('Rule - Require-usecallback', () =>  {
       {
         code:`const Component = () => {
           const myFn1 = () => [];
-          const myFn2 = React.useCallback(() => myFn1, [myFn1]);
+          const myFn2 = useCallback(() => myFn1, [myFn1]);
           return <Child prop={myFn2} />;
         }`,
       },
       {
         code: `const Component = () => {
-          const myFn = React.useMemo(() => function() {}, []);
+          const myFn = useMemo(() => function() {}, []);
           return <Child prop={myFn} />;
         }`,
       },
     ],
     invalid: [
       {
-        code: `const Component = () => {
+        code: `
+        const Component = () => {
           const myFn = function myFn() {};
           return <Child prop={myFn} />;
         }`,
-        output: `const Component = () => {
-          const myFn = React.useCallback(() => {}, []);
+        output: `import { useCallback } from 'react';
+
+        const Component = () => {
+          const myFn = useCallback(() => {}, []);
           return <Child prop={myFn} />;
         }`,
         errors: [{ messageId: "function-usecallback-props" }],
       },
       {
-        code: `const Component = () => {
+        code: `
+        const Component = () => {
           const myFn = () => {};
           return <Child prop={myFn} />;
         }`,
-        output: `const Component = () => {
-          const myFn = React.useCallback(() => {}, []);
+        output: `import { useCallback } from 'react';
+
+        const Component = () => {
+          const myFn = useCallback(() => {}, []);
           return <Child prop={myFn} />;
         }`,
         errors: [{ messageId: "function-usecallback-props" }],
       },
       {
-        code: `const Component = () => {
+        code: `
+        const Component = () => {
           let myFn = useCallback(() => ({}));
           myFn = () => ({});
           return <Child prop={myFn} />;
         }`,
-        // Variable reassignment is not safe to fix, hence it's expected that the generated code will required further fixing
-        output: `const Component = () => {
+        // Variable reassignment is not safe to fix, hence it's expected that the generated code will require a manual fix
+        output: `
+        const Component = () => {
           const myFn = useCallback(() => ({}));
           myFn = () => ({});
           return <Child prop={myFn} />;
@@ -165,14 +173,17 @@ describe('Rule - Require-usecallback', () =>  {
         errors: [{ messageId: "instance-class-memo-props" }],
       },
       {
-        code: `const Component = () => {
+        code: `
+        const Component = () => {
           const myFn1 = () => [];
-          const myFn2 = React.useCallback(() => [], []);
+          const myFn2 = useCallback(() => [], []);
           return <Child prop={myFn2 || myFn1} />;
         }`,
-        output: `const Component = () => {
-          const myFn1 = React.useCallback(() => [], []);
-          const myFn2 = React.useCallback(() => [], []);
+        output: `import { useCallback } from 'react';
+
+        const Component = () => {
+          const myFn1 = useCallback(() => [], []);
+          const myFn2 = useCallback(() => [], []);
           return <Child prop={myFn2 || myFn1} />;
         }`,
         errors: [{ messageId: "function-usecallback-props" }],
@@ -204,23 +215,29 @@ describe('Rule - Require-usecallback', () =>  {
         errors: [{ messageId: "unknown-class-memo-props" }],
       },
       {
-        code: `const Component = () => {
+        code: `
+        const Component = () => {
           const myFn = function test() {};
           return <Child prop={myFn} />;
         }`,
-        output: `const Component = () => {
-          const myFn = React.useCallback(() => {}, []);
+        output: `import { useCallback } from 'react';
+
+        const Component = () => {
+          const myFn = useCallback(() => {}, []);
           return <Child prop={myFn} />;
         }`,
         errors: [{ messageId: "function-usecallback-props" }],
       },
       {
-        code: `const Component = () => {
+        code: `
+        const Component = () => {
           const myFn = () => [];
           return <Child prop={myFn} />;
         }`,
-        output: `const Component = () => {
-          const myFn = React.useCallback(() => [], []);
+        output: `import { useCallback } from 'react';
+
+        const Component = () => {
+          const myFn = useCallback(() => [], []);
           return <Child prop={myFn} />;
         }`,
         errors: [{ messageId: "function-usecallback-props" }],

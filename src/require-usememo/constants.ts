@@ -1,16 +1,6 @@
 import { MemoStatus } from 'src/types';
 import type { ExpressionData, MemoErrorHookDictionary } from './types';
 
-export const ValidExpressions: Record<string, boolean> = {
-  'ArrowFunctionExpression': true,
-  'ObjectExpression': true,
-  'ArrayExpression': true,
-  'LogicalExpression': true,
-  'Identifier': true,
-  'JSXEmptyExpression' : false,
-}
-
-
 export const jsxEmptyExpressionClassData: ExpressionData = {
   [MemoStatus.UnmemoizedObject.toString()]: "object-class-memo-props",
   [MemoStatus.UnmemoizedArray.toString()]: "array-class-memo-props",

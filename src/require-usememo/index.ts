@@ -1,12 +1,12 @@
 import { Rule } from "eslint";
 import { TSESTree } from "@typescript-eslint/types";
-import { defaultReactHookNames, ValidExpressions, jsxEmptyExpressionClassData, jsxEmptyExpressionData, callExpressionData, hookReturnExpressionData  } from './constants';
-import { MessagesRequireUseMemo,  } from '../constants';
+import { defaultReactHookNames, jsxEmptyExpressionClassData, jsxEmptyExpressionData, callExpressionData, hookReturnExpressionData  } from './constants';
+import { MessagesRequireUseMemo  } from '../constants';
 import {
   getExpressionMemoStatus,
   isComplexComponent,
 } from "../common";
-import type {ExpressionTypes, NodeType, ESNode, ExpressionData} from './types';
+import type {ExpressionTypes, NodeType, ESNode, ExpressionData, ReactImportInformation, ImportNode} from './types';
 import { checkForErrors, fixBasedOnMessageId, getIsHook, shouldIgnoreNode } from './utils';
 
 const rule: Rule.RuleModule  = {
@@ -21,20 +21,27 @@ const rule: Rule.RuleModule  = {
     schema: [
       {
         type: "object",
-        properties: { strict: { type: "boolean" }, checkHookReturnObject: { type: "boolean" }, checkHookCalls: { type: "boolean"}, ignoredHookCallsNames: {type: "object"} },
+        properties: { strict: { type: "boolean" }, checkHookReturnObject: { type: "boolean" }, checkHookCalls: { type: "boolean"}, ignoredHookCallsNames: {type: "object"}, fix: {
+          addImports: "boolean",
+        } },
         additionalProperties: false,
       },
     ],
   },
   create: (context: Rule.RuleContext): Rule.RuleListener => {
     let isClass = false;
+    let importData: ReactImportInformation = {
+      reactImported: false,
+      useMemoImported: false,
+      useCallbackImported: false,
+    }
 
     function report<T extends Rule.NodeParentExtension | TSESTree.MethodDefinitionComputedName>(node: T, messageId: keyof typeof MessagesRequireUseMemo) {
         context.report( {node: node as Rule.Node, messageId , fix(fixer) {
           if (isClass) {
             return null;
           }
-          return fixBasedOnMessageId(node as Rule.Node, messageId, fixer, context);
+          return fixBasedOnMessageId(node as Rule.Node, messageId, fixer, context, importData);
         }} );
     }
 
@@ -69,6 +76,16 @@ const rule: Rule.RuleModule  = {
 
       ClassDeclaration: () => {
         isClass = true;
+      },
+
+      ImportDeclaration(node) {
+        if (node.source.value === 'react') {
+          importData.reactImported = true;
+          importData.importDeclaration = node as TSESTree.ImportDeclaration;
+          const specifiers = node.specifiers;
+          importData.useMemoImported = specifiers.some(specifier => specifier.local.name === 'useMemo');
+          importData.useCallbackImported = specifiers.some(specifier => specifier.local.name === 'useCallback');
+        }
       },
 
       ReturnStatement(node) {

@@ -1,6 +1,7 @@
 import { Rule } from "eslint";
-import { TSESTree } from "@typescript-eslint/types";
+import type { TSESTree } from "@typescript-eslint/types";
 import { MessagesRequireUseMemo} from '../constants';
+import type { ImportDeclaration } from "typescript";
 
 export type ExpressionTypes = TSESTree.ArrowFunctionExpression | TSESTree.JSXExpressionContainer | TSESTree.Expression | TSESTree.ObjectExpression | TSESTree.ArrayExpression | TSESTree.Identifier | TSESTree.LogicalExpression | TSESTree.JSXEmptyExpression;
 
@@ -12,3 +13,10 @@ type OptionalRecord<K extends keyof any, T> = {
 };
 type PartialKeyOfMessages = keyof typeof MessagesRequireUseMemo;
 export type MemoErrorHookDictionary = OptionalRecord<PartialKeyOfMessages, 'useCallback' | 'useMemo'>;
+export type ImportNode = TSESTree.ImportDeclaration & Rule.NodeParentExtension;
+export type ReactImportInformation = {
+  reactImported: boolean;
+  useMemoImported: boolean;
+  useCallbackImported: boolean;
+  importDeclaration?: TSESTree.ImportDeclaration;
+};
