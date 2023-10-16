@@ -38,7 +38,7 @@ function Component() {
   return <Modal breakpoints={breakpoints}>
 }
 ```
-> For more details, please refer to React Native's [documentation](https://reactnative.dev/docs/0.61/optimizing-flatlist-configuration#avoid-anonymous-function-on-renderitem) on the importance of using static or memoized props for complex children.
+> For more details, please refer to React's [documentation](https://react.dev/reference/react/useMemo) on hooks, re-rendering and memoization.
 
 ## Installation
 
@@ -75,7 +75,7 @@ This rule requires complex values (objects, arrays, functions, and JSX) that get
 
 One of the great features of this rule is its amazing autofix functionality. It intelligently wraps necessary components with useMemo() or useCallback(), making your code more efficient and saving you valuable time.
 
-For detailed examples, options available for this rule, and information about the autofix functionality, please refer to our rules documentation.
+For detailed examples, options available for this rule, and information about the autofix functionality, please refer to our [rules documentation](https://github.com/arthurgeron/eslint-plugin-react-usememo/blob/main/docs/rules/require-usememo.md).
 
 ## Rule #2: `require-memo`
 This rule requires all function components to be wrapped in `React.memo()`. 
