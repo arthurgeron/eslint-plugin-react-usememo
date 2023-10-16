@@ -2,7 +2,7 @@ import { Rule, SourceCode } from "eslint";
 import { TSESTree } from "@typescript-eslint/types";
 import type * as ESTree from "estree";
 import { MessagesRequireUseMemo } from '../constants';
-import type { ESNode, ExpressionData, NodeType } from "./types";
+import type { ESNode, ExpressionData, ReactImportInformation } from "./types";
 import { MemoStatusToReport } from "src/types";
 import { messageIdToHookDict } from "./constants";
 import { getVariableInScope } from "src/common";
@@ -27,6 +27,48 @@ export function checkForErrors<T,Y extends Rule.NodeParentExtension | TSESTree.M
 
   }
 }
+
+function addReactImports(context: Rule.RuleContext, kind: 'useMemo' | 'useCallback', reactImportData: ReactImportInformation, fixer: Rule.RuleFixer) {
+  const sourceCode = context.getSourceCode();
+  const importsDisabled = context.options?.[0]?.fix?.addImports === false;
+  let specifier: TSESTree.ImportClause | undefined = undefined;
+
+  if (importsDisabled) {
+    return;
+  }
+
+  if (!reactImportData[`${kind}Imported`]) {
+    // Create a new ImportSpecifier for useMemo/useCallback hook.
+    specifier = {
+      type: 'ImportSpecifier',
+      imported: { type: 'Identifier', name: kind },
+      local: { type: 'Identifier', name: kind }
+    } as TSESTree.ImportSpecifier;
+
+    if (reactImportData.importDeclaration) {
+      reactImportData.importDeclaration.specifiers.push(specifier);
+      return fixer.insertTextAfter(reactImportData.importDeclaration.specifiers[reactImportData.importDeclaration.specifiers.length - 2], `, ${kind}`);
+    }
+  }
+
+  // If React is not imported, create a new ImportDeclaration for it.
+  if (!reactImportData.reactImported && !reactImportData.importDeclaration) {
+    reactImportData.importDeclaration = {
+        type: 'ImportDeclaration',
+        specifiers: [specifier],
+        source: {type: 'Literal', value: 'react'}
+    } as TSESTree.ImportDeclaration;
+    reactImportData.reactImported = true;
+    reactImportData[`${kind}Imported`] = true;
+
+    const leadSpace = sourceCode.ast.body[0]?.leadingComments?.[0]?.value || "";
+
+    // Add an extra new line before const component and use indentSpace for proper spacing.
+    return fixer.insertTextBeforeRange([0, 0], `import { ${kind} } from 'react';\n`);
+  }
+  return;
+}
+
 
 export function getIsHook(node: TSESTree.Node | TSESTree.Identifier) {
   if (node.type === "Identifier") {
@@ -63,7 +105,7 @@ function fixFunction(node: TSESTree.FunctionDeclaration | TSESTree.FunctionExpre
   const {body , params = []} = node;
   const funcBody = sourceCode.getText(body as ESTree.Node);
   const funcParams = (params as Array<ESTree.Node>).map(node => sourceCode.getText(node));
-  let fixedCode = `React.useCallback((${funcParams.join(', ')}) => ${funcBody}, [])${shouldSetName ? ';' : ''}`
+  let fixedCode = `useCallback((${funcParams.join(', ')}) => ${funcBody}, [])${shouldSetName ? ';' : ''}`
   if (shouldSetName && node?.id?.name) {
     const name = node?.id?.name;
     fixedCode = `const ${name} = ${fixedCode}`;
@@ -83,7 +125,7 @@ function getSafeVariableName(context: Rule.RuleContext, name: string) {
 }
 
 // Eslint Auto-fix logic, functional components/hooks only
-export function fixBasedOnMessageId(node: Rule.Node, messageId: keyof typeof MessagesRequireUseMemo, fixer: Rule.RuleFixer, context: Rule.RuleContext) {
+export function fixBasedOnMessageId(node: Rule.Node, messageId: keyof typeof MessagesRequireUseMemo, fixer: Rule.RuleFixer, context: Rule.RuleContext, reactImportData: ReactImportInformation) {
   const sourceCode = context.getSourceCode();
   let hook = messageIdToHookDict[messageId] || 'useMemo';
   const isObjExpression = node.type === 'ObjectExpression';
@@ -91,15 +133,14 @@ export function fixBasedOnMessageId(node: Rule.Node, messageId: keyof typeof Mes
   const isArrowFunctionExpression = node.type === 'ArrowFunctionExpression';
   const isFunctionExpression = node.type === 'FunctionExpression';
   const isCorrectableFunctionExpression = isFunctionExpression || (isArrowFunctionExpression && parentIsVariableDeclarator);
+  const fixes: Array<Rule.Fix> = [];
 
   // Determine what type of behavior to follow according to the error message
   switch(messageId) {
     case 'function-usecallback-props':
     case 'object-usememo-props':
     case 'usememo-const': {
-      let sourceCode = context.getSourceCode();
       let variableDeclaration = node.type === 'VariableDeclaration' ? node : findParentType(node, 'VariableDeclaration') as TSESTree.VariableDeclaration;
-      const fixes: Array<Rule.Fix> = [];
 
       // Check if it is a hook being stored in let/var, change to const if so
       if (variableDeclaration && variableDeclaration.kind !== 'const') {
@@ -115,7 +156,9 @@ export function fixBasedOnMessageId(node: Rule.Node, messageId: keyof typeof Mes
       // If it's an dynamic object - Add useMemo/Callback
       if ((isObjExpression || isCorrectableFunctionExpression) ) {
 
-        const fixed = isCorrectableFunctionExpression ? fixFunction(node as TSESTree.FunctionExpression, context) : `React.useMemo(() => (${sourceCode.getText(node)}), [])`;
+        const importStatementFixes = addReactImports(context, isCorrectableFunctionExpression ? 'useCallback' : 'useMemo', reactImportData, fixer);
+        importStatementFixes && fixes.push(importStatementFixes);
+        const fixed = isCorrectableFunctionExpression ? fixFunction(node as TSESTree.FunctionExpression, context) : `useMemo(() => (${sourceCode.getText(node)}), [])`;
         const parent = node.parent as unknown as TSESTree.JSXExpressionContainer;
         // Means we have a object expression declared directly in jsx
         if (parent.type === 'JSXExpressionContainer') {
@@ -148,7 +191,9 @@ export function fixBasedOnMessageId(node: Rule.Node, messageId: keyof typeof Mes
   } 
   
   // Simpler cases bellow, all of them are just adding useMemo/Callback
-  let fixed = `React.${hook}(() => ${isObjExpression ? "(" : ''}${sourceCode.getText(node as unknown as ESTree.Node)}${isObjExpression ? ")" : ''}, [])`;
+  let fixed = `${hook}(() => ${isObjExpression ? "(" : ''}${sourceCode.getText(node as unknown as ESTree.Node)}${isObjExpression ? ")" : ''}, [])`;
+  const importStatementFixes = addReactImports(context, hook, reactImportData, fixer);
+  importStatementFixes && fixes.push(importStatementFixes);
 
   if (node.type === 'FunctionDeclaration') {
     const _node = node as TSESTree.FunctionDeclaration;
@@ -158,8 +203,9 @@ export function fixBasedOnMessageId(node: Rule.Node, messageId: keyof typeof Mes
   }
 
   if ('computed' in node && (node as any)?.computed?.type === 'ArrowFunctionExpression') {
-    return fixer.replaceText((node as any).computed, fixed) as Rule.Fix;
+    fixes.push(fixer.replaceText((node as any).computed, fixed) as Rule.Fix);
   } else {
-    return fixer.replaceText(node, fixed) as Rule.Fix;
+    fixes.push(fixer.replaceText(node, fixed) as Rule.Fix);
   }
+  return fixes;
 }

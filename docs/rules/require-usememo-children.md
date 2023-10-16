@@ -1,6 +1,6 @@
 # Rule: require-usememo-children
 
-This rule enforces the use of `React.useMemo()` around children in render methods. 
+This rule enforces the use of `useMemo()` around children in render methods. 
 
 ## Rationale 
 
@@ -18,7 +18,7 @@ function ParentComponent({ list }) {
 This rule applies to any type of component (functional or class-based) as long as it involves passing complex children (objects, arrays) to another component.
 
 ## Rule Details
-This rule will enforce that all complex children are wrapped in `React.useMemo()`.
+This rule will enforce that all complex children are wrapped in `useMemo()`.
 
 ## Incorrect Code Examples
 
@@ -57,6 +57,6 @@ No options available for this rule.
 
 ## When Not To Use It
 
-If the child elements are simple types (strings, numbers) or the parent doesn't often re-render, then using `React.useMemo()` might be overkill and could even lead to worse performance. Therefore, it's better to turn off this rule in such cases.
+If the child elements are simple types (strings, numbers) or the parent doesn't often re-render, then using `useMemo()` might be overkill and could even lead to worse performance. Therefore, it's better to turn off this rule in such cases.
 
 > For more examples and detailed explanation, refer to the eslint-plugin-react-memo-children [readme](https://github.com/myorg/eslint-plugin-react-memo-children).

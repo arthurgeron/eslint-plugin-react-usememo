@@ -51,17 +51,17 @@ export const MessagesRequireUseMemo = {
 
 export const MessagesRequireUseMemoChildren = {
   "object-usememo-children":
-    "Object literal should be wrapped in React.useMemo() when used as children",
+    "Object literal should be wrapped in React's useMemo() when used as children",
   "array-usememo-children":
-    "Array literal should be wrapped in React.useMemo() when used as children",
+    "Array literal should be wrapped in React's useMemo() when used as children",
   "instance-usememo-children":
-    "Object instantiation should be wrapped in React.useMemo() when used as children",
+    "Object instantiation should be wrapped in React's useMemo() when used as children",
   "jsx-usememo-children":
-    "JSX should be wrapped in React.useMemo() when used as children",
+    "JSX should be wrapped in React's useMemo() when used as children",
   "function-usecallback-children":
-    "Function definition should be wrapped in React.useCallback() when used as children",
+    "Function definition should be wrapped in useCallback() when used as children",
   "unknown-usememo-children":
-    "Unknown value may need to be wrapped in React.useMemo() when used as children",
+    "Unknown value may need to be wrapped in React's useMemo() when used as children",
   "usememo-const":
     "useMemo/useCallback return value should be assigned to a `const` to prevent reassignment",
 };
