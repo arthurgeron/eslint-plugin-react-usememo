@@ -242,6 +242,23 @@ describe('Rule - Require-usecallback', () =>  {
         }`,
         errors: [{ messageId: "function-usecallback-props" }],
       },
+      {
+        code: `import { useMemo } from 'react';
+
+        const Component = () => {
+          const myFn = () => [];
+          const myFn2 = () => [];
+          return <Child prop={myFn} props2={myFn2} />;
+        }`,
+        output: `import { useMemo, useCallback } from 'react';
+
+        const Component = () => {
+          const myFn = useCallback(() => [], []);
+          const myFn2 = useCallback(() => [], []);
+          return <Child prop={myFn} props2={myFn2} />;
+        }`,
+        errors: [{ messageId: "function-usecallback-props" }, { messageId: "function-usecallback-props" }],
+      },
     ],
   });
 });

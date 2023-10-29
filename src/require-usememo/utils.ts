@@ -46,17 +46,21 @@ function addReactImports(context: Rule.RuleContext, kind: 'useMemo' | 'useCallba
     } as TSESTree.ImportSpecifier;
 
     if (reactImportData.importDeclaration) {
-      reactImportData.importDeclaration.specifiers.push(specifier);
-      return fixer.insertTextAfter(reactImportData.importDeclaration.specifiers[reactImportData.importDeclaration.specifiers.length - 2], `, ${kind}`);
+      // Do not add specifier if exists.
+      const specifiers = reactImportData.importDeclaration.specifiers;
+      if (!specifiers.find(x => x.local.name === kind)) {
+        specifiers.push(specifier);
+        return fixer.insertTextAfter(specifiers[specifiers.length - 2], `, ${kind}`);
+      }
     }
   }
 
   // If React is not imported, create a new ImportDeclaration for it.
   if (!reactImportData.reactImported && !reactImportData.importDeclaration) {
     reactImportData.importDeclaration = {
-        type: 'ImportDeclaration',
-        specifiers: [specifier],
-        source: {type: 'Literal', value: 'react'}
+      type: 'ImportDeclaration',
+      specifiers: [specifier],
+      source: { type: 'Literal', value: 'react' }
     } as TSESTree.ImportDeclaration;
     reactImportData.reactImported = true;
     reactImportData[`${kind}Imported`] = true;
@@ -68,7 +72,6 @@ function addReactImports(context: Rule.RuleContext, kind: 'useMemo' | 'useCallba
   }
   return;
 }
-
 
 export function getIsHook(node: TSESTree.Node | TSESTree.Identifier) {
   if (node.type === "Identifier") {
