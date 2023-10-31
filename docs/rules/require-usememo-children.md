@@ -20,40 +20,32 @@ This rule applies to any type of component (functional or class-based) as long a
 ## Rule Details
 This rule will enforce that all complex children are wrapped in `useMemo()`.
 
-## Incorrect Code Examples
+## Incorrect
+```JavaScript
+function Component() {
 
-Here are examples of incorrect code:
-
-```js
-// Not using useMemo for complex children
-function ComponentA(props) {
-  const list = getComplexData(); // Assume this returns an array
-  return <OtherComponent data={list} />
+  <View>
+    <>
+    <OtherComponent />
+    </>
+  </View>
 }
-
-export default ComponentA;
 ```
+   
+## Correct
+```JavaScript
+function Component() {
 
-## Correct Code Examples
-
-Here is an example of correct code pattern:
-
-```js
-// Using useMemo for complex children
-function ComponentB(props) {
-  const list = getComplexData(); // Assume this returns an array
-  
-  const memoizedList = React.useMemo(() => list, [list]);
-
-  return <OtherComponent data={memoizedList} />
+  const children = useMemo(() => (<OtherComponent />), []);
+  <View>
+    {children}
+  </View>
 }
-
-export default ComponentB;
 ```
 
 ## Options 
 
-No options available for this rule.
+- `{strict: true}`: Fails even in cases where it is difficult to determine if the value in question is a primitive (string or number) or a complex value (object, array, etc.).
 
 ## When Not To Use It
 
