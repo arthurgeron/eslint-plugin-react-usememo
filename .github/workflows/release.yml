@@ -139,12 +139,13 @@ jobs:
           path: node_modules
           key: ${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}
 
-      - name: Publish Version
-        run: yarn publish:public
+      - name: Publish Release
+        uses: LumaKernel/npm-release-pack-action@v1.0.1
+        id: release
         env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
-
-      - name: Tag release
-        uses: Klemensas/action-autotag@stable
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         with:
-          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_command: npm publish --access public
+          generate_release_notes: true
+          
