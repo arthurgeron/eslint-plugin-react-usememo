@@ -4,9 +4,9 @@ import type * as ESTree from "estree";
 import { MessagesRequireUseMemo } from '../constants';
 import type { ESNode, ExpressionData, ReactImportInformation } from "./types";
 import { MemoStatusToReport } from "src/types";
-import { messageIdToHookDict } from "./constants";
+import { messageIdToHookDict, nameGeneratorUUID } from "./constants";
 import { getVariableInScope } from "src/common";
-
+import { v5 as uuidV5 } from 'uuid';
 
 export function shouldIgnoreNode(node: ESNode, ignoredNames: Record<string,boolean | undefined> ) {
   return !!ignoredNames[(node as TSESTree.Node as TSESTree.Identifier)?.name]
@@ -116,15 +116,18 @@ function fixFunction(node: TSESTree.FunctionDeclaration | TSESTree.FunctionExpre
   return fixedCode;
 }
 
-function getSafeVariableName(context: Rule.RuleContext, name: string) {
+function getSafeVariableName(context: Rule.RuleContext, name:string, attempts = 0): string {
   const tempVarPlaceholder = 'renameMe';
+  
   if (!getVariableInScope(context, name)) {
     return name;
   }
-  if (!getVariableInScope(context, `_${name}`)) {
-    return `_${name}`;
+  if (attempts >= 5) {
+    const nameExtensionIfExists = getVariableInScope(context, tempVarPlaceholder) ? uuidV5(name, nameGeneratorUUID).split('-')[0] : '';
+    return `${tempVarPlaceholder}${nameExtensionIfExists ? `_${nameExtensionIfExists}` : ''}`;
   }
-  return tempVarPlaceholder;
+  return getSafeVariableName(context, `_${name}`, ++attempts);
+  
 }
 
 // Eslint Auto-fix logic, functional components/hooks only

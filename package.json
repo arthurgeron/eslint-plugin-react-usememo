@@ -17,6 +17,7 @@
     "@rollup/plugin-typescript": "8.3.3",
     "@types/eslint": "8.4.5",
     "@types/jest": "28.1.5",
+    "@types/uuid": "9.0.6",
     "@typescript-eslint/parser": "5.30.6",
     "@typescript-eslint/types": "5.30.6",
     "eslint": "8.19.0",
@@ -37,5 +38,8 @@
   },
   "files": [
     "dist"
-  ]
+  ],
+  "dependencies": {
+    "uuid": "9.0.1"
+  }
 }
