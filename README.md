@@ -8,37 +8,114 @@ The objective is to ensure that your application's component tree and/or expensi
 _**Note:**_ Use of memoization everywhere is not advised, as everything comes with a cost. Overusing memoization might slow down your application instead of speeding it up.
 
 ## Guidelines for Memoization 
+> For more details, please refer to React's [documentation](https://react.dev/reference/react/useMemo) on hooks, re-rendering and memoization.
+### There are two primary rules for situations where dynamic objects should be memoed:
 
-Here are two primary rules for situations where dynamic objects should be memoed:
+1. Variables or expressions that return non-primitive objects or functions passed as props to other components.  
 
-1. Variables or expressions that return non-primitive objects or functions passed as props to other components.
-2. Variables or expressions that return non-primitive objects returned from custom hooks.
+    ***Incorrect***
+    ```js
+    function Component({incomingData}) {
+      const complexData = {
+        ...incomingData,
+        checked: true
+      }; // generated each render, breaks hooks shallow comparison
 
-It is not recommended to use memoization in the following cases:
+      return <SomeComponent data={complexData} />
+    }
+    ```
+    ***Correct***
+    ```js
+    function Component({incomingData}) {
+      const complexData = useMemo(() => ({
+        ...incomingData,
+        checked: true
+      }), [incomingData]); // generated only when incomingData changes
+
+      return <SomeComponent data={complexData} />
+    }
+    ```
+
+2. Variables or expressions that return non-primitive objects returned from custom hooks.   
+
+    ***Incorrect***
+    ```js
+    function useMyData({incomingData}) {
+      const parsedData = parseData(incomingData); // generated each render
+
+      return parsedData; // Will result in loops passed as a dependency in other hooks(e.g. useMemo, useCallback, useEffect).
+    }
+    ```
+    ***Correct***
+    ```js
+    function useMyData({incomingData}) {
+      const parsedData = parseData(incomingData); // generated only when incomingData changes
+
+      return parsedData; // Won't generate loops if used as a dependency in hooks.
+    }
+    ```
+
+### It is not recommended to use memoization in the following cases:
 
 - When the resulting value (expression or variable) is primitive (string, number, boolean).
-- If you're passing props to a native component of the framework (e.g. Div, Touchable, etc), except in some instances in react-native (e.g. FlatList).
+
+  ***Incorrect***
+  ```js
+  function Component() {
+    const width = useMemo(() => someValue * 10, []); // results in integer, wouldn't break hooks' shallow comparison; Memoizing this would only reduce performance
+
+    return <SomeComponent width={width} />
+  }
+  ```
+  ***Correct***
+  ```js
+  function Component() {
+    const width = someValue * 10;
+
+    return <SomeComponent width={width} />
+  }
+  ```
+
+- If you're passing props to a native component of the framework (e.g. Div, Touchable, etc), except in some instances in react-native (e.g. FlatList).   
+
+  ***Incorrect***
+  ```js
+  function Component() {
+    const onClick = useCallback(() => {}, []);
+
+    return <div onClick={onClick} />
+  }
+  ```
+  ***Correct***
+  ```js
+  function Component() {
+    const onClick = () => {};
+
+    return <div onClick={onClick} />
+  }
+  ```
+
 - Values that can be a global/context outside the react Context.
+  ***Incorrect***
+  ```js
+  function Component() {
+    const breakpoints = [100];
 
-Example for better understanding:
+    return <Modal breakpoints={breakpoints}>
+  }
+  ```
 
-***Incorrect***
-```js
-function Component() {
+  ***Correct***
+  ```js
   const breakpoints = [100];
 
-  return <Modal breakpoints={breakpoints}>
-}
-```
+  function Component() {
+    return <Modal breakpoints={breakpoints}>
+  }
+  ```
 
-***Correct***
-```js
-const breakpoints = [100];
-function Component() {
-  return <Modal breakpoints={breakpoints}>
-}
-```
-> For more details, please refer to React's [documentation](https://react.dev/reference/react/useMemo) on hooks, re-rendering and memoization.
+
+
 
 ## Installation
 
