@@ -294,6 +294,19 @@ describe('Rule - Require-usememo', () =>  {
       {
         code: `
         const Component = () => {
+          return <Child prop={<SomeComponent />} />;
+        }`,
+        errors: [{ messageId: "jsx-usememo-props" }],
+        output: `import { useMemo } from 'react';
+
+        const Component = () => {
+          const prop = useMemo(() => (<SomeComponent />), []);
+          return <Child prop={prop} />;
+        }`,
+      },
+      {
+        code: `
+        const Component = () => {
           const myObject = {};
           return <Child prop={myObject} />;
         }`,
@@ -514,7 +527,7 @@ describe('Rule - Require-usememo', () =>  {
       output: `import { useMemo } from 'react';
 
         function Component() {
-          const component = useMemo(() => <OtherChild />, []);
+          const component = useMemo(() => (<OtherChild />), []);
           return <Child component={component} />;
         }`
       },

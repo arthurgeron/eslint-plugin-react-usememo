@@ -128,11 +128,12 @@ function getSafeVariableName(context: Rule.RuleContext, name: string) {
 }
 
 // Eslint Auto-fix logic, functional components/hooks only
-export function fixBasedOnMessageId(node: Rule.Node, messageId: keyof typeof MessagesRequireUseMemo, fixer: Rule.RuleFixer, context: Rule.RuleContext, reactImportData: ReactImportInformation) {
+export function fixBasedOnMessageId(node: Rule.Node | TSESTree.JSXElement, messageId: keyof typeof MessagesRequireUseMemo, fixer: Rule.RuleFixer, context: Rule.RuleContext, reactImportData: ReactImportInformation) {
   const sourceCode = context.getSourceCode();
   let hook = messageIdToHookDict[messageId] || 'useMemo';
   const isObjExpression = node.type === 'ObjectExpression';
-  const parentIsVariableDeclarator = node.parent.type === 'VariableDeclarator';
+  const isJSXElement = node.type === 'JSXElement';
+  const parentIsVariableDeclarator = (node as Rule.Node).parent.type === 'VariableDeclarator';
   const isArrowFunctionExpression = node.type === 'ArrowFunctionExpression';
   const isFunctionExpression = node.type === 'FunctionExpression';
   const isCorrectableFunctionExpression = isFunctionExpression || (isArrowFunctionExpression && parentIsVariableDeclarator);
@@ -142,8 +143,9 @@ export function fixBasedOnMessageId(node: Rule.Node, messageId: keyof typeof Mes
   switch(messageId) {
     case 'function-usecallback-props':
     case 'object-usememo-props':
+    case 'jsx-usememo-props':
     case 'usememo-const': {
-      let variableDeclaration = node.type === 'VariableDeclaration' ? node : findParentType(node, 'VariableDeclaration') as TSESTree.VariableDeclaration;
+      let variableDeclaration = node.type === 'VariableDeclaration' ? node : findParentType(node as Rule.Node, 'VariableDeclaration') as TSESTree.VariableDeclaration;
 
       // Check if it is a hook being stored in let/var, change to const if so
       if (variableDeclaration && variableDeclaration.kind !== 'const') {
@@ -157,17 +159,17 @@ export function fixBasedOnMessageId(node: Rule.Node, messageId: keyof typeof Mes
         }
       }
       // If it's an dynamic object - Add useMemo/Callback
-      if ((isObjExpression || isCorrectableFunctionExpression) ) {
+      if ((isObjExpression || isJSXElement || isCorrectableFunctionExpression) ) {
 
         const importStatementFixes = addReactImports(context, isCorrectableFunctionExpression ? 'useCallback' : 'useMemo', reactImportData, fixer);
         importStatementFixes && fixes.push(importStatementFixes);
-        const fixed = isCorrectableFunctionExpression ? fixFunction(node as TSESTree.FunctionExpression, context) : `useMemo(() => (${sourceCode.getText(node)}), [])`;
+        const fixed = isCorrectableFunctionExpression ? fixFunction(node as TSESTree.FunctionExpression, context) : `useMemo(() => (${sourceCode.getText(node as Rule.Node)}), [])`;
         const parent = node.parent as unknown as TSESTree.JSXExpressionContainer;
         // Means we have a object expression declared directly in jsx
         if (parent.type === 'JSXExpressionContainer') {
           const parentPropName = (parent?.parent as TSESTree.JSXAttribute)?.name?.name.toString();
           const newVarName = getSafeVariableName(context, parentPropName);
-          const returnStatement = findParentType(node, 'ReturnStatement') as TSESTree.ReturnStatement;
+          const returnStatement = findParentType(node as Rule.Node, 'ReturnStatement') as TSESTree.ReturnStatement;
     
           if (returnStatement) {
             const indentationLevel = sourceCode.lines[returnStatement.loc.start.line - 1].search(/\S/);
@@ -175,10 +177,10 @@ export function fixBasedOnMessageId(node: Rule.Node, messageId: keyof typeof Mes
             // Creates a declaration for the variable and inserts it before the return statement
             fixes.push(fixer.insertTextBeforeRange(returnStatement.range,`const ${newVarName} = ${fixed};\n${indentation}`));
             // Replaces the old inline object expression with the variable name
-            fixes.push(fixer.replaceText(node, newVarName));
+            fixes.push(fixer.replaceText(node as Rule.Node, newVarName));
           }
         } else {
-          fixes.push(fixer.replaceText(node, fixed));
+          fixes.push(fixer.replaceText(node as Rule.Node, fixed));
         }
   
       }
@@ -194,7 +196,7 @@ export function fixBasedOnMessageId(node: Rule.Node, messageId: keyof typeof Mes
   } 
   
   // Simpler cases bellow, all of them are just adding useMemo/Callback
-  let fixed = `${hook}(() => ${isObjExpression ? "(" : ''}${sourceCode.getText(node as unknown as ESTree.Node)}${isObjExpression ? ")" : ''}, [])`;
+  let fixed = `${hook}(() => ${isObjExpression || isJSXElement ? "(" : ''}${sourceCode.getText(node as unknown as ESTree.Node)}${isObjExpression ? ")" : ''}, [])`;
   const importStatementFixes = addReactImports(context, hook, reactImportData, fixer);
   importStatementFixes && fixes.push(importStatementFixes);
 
@@ -208,7 +210,7 @@ export function fixBasedOnMessageId(node: Rule.Node, messageId: keyof typeof Mes
   if ('computed' in node && (node as any)?.computed?.type === 'ArrowFunctionExpression') {
     fixes.push(fixer.replaceText((node as any).computed, fixed) as Rule.Fix);
   } else {
-    fixes.push(fixer.replaceText(node, fixed) as Rule.Fix);
+    fixes.push(fixer.replaceText(node as Rule.Node, fixed) as Rule.Fix);
   }
   return fixes;
 }
