@@ -8,13 +8,13 @@ import { messageIdToHookDict, nameGeneratorUUID } from "./constants";
 import { getVariableInScope } from "src/common";
 import { v5 as uuidV5 } from 'uuid';
 
-export function shouldIgnoreNode(node: ESNode, ignoredNames: Record<string,boolean | undefined> ) {
+export function shouldIgnoreNode(node: ESNode, ignoredNames: Record<string, boolean | undefined>) {
   return !!ignoredNames[(node as TSESTree.Node as TSESTree.Identifier)?.name]
-          || !!ignoredNames[(node.callee as TSESTree.Identifier).name]
-          || !!ignoredNames[((node?.callee as TSESTree.MemberExpression)?.property as TSESTree.Identifier)?.name]
+    || !!ignoredNames[(node.callee as TSESTree.Identifier).name]
+    || !!ignoredNames[((node?.callee as TSESTree.MemberExpression)?.property as TSESTree.Identifier)?.name]
 }
 
-export function checkForErrors<T,Y extends Rule.NodeParentExtension | TSESTree.MethodDefinitionComputedName>(data: ExpressionData, statusData: MemoStatusToReport, context: Rule.RuleContext, node: Y | undefined, report: (node: Y, error: keyof typeof MessagesRequireUseMemo) => void) {
+export function checkForErrors<T, Y extends Rule.NodeParentExtension | TSESTree.MethodDefinitionComputedName>(data: ExpressionData, statusData: MemoStatusToReport, context: Rule.RuleContext, node: Y | undefined, report: (node: Y, error: keyof typeof MessagesRequireUseMemo) => void) {
   if (!statusData) {
     return;
   }
@@ -57,18 +57,23 @@ function addReactImports(context: Rule.RuleContext, kind: 'useMemo' | 'useCallba
 
   // If React is not imported, create a new ImportDeclaration for it.
   if (!reactImportData.reactImported && !reactImportData.importDeclaration) {
+    const importBracket = `import { `;
     reactImportData.importDeclaration = {
       type: 'ImportDeclaration',
-      specifiers: [specifier],
+      specifiers: [
+        {
+          ...specifier,
+          range: [
+            importBracket.length,
+            importBracket.length + kind.length]
+        }],
       source: { type: 'Literal', value: 'react' }
     } as TSESTree.ImportDeclaration;
     reactImportData.reactImported = true;
     reactImportData[`${kind}Imported`] = true;
 
-    const leadSpace = sourceCode.ast.body[0]?.leadingComments?.[0]?.value || "";
-
     // Add an extra new line before const component and use indentSpace for proper spacing.
-    return fixer.insertTextBeforeRange([0, 0], `import { ${kind} } from 'react';\n`);
+    return fixer.insertTextBeforeRange([0, 0], `${importBracket}${kind} } from 'react';\n`);
   }
   return;
 }
@@ -105,7 +110,7 @@ export function findParentType(node: Rule.Node, type: string): Rule.Node | undef
 
 function fixFunction(node: TSESTree.FunctionDeclaration | TSESTree.FunctionExpression | TSESTree.ArrowFunctionExpression, context: Rule.RuleContext, shouldSetName?: boolean) {
   const sourceCode = context.getSourceCode();
-  const {body , params = []} = node;
+  const { body, params = [] } = node;
   const funcBody = sourceCode.getText(body as ESTree.Node);
   const funcParams = (params as Array<ESTree.Node>).map(node => sourceCode.getText(node));
   let fixedCode = `useCallback((${funcParams.join(', ')}) => ${funcBody}, [])${shouldSetName ? ';' : ''}`
@@ -116,9 +121,9 @@ function fixFunction(node: TSESTree.FunctionDeclaration | TSESTree.FunctionExpre
   return fixedCode;
 }
 
-function getSafeVariableName(context: Rule.RuleContext, name:string, attempts = 0): string {
+function getSafeVariableName(context: Rule.RuleContext, name: string, attempts = 0): string {
   const tempVarPlaceholder = 'renameMe';
-  
+
   if (!getVariableInScope(context, name)) {
     return name;
   }
@@ -127,7 +132,7 @@ function getSafeVariableName(context: Rule.RuleContext, name:string, attempts = 
     return `${tempVarPlaceholder}${nameExtensionIfExists ? `_${nameExtensionIfExists}` : ''}`;
   }
   return getSafeVariableName(context, `_${name}`, ++attempts);
-  
+
 }
 
 // Eslint Auto-fix logic, functional components/hooks only
@@ -143,7 +148,7 @@ export function fixBasedOnMessageId(node: Rule.Node | TSESTree.JSXElement, messa
   const fixes: Array<Rule.Fix> = [];
 
   // Determine what type of behavior to follow according to the error message
-  switch(messageId) {
+  switch (messageId) {
     case 'function-usecallback-props':
     case 'object-usememo-props':
     case 'jsx-usememo-props':
@@ -157,12 +162,12 @@ export function fixBasedOnMessageId(node: Rule.Node | TSESTree.JSXElement, messa
         if (letKeywordToken?.value !== 'const') {
           fixes.push(fixer.replaceTextRange(
             letKeywordToken.range,
-              'const'
-            ));
+            'const'
+          ));
         }
       }
       // If it's an dynamic object - Add useMemo/Callback
-      if ((isObjExpression || isJSXElement || isCorrectableFunctionExpression) ) {
+      if ((isObjExpression || isJSXElement || isCorrectableFunctionExpression)) {
 
         const importStatementFixes = addReactImports(context, isCorrectableFunctionExpression ? 'useCallback' : 'useMemo', reactImportData, fixer);
         importStatementFixes && fixes.push(importStatementFixes);
@@ -173,21 +178,21 @@ export function fixBasedOnMessageId(node: Rule.Node | TSESTree.JSXElement, messa
           const parentPropName = (parent?.parent as TSESTree.JSXAttribute)?.name?.name.toString();
           const newVarName = getSafeVariableName(context, parentPropName);
           const returnStatement = findParentType(node as Rule.Node, 'ReturnStatement') as TSESTree.ReturnStatement;
-    
+
           if (returnStatement) {
             const indentationLevel = sourceCode.lines[returnStatement.loc.start.line - 1].search(/\S/);
             const indentation = ' '.repeat(indentationLevel);
             // Creates a declaration for the variable and inserts it before the return statement
-            fixes.push(fixer.insertTextBeforeRange(returnStatement.range,`const ${newVarName} = ${fixed};\n${indentation}`));
+            fixes.push(fixer.insertTextBeforeRange(returnStatement.range, `const ${newVarName} = ${fixed};\n${indentation}`));
             // Replaces the old inline object expression with the variable name
             fixes.push(fixer.replaceText(node as Rule.Node, newVarName));
           }
         } else {
           fixes.push(fixer.replaceText(node as Rule.Node, fixed));
         }
-  
+
       }
-      
+
       return !fixes.length ? null : fixes;
     }
     // Unknown cases are usually complex issues or false positives, so we ignore them
@@ -196,8 +201,8 @@ export function fixBasedOnMessageId(node: Rule.Node | TSESTree.JSXElement, messa
     case 'unknown-usememo-deps':
     case 'unknown-usememo-props':
       return null;
-  } 
-  
+  }
+
   // Simpler cases bellow, all of them are just adding useMemo/Callback
   let fixed = `${hook}(() => ${isObjExpression || isJSXElement ? "(" : ''}${sourceCode.getText(node as unknown as ESTree.Node)}${isObjExpression ? ")" : ''}, [])`;
   const importStatementFixes = addReactImports(context, hook, reactImportData, fixer);
@@ -205,7 +210,7 @@ export function fixBasedOnMessageId(node: Rule.Node | TSESTree.JSXElement, messa
 
   if (node.type === 'FunctionDeclaration') {
     const _node = node as TSESTree.FunctionDeclaration;
-    if(_node && _node?.id?.type === "Identifier") {
+    if (_node && _node?.id?.type === "Identifier") {
       fixed = fixFunction(_node, context, true);
     }
   }
