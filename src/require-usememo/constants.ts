@@ -1,6 +1,7 @@
 import { MemoStatus } from 'src/types';
 import type { ExpressionData, MemoErrorHookDictionary } from './types';
 
+export const defaultImportRangeStart = `import { `;
 export const nameGeneratorUUID = 'b32a4d70-4f64-11eb-89d5-33e6ce8a6c99';
 export const jsxEmptyExpressionClassData: ExpressionData = {
   [MemoStatus.UnmemoizedObject.toString()]: "object-class-memo-props",
