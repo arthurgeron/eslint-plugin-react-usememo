@@ -45,7 +45,7 @@ function addReactImports(context: Rule.RuleContext, kind: 'useMemo' | 'useCallba
       local: { type: 'Identifier', name: kind }
     } as TSESTree.ImportSpecifier;
 
-    if (reactImportData.importDeclaration) {
+    if (reactImportData.importDeclaration?.specifiers) {
       // Do not add specifier if exists.
       const specifiers = reactImportData.importDeclaration.specifiers;
       if (!specifiers.find(x => x.local.name === kind)) {
