@@ -583,6 +583,33 @@ describe('Rule - Require-usememo', () =>  {
           return <Child component={component} />;
         }`
       },
+      {
+        code: `
+        import {} from 'react';
+        function useTesty() {
+          const user = {};
+          const x = {
+            renderCell: (user) => <RoleIndicator roles={['role']} user={user} />,
+          };
+          return useData(x);
+        }`,
+        output:  `
+        import { useMemo } from 'react';
+        function useTesty() {
+          const user = {};
+          const x = {
+            renderCell: (user) => <RoleIndicator roles={useMemo(() => ['role'], [])} user={user} />,
+          };
+          return useData(x);
+        }`,
+        errors: [{ messageId: "object-usememo-deps" }, { messageId: "array-usememo-props" }, { messageId: "unknown-usememo-hook" }],
+        options: [{ strict: true,
+          checkHookReturnObject: true,
+          fix: { addImports: true },
+          checkHookCalls: true,
+          ignoredHookCallsNames: {},
+         }],
+      },
     ],
   });
 });
