@@ -610,6 +610,39 @@ describe('Rule - Require-usememo', () =>  {
           ignoredHookCallsNames: {},
          }],
       },
+      {
+        code: `import type { ComponentProps } from 'react';
+        import React from 'react';
+
+        const Component = () => {
+          const myArray = [];
+          return <Child prop={myArray} />;
+        }`,
+        output: `import type { ComponentProps } from 'react';
+        import React, { useMemo } from 'react';
+
+        const Component = () => {
+          const myArray = useMemo(() => [], []);
+          return <Child prop={myArray} />;
+        }`,
+        errors: [{ messageId: "array-usememo-props" }],
+      },
+      {
+        code: `import type { ComponentProps } from 'react';
+
+        const Component = () => {
+          const myArray = [];
+          return <Child prop={myArray} />;
+        }`,
+        output: `import { useMemo } from 'react';
+import type { ComponentProps } from 'react';
+
+        const Component = () => {
+          const myArray = useMemo(() => [], []);
+          return <Child prop={myArray} />;
+        }`,
+        errors: [{ messageId: "array-usememo-props" }],
+      },
     ],
   });
 });
