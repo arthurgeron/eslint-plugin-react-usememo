@@ -4,7 +4,7 @@ import type * as ESTree from "estree";
 import { MessagesRequireUseMemo } from '../constants';
 import type { ESNode, ExpressionData, ReactImportInformation } from "./types";
 import { MemoStatusToReport } from "src/types";
-import { messageIdToHookDict, nameGeneratorUUID } from "./constants";
+import { messageIdToHookDict, nameGeneratorUUID, defaultImportRangeStart } from "./constants";
 import { getVariableInScope } from "src/common";
 import { v5 as uuidV5 } from 'uuid';
 
@@ -57,15 +57,14 @@ function addReactImports(context: Rule.RuleContext, kind: 'useMemo' | 'useCallba
 
   // If React is not imported, create a new ImportDeclaration for it.
   if (!reactImportData.reactImported && !reactImportData.importDeclaration) {
-    const importBracket = `import { `;
     reactImportData.importDeclaration = {
       type: 'ImportDeclaration',
       specifiers: [
         {
           ...specifier,
           range: [
-            importBracket.length,
-            importBracket.length + kind.length]
+            defaultImportRangeStart.length,
+            defaultImportRangeStart.length + kind.length]
         }],
       source: { type: 'Literal', value: 'react' }
     } as TSESTree.ImportDeclaration;
@@ -73,7 +72,7 @@ function addReactImports(context: Rule.RuleContext, kind: 'useMemo' | 'useCallba
     reactImportData[`${kind}Imported`] = true;
 
     // Add an extra new line before const component and use indentSpace for proper spacing.
-    return fixer.insertTextBeforeRange([0, 0], `${importBracket}${kind} } from 'react';\n`);
+    return fixer.insertTextBeforeRange([0, 0], `${defaultImportRangeStart}${kind} } from 'react';\n`);
   }
   return;
 }
