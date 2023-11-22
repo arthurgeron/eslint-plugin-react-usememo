@@ -29,7 +29,6 @@ export function checkForErrors<T, Y extends Rule.NodeParentExtension | TSESTree.
 }
 
 function addReactImports(context: Rule.RuleContext, kind: 'useMemo' | 'useCallback', reactImportData: ReactImportInformation, fixer: Rule.RuleFixer) {
-  const sourceCode = context.getSourceCode();
   const importsDisabled = context.options?.[0]?.fix?.addImports === false;
   let specifier: TSESTree.ImportClause | undefined = undefined;
 
