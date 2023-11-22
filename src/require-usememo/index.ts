@@ -79,7 +79,7 @@ const rule: Rule.RuleModule  = {
       },
 
       ImportDeclaration(node) {
-        if (node.source.value === 'react') {
+        if (node.source.value === 'react' && (node as TSESTree.ImportDeclaration).importKind !== 'type') {
           importData.reactImported = true;
           importData.importDeclaration = node as TSESTree.ImportDeclaration;
           const specifiers = node.specifiers;
