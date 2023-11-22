@@ -45,11 +45,21 @@ function addReactImports(context: Rule.RuleContext, kind: 'useMemo' | 'useCallba
     } as TSESTree.ImportSpecifier;
 
     if (reactImportData.importDeclaration?.specifiers) {
-      // Do not add specifier if exists.
       const specifiers = reactImportData.importDeclaration.specifiers;
+      const isEmpty = !specifiers.length;
+      if (isEmpty) {
+        specifiers.push(specifier);
+        const importDeclaration = reactImportData.importDeclaration as TSESTree.ImportDeclaration;
+        const fixRange = importDeclaration.range[0] + defaultImportRangeStart.length - 1;
+
+        return fixer.insertTextAfterRange([fixRange, fixRange], ` ${kind} `);
+      }
+      // Do not add specifier if exists.
       if (!specifiers.find(x => x.local.name === kind)) {
         specifiers.push(specifier);
-        return fixer.insertTextAfter(specifiers[specifiers.length - 2], `, ${kind}`);
+        const insertPosition = specifiers[specifiers.length - 2];
+
+        return fixer.insertTextAfter(insertPosition, `, ${kind}`);
       }
     }
   }
