@@ -1,8 +1,8 @@
 import { Rule } from "eslint";
 import { TSESTree } from "@typescript-eslint/types";
-import { ESNode } from "src/require-usememo/types";
 import { MemoStatus, MemoStatusToReport } from "src/types";
 import { getIsHook } from "src/require-usememo/utils";
+import getVariableInScope from "src/utils/getVariableInScope";
 
 const componentNameRegex = /^[^a-z]/;
 
@@ -41,9 +41,7 @@ function isCallExpression(
   return false;
 }
 
-export function getVariableInScope(context: Rule.RuleContext, name: string) {
-  return context.getScope().variables.find((variable) => variable.name === name);
-}
+
 
 function getIdentifierMemoStatus(
   context: Rule.RuleContext,
