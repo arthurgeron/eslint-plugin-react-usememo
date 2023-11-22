@@ -1,4 +1,4 @@
-import { Rule, SourceCode } from "eslint";
+import { Rule } from "eslint";
 import { TSESTree } from "@typescript-eslint/types";
 import type * as ESTree from "estree";
 import { MessagesRequireUseMemo } from '../constants';
