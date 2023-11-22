@@ -46,16 +46,25 @@ function addReactImports(context: Rule.RuleContext, kind: 'useMemo' | 'useCallba
 
     if (reactImportData.importDeclaration?.specifiers) {
       const specifiers = reactImportData.importDeclaration.specifiers;
+      const hasDefaultExport = specifiers?.[0]?.type === 'ImportDefaultSpecifier';
       const isEmpty = !specifiers.length;
-      if (isEmpty) {
+      // Default export counts as a specifier too
+      const shouldCreateSpecifiersBracket = specifiers.length <= 1 && hasDefaultExport;
+      const hasCurrentSpecifier = !isEmpty && !shouldCreateSpecifiersBracket && specifiers.find(x => x.local.name === kind);
+      
+      if (shouldCreateSpecifiersBracket) {
         specifiers.push(specifier);
+        return fixer.insertTextAfter(specifiers[0], `, { ${kind} }`);
+      }
+
+      if (isEmpty) {
         const importDeclaration = reactImportData.importDeclaration as TSESTree.ImportDeclaration;
         const fixRange = importDeclaration.range[0] + defaultImportRangeStart.length - 1;
 
         return fixer.insertTextAfterRange([fixRange, fixRange], ` ${kind} `);
       }
-      // Do not add specifier if exists.
-      if (!specifiers.find(x => x.local.name === kind)) {
+
+      if (!hasCurrentSpecifier) {
         specifiers.push(specifier);
         const insertPosition = specifiers[specifiers.length - 2];
 
