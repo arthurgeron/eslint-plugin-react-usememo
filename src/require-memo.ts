@@ -1,5 +1,5 @@
 import { Rule } from "eslint";
-import { isComponentName } from './common';
+import { isComponentName } from './utils';
 import * as ESTree from "estree";
 import * as path from "path";
 
