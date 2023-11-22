@@ -4,7 +4,7 @@ import { TSESTree } from "@typescript-eslint/types";
 import {
   getExpressionMemoStatus,
   isComplexComponent,
-} from "./common";
+} from "./utils";
 import { MessagesRequireUseMemoChildren } from "./constants";
 import { MemoStatus } from "src/types";
 

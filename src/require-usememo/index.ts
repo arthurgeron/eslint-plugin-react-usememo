@@ -5,7 +5,7 @@ import { MessagesRequireUseMemo  } from '../constants';
 import {
   getExpressionMemoStatus,
   isComplexComponent,
-} from "../common";
+} from "../utils";
 import type {ExpressionTypes, NodeType, ESNode, ExpressionData, ReactImportInformation, ImportNode} from './types';
 import { checkForErrors, fixBasedOnMessageId, getIsHook, shouldIgnoreNode } from './utils';
 

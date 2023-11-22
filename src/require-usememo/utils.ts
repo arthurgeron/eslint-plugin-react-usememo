@@ -5,7 +5,7 @@ import { MessagesRequireUseMemo } from '../constants';
 import type { ESNode, ExpressionData, ReactImportInformation } from "./types";
 import { MemoStatusToReport } from "src/types";
 import { messageIdToHookDict, nameGeneratorUUID, defaultImportRangeStart } from "./constants";
-import { getVariableInScope } from "src/common";
+import { getVariableInScope } from "src/utils";
 import { v5 as uuidV5 } from 'uuid';
 
 export function shouldIgnoreNode(node: ESNode, ignoredNames: Record<string, boolean | undefined>) {
