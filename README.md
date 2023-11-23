@@ -49,7 +49,7 @@ _**Note:**_ Use of memoization everywhere is not advised, as everything comes wi
     ***Correct***
     ```js
     function useMyData({incomingData}) {
-      const parsedData = parseData(incomingData); // generated only when incomingData changes
+      const parsedData = useMemo(() => parseData(incomingData), [incomingData]); // generated only when incomingData changes
 
       return parsedData; // Won't generate loops if used as a dependency in hooks.
     }
