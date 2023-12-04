@@ -24,17 +24,22 @@ The rule takes an optional object:
 
 Here is what each option means:
 
-- `{strict: true}` Fails even in cases where it is difficult to determine if the value in question is a primitive (string or number) or a complex value (object, array, etc.).
+- `{strict: true}`: Fails even in cases where it is difficult to determine if the value in question is a primitive (string or number) or a complex value (object, array, etc.).
 
-- `{checkHookReturnObject: true}` Requires Object Expressions passed in return statements. 
+- `{checkHookReturnObject: true}`: Requires Object Expressions passed in return statements. 
 
-- `{checkHookCalls: true}` Requires objects/data passed to a non-native/Custom hook to be memoized.
+- `{checkHookCalls: true}`: Requires objects/data passed to a non-native/Custom hook to be memoized.
 
-- `{ignoredHookCallsNames: Record<string, boolean>}` Enable you to add specific hooks names here, individually disabling or enabling them to be checked when used.   
+- `{ignoredHookCallsNames: Record<string, boolean>}`: This allows you to add specific hook names, thereby individually disabling or enabling them to be checked when used. Matching names with a `true` value will cause the checks to be ignored.   
+You can use strict 1:1 comparisons (e.g., `"useCustomHook"`) or employ Minimatch's Glob Pattern (e.g., `"useState*"`).
+  > For more information on Minimatch, refer to its README [here](https://www.npmjs.com/package/minimatch). You may also find this [cheatsheet](https://github.com/motemen/minimatch-cheat-sheet) useful.
 
-- `fix` Contains rules that only apply during eslint's fix routine.
+  > If no strict names match and you have entries with Glob syntax, the algorithm will stop at the first match.
 
-  - `addImports` Creates imports for useMemo and useCallback when one or both are added by this rule. Will increment to a existing import declaration or create a new one. Setting this to false disables it, defaults to true.
+
+- `fix`: Contains rules that only apply during eslint's fix routine.
+
+  - `addImports`: Creates imports for useMemo and useCallback when one or both are added by this rule. Will increment to a existing import declaration or create a new one. Setting this to false disables it, defaults to true.
 ## Autofix Examples (Function Components & Hooks only)
 
 To illustrate the autofix feature in action, below are some examples with input code and the corresponding fixed output:

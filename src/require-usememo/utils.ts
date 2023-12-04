@@ -4,14 +4,36 @@ import type * as ESTree from "estree";
 import { MessagesRequireUseMemo } from '../constants';
 import type { ESNode, ExpressionData, ReactImportInformation } from "./types";
 import { MemoStatusToReport } from "src/types";
-import { messageIdToHookDict, nameGeneratorUUID, defaultImportRangeStart } from "./constants";
+import { messageIdToHookDict, nameGeneratorUUID, defaultImportRangeStart, defaultReactHookNames } from "./constants";
 import getVariableInScope from "src/utils/getVariableInScope";
 import { v5 as uuidV5 } from 'uuid';
+import {Minimatch} from 'minimatch'
 
 export function shouldIgnoreNode(node: ESNode, ignoredNames: Record<string, boolean | undefined>) {
-  return !!ignoredNames[(node as TSESTree.Node as TSESTree.Identifier)?.name]
-    || !!ignoredNames[(node.callee as TSESTree.Identifier).name]
-    || !!ignoredNames[((node?.callee as TSESTree.MemberExpression)?.property as TSESTree.Identifier)?.name]
+  const nodeName = (node as TSESTree.Node as TSESTree.Identifier)?.name;
+  const nodeCalleeName = (node?.callee as TSESTree.Identifier)?.name;
+  const nodeCalleePropertyName = ((node?.callee as TSESTree.MemberExpression)?.property as TSESTree.Identifier)?.name;
+  const nameToCheck = nodeName || nodeCalleeName || nodeCalleePropertyName;
+
+  const matchedValue = {...ignoredNames, ...defaultReactHookNames}[nameToCheck];
+
+    if (matchedValue != undefined) {
+      return matchedValue;
+    }
+
+    const shouldIgnore = Object.keys(ignoredNames).find(key => {
+      const value = ignoredNames[key];
+      const miniMatch = new Minimatch(key);
+      if (miniMatch.hasMagic()) {
+         const isMatch = (nameToCheck && miniMatch.match(nameToCheck));
+          if (isMatch) {
+            return !!value;
+          }
+      }
+      return false;
+    });
+
+    return shouldIgnore != undefined ? shouldIgnore : false;
 }
 
 export function checkForErrors<T, Y extends Rule.NodeParentExtension | TSESTree.MethodDefinitionComputedName>(data: ExpressionData, statusData: MemoStatusToReport, context: Rule.RuleContext, node: Y | undefined, report: (node: Y, error: keyof typeof MessagesRequireUseMemo) => void) {
