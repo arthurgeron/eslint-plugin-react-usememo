@@ -110,7 +110,7 @@ const rule: Rule.RuleModule  = {
 
       CallExpression: (node) => {
         const { callee } = node;
-        const ignoredNames = { ...defaultReactHookNames, ...(context.options?.[0]?.ignoredHookCallsNames ?? {}) };
+        const ignoredNames = context.options?.[0]?.ignoredHookCallsNames ?? {};
         if (
           context.options?.[0]?.checkHookCalls === false
           || !getIsHook(callee as ESNode)
