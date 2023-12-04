@@ -263,6 +263,14 @@ describe('Rule - Require-usememo', () =>  {
           options: [{ checkHookReturnObject: true, ignoredHookCallsNames: {"useData": true} }],
         },
       {
+          code: `
+          function useTesty() {
+            const x = {};
+            return useDataManager(x);
+          }`,
+          options: [{ checkHookReturnObject: true, ignoredHookCallsNames: {"!useDate*": true} }],
+        },
+      {
         code: `const Component = () => {
           const myArray1 = [];
           const myArray2 = useMemo(() => myArray1, [myArray1]);
