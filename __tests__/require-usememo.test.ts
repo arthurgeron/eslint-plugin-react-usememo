@@ -560,7 +560,6 @@ describe('Rule - Require-usememo', () =>  {
         }`,
         errors: [{ messageId: "object-usememo-props" }],
       },
-      
       {
         code: `
         const useTest = () => {
@@ -650,6 +649,62 @@ import type { ComponentProps } from 'react';
           return <Child prop={myArray} />;
         }`,
         errors: [{ messageId: "array-usememo-props" }],
+      },
+      {
+        code: `
+        function useTest() {
+          return { x: 1 };
+        }`,
+        output: `import { useMemo } from 'react';
+
+        function useTest() {
+          return useMemo(() => ({ x: 1 }), []);
+        }`,
+        errors: [{ messageId: "object-usememo-hook" }],
+        options: [{ checkHookReturnObject: true, strict: true }],
+      },
+      {
+        code: `
+        function useTest() {
+          return (data) => {};
+        }`,
+        output: `import { useCallback } from 'react';
+
+        function useTest() {
+          return useCallback((data) => {}, []);
+        }`,
+        errors: [{ messageId: "function-usecallback-hook" }],
+        options: [{ checkHookReturnObject: true, strict: true }],
+      },
+      {
+        code: `
+        function useTest() {
+          const y = { x: 1 };
+          return y;
+        }`,
+        output: `import { useMemo } from 'react';
+
+        function useTest() {
+          const y = useMemo(() => ({ x: 1 }), []);
+          return y;
+        }`,
+        errors: [{ messageId: "object-usememo-hook" }],
+        options: [{ checkHookReturnObject: true, strict: true }],
+      },
+      {
+        code: `
+        function useTest() {
+          const y = (data) => {};
+          return y;
+        }`,
+        output: `import { useCallback } from 'react';
+
+        function useTest() {
+          const y = useCallback((data) => {}, []);
+          return y;
+        }`,
+        errors: [{ messageId: "function-usecallback-hook" }],
+        options: [{ checkHookReturnObject: true, strict: true }],
       },
     ],
   });
