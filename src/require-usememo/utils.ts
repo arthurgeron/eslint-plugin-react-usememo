@@ -175,11 +175,11 @@ function getSafeVariableName(context: Rule.RuleContext, name: string, attempts =
 }
 
 // Eslint Auto-fix logic, functional components/hooks only
-export function fixBasedOnMessageId(node: Rule.Node | TSESTree.JSXElement, messageId: keyof typeof MessagesRequireUseMemo, fixer: Rule.RuleFixer, context: Rule.RuleContext, reactImportData: ReactImportInformation) {
+export function fixBasedOnMessageId(node: Rule.Node, messageId: keyof typeof MessagesRequireUseMemo, fixer: Rule.RuleFixer, context: Rule.RuleContext, reactImportData: ReactImportInformation) {
   const sourceCode = context.getSourceCode();
   let hook = messageIdToHookDict[messageId] || 'useMemo';
   const isObjExpression = node.type === 'ObjectExpression';
-  const isJSXElement = node.type === 'JSXElement';
+  const isJSXElement = (node as unknown as TSESTree.JSXElement).type === 'JSXElement';
   const parentIsVariableDeclarator = (node as Rule.Node).parent.type === 'VariableDeclarator';
   const isArrowFunctionExpression = node.type === 'ArrowFunctionExpression';
   const isFunctionExpression = node.type === 'FunctionExpression';
@@ -188,6 +188,26 @@ export function fixBasedOnMessageId(node: Rule.Node | TSESTree.JSXElement, messa
 
   // Determine what type of behavior to follow according to the error message
   switch (messageId) {
+    case 'function-usecallback-hook':
+      if (node.type === 'FunctionExpression' || node.type === 'ArrowFunctionExpression') {
+        const importStatementFixes = addReactImports(context, 'useCallback', reactImportData, fixer);
+        const fixed = fixFunction(node as TSESTree.FunctionExpression, context);
+        importStatementFixes && fixes.push(importStatementFixes);
+        fixes.push(fixer.replaceText(node as Rule.Node, fixed));
+        return fixes;
+      }
+      break;
+    case 'object-usememo-hook':
+      const _returnNode = node as TSESTree.ReturnStatement;
+      // An undefined node.argument means returned value is not an expression, but most probably a variable which should not be handled here, which falls under default, simpler fix logic.
+      if(_returnNode.argument) {
+        const importStatementFixes = addReactImports(context, 'useMemo', reactImportData, fixer);
+        const fixed = `useMemo(() => (${sourceCode.getText(_returnNode.argument as Rule.Node)}), [])`;
+        importStatementFixes && fixes.push(importStatementFixes);
+        fixes.push(fixer.replaceText(_returnNode.argument as Rule.Node, fixed));
+        return fixes;
+      } 
+      break;
     case 'function-usecallback-props':
     case 'object-usememo-props':
     case 'jsx-usememo-props':
