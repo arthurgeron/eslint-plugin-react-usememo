@@ -74,6 +74,13 @@ describe('Rule - Require-usememo', () =>  {
           return y;
         }`,
       },
+      {// Not a hook, short name crash test
+        code: `
+        function hi() {
+          const y = (data) => {};
+          return y;
+        }`,
+      },
       {
         code: `const Component = () => {
         const myArray = useMemo(() => new Object(), []);
