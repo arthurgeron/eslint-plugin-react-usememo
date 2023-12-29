@@ -17,7 +17,8 @@ export default React.memo(MyComponent);
 This rule applies to function components, not class-based components as they should extend `React.PureComponent` or must implement `shouldComponentUpdate` lifecycle method for similar optimization.
 
 ## Rule Details
-This rule will enforce that all function components are wrapped in `React.memo()`. 
+This rule will enforce that all function components are wrapped in `React.memo()`.  
+Only exported components are validated.
 
 ## Incorrect Code Examples
 

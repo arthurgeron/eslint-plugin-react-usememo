@@ -1,5 +1,6 @@
-import { Rule } from "eslint";
+import { Rule, Scope } from "eslint";
 import { TSESTree } from "@typescript-eslint/types";
+import * as ESTree from "estree";
 import { MemoStatus, MemoStatusToReport } from "src/types";
 import { getIsHook } from "src/require-usememo/utils";
 import getVariableInScope from "src/utils/getVariableInScope";
@@ -95,4 +96,16 @@ export function getExpressionMemoStatus(
     default:
       return {node: expression, status: MemoStatus.UnmemoizedOther};
   }
+}
+
+export function findVariable(scope: Scope.Scope, node: ESTree.Identifier): Scope.Variable | undefined {
+  if (scope.variables.some(variable => variable.name === node.name)) {
+    return scope.variables.find(variable => variable.name === node.name);
+  }
+
+  if (scope.upper) {
+    return findVariable(scope.upper, node);
+  }
+
+  return undefined;
 }

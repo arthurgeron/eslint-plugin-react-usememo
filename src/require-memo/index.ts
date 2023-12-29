@@ -1,69 +1,7 @@
 import { Rule } from "eslint";
-import { isComponentName } from './utils';
-import * as ESTree from "estree";
-import * as path from "path";
-
-function isMemoCallExpression(node: Rule.Node) {
-  if (node.type !== "CallExpression") return false;
-  if (node.callee?.type === "MemberExpression") {
-    const {
-      callee: { object, property },
-    } = node;
-    if (
-      object.type === "Identifier" &&
-      property.type === "Identifier" &&
-      object.name === "React" &&
-      property.name === "memo"
-    ) {
-      return true;
-    }
-  } else if (node.callee?.type === "Identifier" && node.callee?.name === "memo") {
-    return true;
-  }
-
-  return false;
-}
-
-function checkFunction(
-  context: Rule.RuleContext,
-  node: (
-    | ESTree.ArrowFunctionExpression
-    | ESTree.FunctionExpression
-    | ESTree.FunctionDeclaration
-  ) &
-    Rule.NodeParentExtension
-) {
-  let currentNode = node.parent;
-  while (currentNode.type === "CallExpression") {
-    if (isMemoCallExpression(currentNode)) {
-      return;
-    }
-
-    currentNode = currentNode.parent;
-  }
-
-  if (currentNode.type === "VariableDeclarator") {
-    const { id } = currentNode;
-    if (id.type === "Identifier") {
-      if (isComponentName(id?.name)) {
-        context.report({ node, messageId: "memo-required" });
-      }
-    }
-  } else if (
-    node.type === "FunctionDeclaration" &&
-    currentNode.type === "Program"
-  ) {
-    if (node.id !== null &&isComponentName(node.id?.name)) {
-      context.report({ node, messageId: "memo-required" });
-    } else {
-      if (context.getFilename() === "<input>") return;
-      const filename = path.basename(context.getFilename());
-      if (isComponentName(filename)) {
-        context.report({ node, messageId: "memo-required" });
-      }
-    }
-  }
-}
+import { findVariable } from '../utils';
+import { checkVariableDeclaration, checkFunction} from './utils';
+import type { MemoFunctionDeclaration, MemoFunctionExpression } from './types';
 
 const rule: Rule.RuleModule = {
   meta: {
@@ -72,16 +10,35 @@ const rule: Rule.RuleModule = {
     },
   },
   create: (context) => ({
-    ArrowFunctionExpression(node) {
-      checkFunction(context, node);
+     ExportNamedDeclaration(node) {
+      // Check if the node has declaration and is a function
+      if (node.declaration && node.declaration.type === 'VariableDeclaration') {
+        const declarations = node.declaration.declarations;
+        declarations.forEach(declaration => checkVariableDeclaration(context, declaration));
+        return
+      }
+      if ((node?.declaration?.type === 'FunctionDeclaration')) {
+        checkFunction(context, node.declaration as MemoFunctionDeclaration);
+      }
     },
-    FunctionDeclaration(node) {
-      checkFunction(context, node);
-    },
-    FunctionExpression(node) {
-      checkFunction(context, node);
-    },
+    ExportDefaultDeclaration(node) {
+      // It was exported in one place but declared elsewhere
+      if (node.declaration.type === 'Identifier') {
+        const variable = findVariable(context.getScope(), node.declaration);
+        
+        if (variable && variable.defs[0] && variable.defs[0].type === 'Variable') {
+          const variableNode = variable.defs[0].node;
+
+          checkVariableDeclaration(context, variableNode);
+        }
+        return
+      } 
+      if (node.declaration.type === 'FunctionDeclaration') {
+        checkFunction(context, node.declaration as MemoFunctionDeclaration);
+      }
+    }
   }),
 };
 
-export default rule;
+  export default rule;
+
