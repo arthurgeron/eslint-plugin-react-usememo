@@ -706,6 +706,25 @@ import type { ComponentProps } from 'react';
         errors: [{ messageId: "function-usecallback-hook" }],
         options: [{ checkHookReturnObject: true, strict: true }],
       },
+      {
+        code: `import { anything } from 'react'
+
+        const useMyHook = () => {
+          useAnotherHook(
+            () => {},
+            []
+          );
+        };`,
+        output: `import { anything, useCallback } from 'react'
+
+        const useMyHook = () => {
+          useAnotherHook(
+            useCallback(() => {}, []),
+            []
+          );
+        };`,
+        errors: [{ messageId: "function-usecallback-deps" }, { messageId: "array-usememo-deps" }],
+      },
     ],
   });
 });
