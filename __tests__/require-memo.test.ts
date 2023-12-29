@@ -12,67 +12,109 @@ describe('Rule - Require-memo', () =>  {
   ruleTester.run("memo", rule as Rule.RuleModule , {
     valid: [
       {
-        code: `const Component = React.memo(() => <div />)`,
+        code: `export const Component = React.memo(() => <div />)`,
       },
       {
-        code: `const Component = memo(() => <div />)`,
+        code: `export const Component = memo(() => <div />)`,
       },
       {
-        code: `const Component = memo(useRef(() => <div />))`,
+        code: `const Component = memo(() => <div />); export default Component;`,
       },
       {
+        code: `export default memo(function Component() { return <div />; })`,
+      },
+      {
+        code: `export const Component = memo(useRef(() => <div />))`,
+      },
+      { // We do not validate hanging/dynamic declarations, only exports
         code: `const Component = React.useRef(React.memo(() => <div />))`,
       },
-      {
-        code: `const myFunction = () => <div />`,
+      { // Is not a component
+        code: `export const myFunction = () => <div />`,
+      },
+      {// Is not a component
+        code: `export const myFunction = wrapper(() => <div />)`,
       },
       {
-        code: `const myFunction = wrapper(() => <div />)`,
+        code: `export const Component = React.memo(function() { return <div />; });`,
       },
       {
-        code: `const Component = React.memo(function() { return <div />; });`,
+        code: `export const Component = memo(function Component() { return <div />; });`,
       },
-      {
-        code: `const Component = memo(function Component() { return <div />; });`,
+      { // Is not a component
+        code: `export const myFunction = () => <div />`,
       },
-      {
-        code: `const myFunction = () => <div />`,
+      { // Is not a component
+        code: `export const myFunction = wrapper(() => <div />)`,
       },
-      {
-        code: `const myFunction = wrapper(() => <div />)`,
-      },
-      {
+      { // Is not a component
         code: `function myFunction() { return <div />; }`,
       },
-      {
+      { // Is not a component
         code: `const myFunction = wrapper(function() { return <div /> })`,
       },
-      {
+      { // Is not a component
         filename: "dir/myFunction.js",
         parserOptions: { ecmaVersion: 6, sourceType: "module" },
         code: `export default function() { return <div /> };`,
       },
+      {
+        code: `const Component = () => <div />; export default memo(Component);`,
+        options: [{ 
+          strict: false,
+          checkHookReturnObject: true,
+          fix: { addImports: false },     
+          checkHookCalls: false,
+         }],
+      },
+      {
+        code: `const Component = memo(() => <div />); export default Component;`,
+        options: [{ 
+          strict: false,
+          checkHookReturnObject: true,
+          fix: { addImports: false },     
+          checkHookCalls: false,
+         }],
+      },
     ],
     invalid: [
       {
-        code: `const Component = () => <div />`,
+        code: `export const Component = () => <div />`,
         errors: [{ messageId: "memo-required" }],
       },
       {
-        code: `const Component = useRef(() => <div />)`,
+        code: `const Component = () => <div />; export default Component;`,
         errors: [{ messageId: "memo-required" }],
       },
       {
-        code: `const Component = function Component() { return <div />; }`,
+        code: `export const Component = useRef(() => <div />)`,
         errors: [{ messageId: "memo-required" }],
       },
       {
-        code: `const Component = useRef(function() { return <div />; })`,
+        code: `export const Component = function Component() { return <div />; }`,
         errors: [{ messageId: "memo-required" }],
       },
       {
-        code: `function Component() { return <div />; }`,
+        code: `export const Component = useRef(function() { return <div />; })`,
         errors: [{ messageId: "memo-required" }],
+      },
+      {
+        code: `export function Component() { return <div />; }`,
+        errors: [{ messageId: "memo-required" }],
+      },
+      {
+        code: `export default function Component() { return <div />; }`,
+        errors: [{ messageId: "memo-required" }],
+      },
+      {
+        code: `const Component = () => <div />; export default Component;`,
+        options: [{ 
+          strict: false,
+          checkHookReturnObject: true,
+          fix: { addImports: false },     
+          checkHookCalls: false,
+         }],
+         errors: [{ messageId: "memo-required" }],
       },
     ],
   });
