@@ -266,7 +266,7 @@ export function fixBasedOnMessageId(node: Rule.Node, messageId: keyof typeof Mes
   }
 
   // Simpler cases bellow, all of them are just adding useMemo/Callback
-  let fixed = `${hook}(() => ${isObjExpression || isJSXElement ? "(" : ''}${sourceCode.getText(node as unknown as ESTree.Node)}${isObjExpression ? ")" : ''}, [])`;
+  let fixed = `${hook}(${isArrowFunctionExpression ? '' : '() => ' }${isObjExpression || isJSXElement ? "(" : ''}${sourceCode.getText(node as unknown as ESTree.Node)}${isObjExpression ? ")" : ''}, [])`;
   const importStatementFixes = addReactImports(context, hook, reactImportData, fixer);
   importStatementFixes && fixes.push(importStatementFixes);
 
