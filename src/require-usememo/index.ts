@@ -81,8 +81,8 @@ const rule: Rule.RuleModule  = {
       ImportDeclaration(node) {
         if (node.source.value === 'react' && (node as TSESTree.ImportDeclaration).importKind !== 'type') {
           importData.reactImported = true;
-          importData.importDeclaration = node as TSESTree.ImportDeclaration;
-          const specifiers = node.specifiers;
+          const specifiers = Array.isArray(node.specifiers) ? node.specifiers.slice() : node.specifiers;
+          importData.importDeclaration = Object.assign({}, node, {specifiers}) as TSESTree.ImportDeclaration;
           importData.useMemoImported = specifiers.some(specifier => specifier.local.name === 'useMemo');
           importData.useCallbackImported = specifiers.some(specifier => specifier.local.name === 'useCallback');
         }
