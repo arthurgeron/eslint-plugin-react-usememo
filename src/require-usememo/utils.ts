@@ -88,9 +88,12 @@ function addReactImports(context: Rule.RuleContext, kind: 'useMemo' | 'useCallba
 
       if (!hasCurrentSpecifier) {
         specifiers.push(specifier);
-        const insertPosition = specifiers[specifiers.length - 2];
+        const insertPosition = specifiers.find(specifier => !!specifier.range);
 
-        return fixer.insertTextAfter(insertPosition, `, ${kind}`);
+        if (insertPosition) {
+          return fixer.insertTextAfter(insertPosition, `, ${kind}`);
+        }
+        return;
       }
     }
   }
