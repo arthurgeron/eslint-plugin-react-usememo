@@ -123,7 +123,7 @@ function addReactImports(context: Rule.RuleContext, kind: 'useMemo' | 'useCallba
 export function getIsHook(node: TSESTree.Node | TSESTree.Identifier) {
   if (node.type === "Identifier") {
     const { name } = node;
-    return name[0] === 'u' && name[1] === 's' && name[2] === 'e';
+    return name[0] === 'u' && name[1] === 's' && name[2] === 'e' && name[3] === name[3].toUpperCase();
   } else if (
     node.type === "MemberExpression" &&
     !node.computed &&
