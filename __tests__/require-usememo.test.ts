@@ -67,6 +67,13 @@ describe('Rule - Require-usememo', () =>  {
         return <Child prop={x} />;
       }`,
       },
+      {// Not a hook, would fail the rule but shouldn't be checked
+        code: `
+        function userTest() {
+          const y = (data) => {};
+          return y;
+        }`,
+      },
       {
         code: `const Component = () => {
         const myArray = useMemo(() => new Object(), []);
