@@ -32,6 +32,8 @@ Here is what each option means:
 
 - `{ignoredHookCallsNames: Record<string, boolean>}`: This allows you to add specific hook names, thereby individually disabling or enabling them to be checked when used. Matching names with a `true` value will cause the checks to be ignored.   
 You can use strict 1:1 comparisons (e.g., `"useCustomHook"`) or employ Minimatch's Glob Pattern (e.g., `"useState*"`).
+  > React's [use](https://react.dev/reference/react/use) hook is ignored here by default, while triggering async calls dinamically losely within a component's render cycle is bad, it does not affect the overall "performance" or behavior of the hook itself. This can be disabled with a `"use": true` entry.   
+  
   > For more information on Minimatch, refer to its README [here](https://www.npmjs.com/package/minimatch). You may also find this [cheatsheet](https://github.com/motemen/minimatch-cheat-sheet) useful.
 
   > If no strict names match and you have entries with Glob syntax, the algorithm will stop at the first match.
