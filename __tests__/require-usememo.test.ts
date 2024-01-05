@@ -274,7 +274,14 @@ describe('Rule - Require-usememo', () =>  {
             const x = {};
             return useData(x);
           }`,
-          options: [{ checkHookReturnObject: true, ignoredHookCallsNames: {"useData": true} }],
+          options: [{ checkHookReturnObject: true, checkHookCalls: false }],
+        },
+      {
+          code: `
+          function useTesty() {
+            const x = {};
+            return use(x);
+          }`,
         },
       {
           code: `
