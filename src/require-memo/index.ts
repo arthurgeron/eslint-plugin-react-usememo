@@ -1,7 +1,8 @@
 import { Rule } from "eslint";
-import { findVariable } from '../utils';
+import { findVariable, isComponentName } from '../utils';
 import { checkVariableDeclaration, checkFunction} from './utils';
 import type { MemoFunctionDeclaration, MemoFunctionExpression } from './types';
+import { TSESTree } from "@typescript-eslint/types";
 
 const rule: Rule.RuleModule = {
   meta: {
@@ -14,10 +15,14 @@ const rule: Rule.RuleModule = {
       // Check if the node has declaration and is a function
       if (node.declaration && node.declaration.type === 'VariableDeclaration') {
         const declarations = node.declaration.declarations;
-        declarations.forEach(declaration => checkVariableDeclaration(context, declaration));
+        declarations.forEach(declaration => { 
+          if (isComponentName((declaration?.id as TSESTree.Identifier)?.name)) {
+            checkVariableDeclaration(context, declaration)
+          }
+        });
         return
       }
-      if ((node?.declaration?.type === 'FunctionDeclaration')) {
+      if (node?.declaration?.type === 'FunctionDeclaration') {
         checkFunction(context, node.declaration as MemoFunctionDeclaration);
       }
     },
@@ -29,7 +34,9 @@ const rule: Rule.RuleModule = {
         if (variable && variable.defs[0] && variable.defs[0].type === 'Variable') {
           const variableNode = variable.defs[0].node;
 
-          checkVariableDeclaration(context, variableNode);
+          if (isComponentName((variableNode.id as TSESTree.Identifier).name)) {
+            checkVariableDeclaration(context, variableNode);
+          }
         }
         return
       } 
