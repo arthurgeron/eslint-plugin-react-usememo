@@ -14,9 +14,9 @@ export function isComplexComponent(node: TSESTree.JSXOpeningElement | TSESTree.J
 }
 
 
-export function isComponentName(name: string) {
+export function isComponentName(name: string | undefined) {
   // All components are PascalCased, thoroughly checking for this only adds processing time and opens more chance to bugs/issues.
-  return name?.[0] === name?.[0]?.toUpperCase()
+  return typeof name === 'string' && !!name && name?.[0] === name?.[0]?.toUpperCase()
 }
 
 function isCallExpression(
