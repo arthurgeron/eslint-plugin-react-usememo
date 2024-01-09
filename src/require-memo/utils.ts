@@ -84,5 +84,4 @@ export function checkVariableDeclaration(context: Rule.RuleContext, declaration:
       return;
     }
   } 
-  checkFunction(context, declaration.id as MemoVariableIdentifier);
 }

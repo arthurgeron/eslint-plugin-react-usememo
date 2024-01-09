@@ -12,6 +12,24 @@ describe('Rule - Require-memo', () =>  {
   ruleTester.run("memo", rule as Rule.RuleModule , {
     valid: [
       {
+        code: `export const TestMap = {};`,
+      },
+      {
+        code: `const TestMap = {}; export default TestMap;`,
+      },
+      {
+        code: `export default {};`,
+      },
+      {
+        code: `export const SomethingWeird = func()();`,
+      },
+      {
+        code: `export const Component = useRef(() => <div />)`,
+      },
+      { // By the way, never do this
+        code: `export const Component = useRef(function() { return <div />; })`,
+      },
+      {
         code: `export const variable = func()();`,
       },
       {
@@ -82,10 +100,6 @@ describe('Rule - Require-memo', () =>  {
     ],
     invalid: [
       {
-        code: `export const SomethingWeird = func()();`,
-        errors: [{ messageId: "memo-required" }],
-      },
-      {
         code: `export const Component = () => <div />`,
         errors: [{ messageId: "memo-required" }],
       },
@@ -94,15 +108,7 @@ describe('Rule - Require-memo', () =>  {
         errors: [{ messageId: "memo-required" }],
       },
       {
-        code: `export const Component = useRef(() => <div />)`,
-        errors: [{ messageId: "memo-required" }],
-      },
-      {
         code: `export const Component = function Component() { return <div />; }`,
-        errors: [{ messageId: "memo-required" }],
-      },
-      {
-        code: `export const Component = useRef(function() { return <div />; })`,
         errors: [{ messageId: "memo-required" }],
       },
       {
