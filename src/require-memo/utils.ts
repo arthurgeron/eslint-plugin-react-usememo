@@ -75,7 +75,7 @@ export function checkVariableDeclaration(context: Rule.RuleContext, declaration:
   if (declaration.init) {
     if (declaration.init.type === 'CallExpression') {
       const declarationProperties = ((declaration.init.callee as MemoVariableIdentifier).name ? declaration.init.callee : (declaration.init.callee as ESTree.MemberExpression).property) as MemoVariableIdentifier;
-      if (declarationProperties.name === 'memo') {
+      if (declarationProperties?.name === 'memo') {
         checkFunction(context, (declaration.init.arguments[0]) as MemoVariableIdentifier);
         return;
       }
