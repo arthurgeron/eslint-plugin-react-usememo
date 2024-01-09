@@ -12,6 +12,9 @@ describe('Rule - Require-memo', () =>  {
   ruleTester.run("memo", rule as Rule.RuleModule , {
     valid: [
       {
+        code: `export const variable = func()();`,
+      },
+      {
         code: `export const Component = React.memo(() => <div />)`,
       },
       {
@@ -78,6 +81,10 @@ describe('Rule - Require-memo', () =>  {
       },
     ],
     invalid: [
+      {
+        code: `export const SomethingWeird = func()();`,
+        errors: [{ messageId: "memo-required" }],
+      },
       {
         code: `export const Component = () => <div />`,
         errors: [{ messageId: "memo-required" }],
