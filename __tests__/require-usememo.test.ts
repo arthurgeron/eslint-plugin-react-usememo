@@ -582,6 +582,20 @@ describe('Rule - Require-usememo', () =>  {
         errors: [{ messageId: "object-usememo-props" }],
       },
       {
+        code: `import { useMemo } from 'react';
+        function useTesty() {
+          const x = {};
+          return useDataManager(x);
+        }`,
+        options: [{ checkHookReturnObject: true, ignoredHookCallsNames: {"useData*": false} }],
+        output: `import { useMemo } from 'react';
+        function useTesty() {
+          const x = useMemo(() => ({}), []);
+          return useDataManager(x);
+        }`,
+        errors: [{ messageId: "object-usememo-deps" }],
+      },
+      {
         code: `
         const useTest = () => {
           const x: boolean | undefined = false;
