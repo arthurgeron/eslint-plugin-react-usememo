@@ -81,21 +81,9 @@ describe('Rule - Require-memo', () =>  {
       },
       {
         code: `const Component = () => <div />; export default memo(Component);`,
-        options: [{ 
-          strict: false,
-          checkHookReturnObject: true,
-          fix: { addImports: false },     
-          checkHookCalls: false,
-         }],
       },
       {
         code: `const Component = memo(() => <div />); export default Component;`,
-        options: [{ 
-          strict: false,
-          checkHookReturnObject: true,
-          fix: { addImports: false },     
-          checkHookCalls: false,
-         }],
       },
     ],
     invalid: [
@@ -121,12 +109,6 @@ describe('Rule - Require-memo', () =>  {
       },
       {
         code: `const Component = () => <div />; export default Component;`,
-        options: [{ 
-          strict: false,
-          checkHookReturnObject: true,
-          fix: { addImports: false },     
-          checkHookCalls: false,
-         }],
          errors: [{ messageId: "memo-required" }],
       },
     ],
