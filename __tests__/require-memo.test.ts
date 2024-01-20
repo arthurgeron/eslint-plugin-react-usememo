@@ -85,11 +85,29 @@ describe('Rule - Require-memo', () =>  {
       {
         code: `const Component = memo(() => <div />); export default Component;`,
       },
+      {
+        code: `export const Component = () => <div />`,
+        options: [{
+          ignoredComponents: {
+            'Component': true,
+          }
+        }]
+      },
     ],
     invalid: [
       {
         code: `export const Component = () => <div />`,
         errors: [{ messageId: "memo-required" }],
+      },
+      {
+        code: `export const ListItem = () => <div />`,
+        errors: [{ messageId: "memo-required" }],
+        options: [{
+          ignoredComponents: {
+            '*Item': false,
+            '*': true
+          }
+        }]
       },
       {
         code: `const Component = () => <div />; export default Component;`,

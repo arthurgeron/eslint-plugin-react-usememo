@@ -1,10 +1,11 @@
 
 import type { Rule } from "eslint";
 import type * as ESTree from "estree";
-import { isComponentName } from '../utils';
+import { isComponentName, shouldIgnoreNode } from '../utils';
 import * as path from "path";
 
 import type { MemoFunctionExpression, MemoVariableIdentifier} from './types';
+import { ESNode } from "src/types";
 
 function isMemoCallExpression(node: Rule.Node) {
   if (node.type !== "CallExpression") return false;
@@ -37,6 +38,7 @@ export function checkFunction(
   ) &
     Rule.NodeParentExtension
 ) {
+  const ignoredNames = context.options?.[0]?.ignoredComponents;
   let currentNode = node.type === 'FunctionDeclaration' ? node : node.parent;
   while (currentNode.type === "CallExpression") {
     if (isMemoCallExpression(currentNode)) {
@@ -49,7 +51,7 @@ export function checkFunction(
   if (currentNode.type === "VariableDeclarator" || currentNode.type === 'FunctionDeclaration') {
     const { id } = currentNode;
     if (id?.type === "Identifier") {
-      if (isComponentName(id?.name)) {
+      if (isComponentName(id?.name) && (!ignoredNames || !shouldIgnoreNode(id as unknown as ESNode, ignoredNames))) {
         context.report({ node, messageId: "memo-required" });
       }
     }
@@ -57,6 +59,9 @@ export function checkFunction(
     node.type === "FunctionDeclaration" &&
     currentNode.type === "Program"
   ) {
+    if(ignoredNames && !shouldIgnoreNode(node as unknown as ESNode, ignoredNames)) {
+      return;
+    }
     if (node.id !== null &&isComponentName(node.id?.name)) {
       context.report({ node, messageId: "memo-required" });
     } else {

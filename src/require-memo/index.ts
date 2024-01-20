@@ -9,6 +9,13 @@ const rule: Rule.RuleModule = {
     messages: {
       "memo-required": "Component definition not wrapped in React.memo()",
     },
+    schema: [
+      {
+        type: "object",
+        properties: { ignoredComponents: {type: "object"} },
+        additionalProperties: false,
+      },
+    ],
   },
   create: (context) => ({
      ExportNamedDeclaration(node) {
