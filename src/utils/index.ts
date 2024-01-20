@@ -131,17 +131,20 @@ export function shouldIgnoreNode(node: ESNode, ignoredNames: Record<string, bool
     }
 
     // Checking via patterns
-    const shouldIgnore = Object.keys(ignoredNames).find(key => {
+    let shouldIgnore;
+    
+    Object.keys(ignoredNames).find(key => {
       const value = ignoredNames[key];
       const miniMatch = new Minimatch(key);
       if (miniMatch.hasMagic()) {
          const isMatch = (nameToCheck && miniMatch.match(nameToCheck));
           if (isMatch) {
-            return !!value;
+            shouldIgnore = !!value;
+            return true;
           }
       }
       return false;
     });
 
-    return shouldIgnore != undefined ? shouldIgnore : false;
+    return !!shouldIgnore;
 }
