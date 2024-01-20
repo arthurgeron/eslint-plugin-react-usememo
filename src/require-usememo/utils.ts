@@ -2,46 +2,13 @@ import { Rule } from "eslint";
 import { TSESTree } from "@typescript-eslint/types";
 import type * as ESTree from "estree";
 import { MessagesRequireUseMemo } from '../constants';
-import type { ESNode, ExpressionData, ReactImportInformation } from "./types";
+import type {  ExpressionData, ReactImportInformation } from "./types";
 import { MemoStatusToReport } from "src/types";
-import { messageIdToHookDict, nameGeneratorUUID, defaultImportRangeStart, defaultReactHookNames } from "./constants";
+import { messageIdToHookDict, nameGeneratorUUID, defaultImportRangeStart } from "./constants";
 import getVariableInScope from "src/utils/getVariableInScope";
 import { v5 as uuidV5 } from 'uuid';
-import {Minimatch} from 'minimatch'
 
-export function shouldIgnoreNode(node: ESNode, ignoredNames: Record<string, boolean | undefined>) {
-  const nodeName = (node as TSESTree.Node as TSESTree.Identifier)?.name;
-  const nodeCalleeName = (node?.callee as TSESTree.Identifier)?.name;
-  const nodeCalleePropertyName = ((node?.callee as TSESTree.MemberExpression)?.property as TSESTree.Identifier)?.name;
-  const nameToCheck = nodeName || nodeCalleeName || nodeCalleePropertyName;
 
-  const matchedValue = {...ignoredNames, ...defaultReactHookNames}[nameToCheck];
-
-    // Checking for 1:1 matches
-    if (matchedValue != undefined) {
-      return matchedValue;
-    }
-
-    // This rule ignores React's "use" hook by default, more info in the rule's README
-    if (nameToCheck === 'use') {
-      return true;
-    }
-
-    // Checking via patterns
-    const shouldIgnore = Object.keys(ignoredNames).find(key => {
-      const value = ignoredNames[key];
-      const miniMatch = new Minimatch(key);
-      if (miniMatch.hasMagic()) {
-         const isMatch = (nameToCheck && miniMatch.match(nameToCheck));
-          if (isMatch) {
-            return !!value;
-          }
-      }
-      return false;
-    });
-
-    return shouldIgnore != undefined ? shouldIgnore : false;
-}
 
 export function checkForErrors<T, Y extends Rule.NodeParentExtension | TSESTree.MethodDefinitionComputedName>(data: ExpressionData, statusData: MemoStatusToReport, context: Rule.RuleContext, node: Y | undefined, report: (node: Y, error: keyof typeof MessagesRequireUseMemo) => void) {
   if (!statusData) {

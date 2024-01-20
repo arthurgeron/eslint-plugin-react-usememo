@@ -17,3 +17,5 @@ export enum MemoStatus {
   UnmemoizedOther,
   UnsafeLet
 }
+
+export type ESNode = TSESTree.CallExpression & Rule.NodeParentExtension
