@@ -1,9 +1,10 @@
 import { Rule, Scope } from "eslint";
 import { TSESTree } from "@typescript-eslint/types";
 import * as ESTree from "estree";
-import { MemoStatus, MemoStatusToReport } from "src/types";
+import { ESNode, MemoStatus, MemoStatusToReport } from "src/types";
 import { getIsHook } from "src/require-usememo/utils";
 import getVariableInScope from "src/utils/getVariableInScope";
+import {Minimatch} from 'minimatch'
 
 const componentNameRegex = /^[^a-z]/;
 
@@ -108,4 +109,39 @@ export function findVariable(scope: Scope.Scope, node: ESTree.Identifier): Scope
   }
 
   return undefined;
+}
+
+
+export function shouldIgnoreNode(node: ESNode, ignoredNames: Record<string, boolean | undefined>) {
+  const nodeName = (node as TSESTree.Node as TSESTree.Identifier)?.name;
+  const nodeCalleeName = (node?.callee as TSESTree.Identifier)?.name;
+  const nodeCalleePropertyName = ((node?.callee as TSESTree.MemberExpression)?.property as TSESTree.Identifier)?.name;
+  const nameToCheck = nodeName || nodeCalleeName || nodeCalleePropertyName;
+
+  const matchedValue = ignoredNames[nameToCheck];
+
+    // Checking for 1:1 matches
+    if (matchedValue != undefined) {
+      return matchedValue;
+    }
+
+    // This rule ignores React's "use" hook by default, more info in the rule's README
+    if (nameToCheck === 'use') {
+      return true;
+    }
+
+    // Checking via patterns
+    const shouldIgnore = Object.keys(ignoredNames).find(key => {
+      const value = ignoredNames[key];
+      const miniMatch = new Minimatch(key);
+      if (miniMatch.hasMagic()) {
+         const isMatch = (nameToCheck && miniMatch.match(nameToCheck));
+          if (isMatch) {
+            return !!value;
+          }
+      }
+      return false;
+    });
+
+    return shouldIgnore != undefined ? shouldIgnore : false;
 }

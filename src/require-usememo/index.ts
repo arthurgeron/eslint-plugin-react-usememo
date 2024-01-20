@@ -5,9 +5,11 @@ import { MessagesRequireUseMemo  } from '../constants';
 import {
   getExpressionMemoStatus,
   isComplexComponent,
+  shouldIgnoreNode,
 } from "../utils";
-import type {ExpressionTypes, NodeType, ESNode, ExpressionData, ReactImportInformation, ImportNode} from './types';
-import { checkForErrors, fixBasedOnMessageId, getIsHook, shouldIgnoreNode } from './utils';
+import type {ExpressionTypes, NodeType, ExpressionData, ReactImportInformation, ImportNode} from './types';
+import { checkForErrors, fixBasedOnMessageId, getIsHook } from './utils';
+import { ESNode } from "src/types";
 
 const rule: Rule.RuleModule  = {
   meta: {
@@ -118,7 +120,7 @@ const rule: Rule.RuleModule  = {
           return;
         }
 
-        if(!shouldIgnoreNode(node as ESNode, ignoredNames)) {
+        if(!shouldIgnoreNode(node as ESNode, {...defaultReactHookNames, ...ignoredNames})) {
           for (const argument of node.arguments) {
             if (argument.type !== 'SpreadElement') {
               checkForErrors(callExpressionData, getExpressionMemoStatus(context, (argument as TSESTree.Expression)), context, node, report);
