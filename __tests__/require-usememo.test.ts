@@ -686,6 +686,25 @@ import type { ComponentProps } from 'react';
         errors: [{ messageId: "array-usememo-props" }],
       },
       {
+        code: `import type { ComponentProps } from 'react';
+        import React, { useRef } from 'react';
+
+        const Component = () => {
+          const myRef = useRef();
+          const myArray = [];
+          return <Child ref={myRef} prop={myArray} />;
+        }`,
+        output: `import type { ComponentProps } from 'react';
+        import React, { useRef, useMemo } from 'react';
+
+        const Component = () => {
+          const myRef = useRef();
+          const myArray = useMemo(() => [], []);
+          return <Child ref={myRef} prop={myArray} />;
+        }`,
+        errors: [{ messageId: "array-usememo-props" }],
+      },
+      {
         code: `
         function useTest() {
           return { x: 1 };
