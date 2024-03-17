@@ -15,7 +15,8 @@ export enum MemoStatus {
   UnmemoizedFunctionCall,
   UnmemoizedJSX,
   UnmemoizedOther,
-  UnsafeLet
+  UnsafeLet,
+  ErrorInvalidContext = 'error-in-invalid-context'
 }
 
 export type ESNode = TSESTree.CallExpression & Rule.NodeParentExtension

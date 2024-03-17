@@ -9,7 +9,7 @@ import {
 } from "../utils";
 import type {ExpressionTypes, NodeType, ExpressionData, ReactImportInformation, ImportNode} from './types';
 import { checkForErrors, fixBasedOnMessageId, getIsHook } from './utils';
-import { ESNode } from "src/types";
+import { ESNode, MemoStatus } from "src/types";
 
 const rule: Rule.RuleModule  = {
   meta: {
@@ -40,14 +40,12 @@ const rule: Rule.RuleModule  = {
 
     function report<T extends Rule.NodeParentExtension | TSESTree.MethodDefinitionComputedName>(node: T, messageId: keyof typeof MessagesRequireUseMemo) {
         context.report( {node: node as Rule.Node, messageId , fix(fixer) {
-          if (isClass) {
-            return null;
-          }
-          return fixBasedOnMessageId(node as Rule.Node, messageId, fixer, context, importData);
+          const disableFixer = isClass || messageId === MemoStatus.ErrorInvalidContext;
+          return disableFixer ? null : fixBasedOnMessageId(node as Rule.Node, messageId, fixer, context, importData);
         }} );
     }
 
-    function process(node: NodeType, _expression?: ExpressionTypes, expressionData?: ExpressionData) {
+    function process(node: NodeType, _expression?: ExpressionTypes, expressionData?: ExpressionData, checkContext = false) {
 
       const expression = _expression ?? (node.value && Object.prototype.hasOwnProperty.call(node.value, 'expression') ? (node.value as unknown as TSESTree.JSXExpressionContainer).expression : node.value ) ;
       switch(expression?.type) {
@@ -58,7 +56,7 @@ const rule: Rule.RuleModule  = {
         case 'JSXEmptyExpression':
           return;
         default:
-          checkForErrors(expressionData || (isClass ? jsxEmptyExpressionClassData : jsxEmptyExpressionData), getExpressionMemoStatus(context, expression as TSESTree.Expression),context, node, report);
+          checkForErrors(expressionData || (isClass ? jsxEmptyExpressionClassData : jsxEmptyExpressionData), getExpressionMemoStatus(context, expression as TSESTree.Expression, checkContext),context, node, report);
           return;
       } 
     }
@@ -68,7 +66,7 @@ const rule: Rule.RuleModule  = {
       if (value === null) return null;
       if (parent && !isComplexComponent(parent as TSESTree.JSXIdentifier)) return null;
       if ((value.type as string) === "JSXExpressionContainer") {
-        process(node as TSESTree.MethodDefinitionComputedName);
+        process(node as TSESTree.MethodDefinitionComputedName, undefined, undefined, true);
       }
       return null;
     }

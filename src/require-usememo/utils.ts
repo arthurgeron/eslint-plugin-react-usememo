@@ -3,16 +3,35 @@ import { TSESTree } from "@typescript-eslint/types";
 import type * as ESTree from "estree";
 import { MessagesRequireUseMemo } from '../constants';
 import type {  ExpressionData, ReactImportInformation } from "./types";
-import { MemoStatusToReport } from "src/types";
+import { MemoStatus, MemoStatusToReport } from "src/types";
 import { messageIdToHookDict, nameGeneratorUUID, defaultImportRangeStart } from "./constants";
 import getVariableInScope from "src/utils/getVariableInScope";
 import { v5 as uuidV5 } from 'uuid';
+
+export function isImpossibleToFix(node: Rule.NodeParentExtension, context: Rule.RuleContext) {
+  let current: TSESTree.Node | undefined = node as TSESTree.Node;
+
+  while (current) {
+    if (current.type === 'CallExpression') {
+      const callee = current.callee;
+      const isInsideIteration = callee.type === 'MemberExpression' && callee.property.type === 'Identifier' && (callee.property.name in Array.prototype);
+      const isInsideOtherHook = callee.type === 'Identifier' && (callee.name === 'useMemo' || callee.name === 'useCallback');
+      return { result: isInsideIteration || isInsideOtherHook, node:  callee };
+    }
+    current = current.parent;
+  }
+
+  return { result: false };
+}
 
 
 
 export function checkForErrors<T, Y extends Rule.NodeParentExtension | TSESTree.MethodDefinitionComputedName>(data: ExpressionData, statusData: MemoStatusToReport, context: Rule.RuleContext, node: Y | undefined, report: (node: Y, error: keyof typeof MessagesRequireUseMemo) => void) {
   if (!statusData) {
     return;
+  }
+  if (statusData.status === MemoStatus.ErrorInvalidContext) {
+    report((statusData.node ?? node) as Y, MemoStatus.ErrorInvalidContext);
   }
   const errorName = data?.[statusData.status.toString()];
   if (errorName) {
@@ -236,6 +255,7 @@ export function fixBasedOnMessageId(node: Rule.Node, messageId: keyof typeof Mes
     case 'unknown-usememo-hook':
     case 'unknown-usememo-deps':
     case 'unknown-usememo-props':
+    case 'error-in-invalid-context':
       return null;
   }
 
