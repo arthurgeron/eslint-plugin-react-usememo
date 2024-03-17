@@ -1,4 +1,5 @@
 export const MessagesRequireUseMemo = {
+  "error-in-invalid-context": "An error was identified inside this expression, but it can't be fixed because it'd break the rule of hooks. JSX logic should be extracted into a separate component.",
   "object-usememo-props":
     "Object literal should be wrapped in useMemo() or be static when used as a prop",
   "object-class-memo-props":
@@ -47,7 +48,7 @@ export const MessagesRequireUseMemo = {
     "Unknown value may need to be wrapped in useMemo() when used as a hook dependency",
   "usememo-const":
     "useMemo/useCallback return value should be assigned to a `const` to prevent reassignment",
-};
+} as const;
 
 export const MessagesRequireUseMemoChildren = {
   "object-usememo-children":

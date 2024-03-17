@@ -2,7 +2,7 @@ import { Rule, Scope } from "eslint";
 import { TSESTree } from "@typescript-eslint/types";
 import * as ESTree from "estree";
 import { ESNode, MemoStatus, MemoStatusToReport } from "src/types";
-import { getIsHook } from "src/require-usememo/utils";
+import { getIsHook, isImpossibleToFix } from "src/require-usememo/utils";
 import getVariableInScope from "src/utils/getVariableInScope";
 import {Minimatch} from 'minimatch'
 
@@ -67,28 +67,40 @@ function getIdentifierMemoStatus(
   return getExpressionMemoStatus(context, node.init);
 }
 
-export function getExpressionMemoStatus(
+function getInvalidContextReport(
   context: Rule.RuleContext,
   expression: TSESTree.Expression
+) {
+  const impossibleFix =  isImpossibleToFix(expression as Rule.NodeParentExtension, context);
+  if (impossibleFix?.result) {
+    return {node: impossibleFix.node, status:  MemoStatus.ErrorInvalidContext};
+  }
+  return false;
+}
+
+export function getExpressionMemoStatus(
+  context: Rule.RuleContext,
+  expression: TSESTree.Expression,
+  checkContext = false,
 ): MemoStatusToReport {
   switch (expression?.type) {
     case undefined:
     case "ObjectExpression":
-      return {node: expression, status: MemoStatus.UnmemoizedObject};
+      return (checkContext && getInvalidContextReport(context, expression)) || {node: expression, status: MemoStatus.UnmemoizedObject};
     case "ArrayExpression":
-      return {node: expression, status: MemoStatus.UnmemoizedArray};
-    case "NewExpression":
-      return {node: expression, status: MemoStatus.UnmemoizedNew};
+      return (checkContext && getInvalidContextReport(context, expression)) || {node: expression, status: MemoStatus.UnmemoizedArray};
+    case "NewExpression": 
+      return (checkContext && getInvalidContextReport(context, expression)) || {node: expression, status: MemoStatus.UnmemoizedNew};
     case "FunctionExpression":
-    case "ArrowFunctionExpression":
-      return {node: expression, status: MemoStatus.UnmemoizedFunction};
+    case "ArrowFunctionExpression": {
+      return (checkContext && getInvalidContextReport(context, expression)) || {node: expression, status: MemoStatus.UnmemoizedFunction};
+    }
     case "JSXElement":
-      return {node: expression, status: MemoStatus.UnmemoizedJSX};
+      return (checkContext && getInvalidContextReport(context, expression)) || {node: expression, status: MemoStatus.UnmemoizedJSX};
     case "CallExpression": {
-      const validCallExpression = isCallExpression(expression, "useMemo") ||
-      isCallExpression(expression, "useCallback");
+      const validCallExpression = isCallExpression(expression, "useMemo") || isCallExpression(expression, "useCallback");
 
-      return {node: expression, status: validCallExpression ? MemoStatus.Memoized : MemoStatus.UnmemoizedFunctionCall};
+      return (validCallExpression && (checkContext && getInvalidContextReport(context, expression))) || {node: expression, status: validCallExpression ? MemoStatus.Memoized : MemoStatus.UnmemoizedFunctionCall};
     }
     case "Identifier":
       return getIdentifierMemoStatus(context, expression);
