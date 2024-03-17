@@ -322,6 +322,61 @@ describe('Rule - Require-usememo', () =>  {
     invalid: [
       {
         code: `
+          import React, { useMemo } from 'react';
+          const MyComponent = () => {
+            const items = [1, 2];
+            return (
+              <div>
+                {items.map(item => <ChildComponent key={item} prop={{}} />)}
+                {items.forEach(item => <ChildComponent key={item} prop={{}} />)}
+                {items.reduce((acc, item) => <ChildComponent key={item} prop={{}} />)}
+                {items.some((acc, item) => <ChildComponent key={item} prop={{}} />)}
+                {items.every((acc, item) => <ChildComponent key={item} prop={{}} />)}
+                {items.find((acc, item) => <ChildComponent key={item} prop={{}} />)}
+                {items.findIndex((acc, item) => <ChildComponent key={item} prop={{}} />)}
+              </div>
+            );
+          };
+        `,
+        errors: [
+          { messageId: "error-in-invalid-context" },
+          { messageId: "error-in-invalid-context" },
+          { messageId: "error-in-invalid-context" },
+          { messageId: "error-in-invalid-context" },
+          { messageId: "error-in-invalid-context" },
+          { messageId: "error-in-invalid-context" }, 
+          { messageId: "error-in-invalid-context" }
+        ],
+      },
+      {
+        code: `
+          import React, { useMemo } from 'react';
+          const MyComponent = () => {
+            const itemsJSX = useMemo(() => <ChildComponent key={item} prop={{}} />, []);
+            const itemsParsed = useMemo(() => items.map(item => <ChildComponent key={item} prop={{}} />), []);
+
+            return null;
+          };
+        `,
+        errors: [
+          { messageId: "error-in-invalid-context" },
+          { messageId: "error-in-invalid-context" }
+        ],
+      },
+      {
+        code: `
+          import React, { useCallback } from 'react';
+          const MyComponent = () => {
+            const handleClick = useCallback(() => {
+              return <ChildComponent prop={{}} />;
+            }, []);
+            return <div onClick={handleClick}>Click me</div>;
+          };
+        `,
+        errors: [{ messageId: "error-in-invalid-context" }],
+      },
+      {
+        code: `
         const Component = () => {
           return <Child prop={<SomeComponent />} />;
         }`,

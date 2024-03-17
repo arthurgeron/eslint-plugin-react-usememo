@@ -40,10 +40,8 @@ const rule: Rule.RuleModule  = {
 
     function report<T extends Rule.NodeParentExtension | TSESTree.MethodDefinitionComputedName>(node: T, messageId: keyof typeof MessagesRequireUseMemo) {
         context.report( {node: node as Rule.Node, messageId , fix(fixer) {
-          if (isClass) {
-            return null;
-          }
-          return fixBasedOnMessageId(node as Rule.Node, messageId, fixer, context, importData);
+          const disableFixer = isClass || messageId === MemoStatus.ErrorInvalidContext;
+          return disableFixer ? null : fixBasedOnMessageId(node as Rule.Node, messageId, fixer, context, importData);
         }} );
     }
 
