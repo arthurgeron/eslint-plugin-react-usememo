@@ -6,12 +6,12 @@ import { getIsHook } from "src/require-usememo/utils";
 import getVariableInScope from "src/utils/getVariableInScope";
 import {Minimatch} from 'minimatch'
 
-const componentNameRegex = /^[^a-z]/;
 
 export function isComplexComponent(node: TSESTree.JSXOpeningElement | TSESTree.JSXIdentifier ) {
   if (node?.type !== "JSXOpeningElement") return false;
   if (node?.name?.type !== "JSXIdentifier") return false;
-  return componentNameRegex.test(node?.name?.name);
+  const firstCharacterLowerCase = node?.name?.name?.[0]?.toLowerCase();
+  return !!firstCharacterLowerCase && firstCharacterLowerCase !== node?.name?.name?.[0];
 }
 
 
