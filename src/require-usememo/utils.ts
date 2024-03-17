@@ -37,12 +37,6 @@ export function checkForErrors<T, Y extends Rule.NodeParentExtension | TSESTree.
   if (errorName) {
     const strict = errorName.includes('unknown');
     if (!strict || (strict && context.options?.[0]?.strict)) {
-      // const specialContext = node && isInSpecialContext(node as Rule.NodeParentExtension, context);
-      // if (specialContext) {
-      //   // If in special context, report the special error
-      //   report(node, "special-error-found");
-      //   return;
-      // }
       report((statusData.node ?? node) as Y, errorName);
     }
 
