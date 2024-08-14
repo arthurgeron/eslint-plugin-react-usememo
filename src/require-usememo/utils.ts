@@ -208,7 +208,7 @@ export function fixBasedOnMessageId(node: Rule.Node, messageId: keyof typeof Mes
     case 'object-usememo-props':
     case 'jsx-usememo-props':
     case 'usememo-const': {
-      let variableDeclaration = node.type === 'VariableDeclaration' ? node : findParentType(node as Rule.Node, 'VariableDeclaration') as TSESTree.VariableDeclaration;
+      const variableDeclaration = node.type === 'VariableDeclaration' ? node : findParentType(node as Rule.Node, 'VariableDeclaration') as TSESTree.VariableDeclaration;
 
       // Check if it is a hook being stored in let/var, change to const if so
       if (variableDeclaration && variableDeclaration.kind !== 'const') {
@@ -260,10 +260,10 @@ export function fixBasedOnMessageId(node: Rule.Node, messageId: keyof typeof Mes
   }
 
   // Simpler cases bellow, all of them are just adding useMemo/Callback
-  let functionPrefix = isArrowFunctionExpression ? '' : '() => ';
-  let expressionPrefix = isObjExpression || isJSXElement ? '(' : '';
-  let coreExpression = sourceCode.getText(node as unknown as ESTree.Node);
-  let expressionSuffix = isObjExpression ? ')' : '';
+  const functionPrefix = isArrowFunctionExpression ? '' : '() => ';
+  const expressionPrefix = isObjExpression || isJSXElement ? '(' : '';
+  const coreExpression = sourceCode.getText(node as unknown as ESTree.Node);
+  const expressionSuffix = isObjExpression ? ')' : '';
 
   let fixed = `${hook}(${functionPrefix}${expressionPrefix}${coreExpression}${expressionSuffix}, [])`;
   const importStatementFixes = addReactImports(context, hook, reactImportData, fixer);

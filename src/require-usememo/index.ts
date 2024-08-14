@@ -32,7 +32,7 @@ const rule: Rule.RuleModule  = {
   },
   create: (context: Rule.RuleContext): Rule.RuleListener => {
     let isClass = false;
-    let importData: ReactImportInformation = {
+    const importData: ReactImportInformation = {
       reactImported: false,
       useMemoImported: false,
       useCallbackImported: false,
