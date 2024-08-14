@@ -47,6 +47,11 @@ const rule: Rule.RuleModule  = {
 
     function process(node: NodeType, _expression?: ExpressionTypes, expressionData?: ExpressionData, checkContext = false) {
 
+      const isGlobalScope = context.getScope().block.type === 'Program';
+      if (checkContext && isGlobalScope) {
+        return;
+      }
+
       const expression = _expression ?? (node.value && Object.prototype.hasOwnProperty.call(node.value, 'expression') ? (node.value as unknown as TSESTree.JSXExpressionContainer).expression : node.value ) ;
       switch(expression?.type) {
         case 'LogicalExpression':
