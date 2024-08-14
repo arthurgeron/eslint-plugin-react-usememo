@@ -117,16 +117,18 @@ export function getIsHook(node: TSESTree.Node | TSESTree.Identifier) {
   if (node.type === "Identifier") {
     const { name } = node;
     return name === 'use' || ((name?.length ?? 0) >= 4 && name[0] === 'u' && name[1] === 's' && name[2] === 'e' && name[3] === name[3]?.toUpperCase?.());
-  } else if (
+  } 
+  
+  if (
     node.type === "MemberExpression" &&
     !node.computed &&
     getIsHook(node.property)
   ) {
     const { object: obj } = node; // Utilizing Object destructuring
     return obj.type === "Identifier" && obj.name === "React";
-  } else {
-    return false;
   }
+
+  return false;
 }
 
 // Helper function to find parent of a specified type. 
@@ -173,7 +175,7 @@ function getSafeVariableName(context: Rule.RuleContext, name: string, attempts =
 // Eslint Auto-fix logic, functional components/hooks only
 export function fixBasedOnMessageId(node: Rule.Node, messageId: keyof typeof MessagesRequireUseMemo, fixer: Rule.RuleFixer, context: Rule.RuleContext, reactImportData: ReactImportInformation) {
   const sourceCode = context.getSourceCode();
-  let hook = messageIdToHookDict[messageId] || 'useMemo';
+  const hook = messageIdToHookDict[messageId] || 'useMemo';
   const isObjExpression = node.type === 'ObjectExpression';
   const isJSXElement = (node as unknown as TSESTree.JSXElement).type === 'JSXElement';
   const parentIsVariableDeclarator = (node as Rule.Node).parent.type === 'VariableDeclarator';
