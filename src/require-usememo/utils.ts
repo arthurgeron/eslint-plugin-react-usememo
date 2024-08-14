@@ -195,7 +195,7 @@ export function fixBasedOnMessageId(node: Rule.Node, messageId: keyof typeof Mes
         return fixes;
       }
       break;
-    case 'object-usememo-hook':
+    case 'object-usememo-hook': {
       const _returnNode = node as TSESTree.ReturnStatement;
       // An undefined node.argument means returned value is not an expression, but most probably a variable which should not be handled here, which falls under default, simpler fix logic.
       if(_returnNode.argument) {
@@ -206,6 +206,7 @@ export function fixBasedOnMessageId(node: Rule.Node, messageId: keyof typeof Mes
         return fixes;
       } 
       break;
+    }
     case 'function-usecallback-props':
     case 'object-usememo-props':
     case 'jsx-usememo-props':
