@@ -1,5 +1,5 @@
-import { Rule } from "eslint";
-import { TSESTree } from "@typescript-eslint/types";
+import type { Rule } from "eslint";
+import type { TSESTree } from "@typescript-eslint/types";
 import { defaultReactHookNames, jsxEmptyExpressionClassData, jsxEmptyExpressionData, callExpressionData, hookReturnExpressionData  } from './constants';
 import { MessagesRequireUseMemo  } from '../constants';
 import {
@@ -9,7 +9,7 @@ import {
 } from "../utils";
 import type {ExpressionTypes, NodeType, ExpressionData, ReactImportInformation, ImportNode} from './types';
 import { checkForErrors, fixBasedOnMessageId, getIsHook } from './utils';
-import { ESNode, MemoStatus } from "src/types";
+import { type ESNode, MemoStatus } from "src/types";
 
 const rule: Rule.RuleModule  = {
   meta: {
