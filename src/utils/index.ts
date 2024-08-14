@@ -143,7 +143,7 @@ export function shouldIgnoreNode(node: ESNode, ignoredNames: Record<string, bool
     }
 
     // Checking via patterns
-    let shouldIgnore;
+    let shouldIgnore: boolean | undefined;
     
     Object.keys(ignoredNames).find(key => {
       const value = ignoredNames[key];
