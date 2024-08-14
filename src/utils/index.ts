@@ -1,7 +1,7 @@
-import { Rule, Scope } from "eslint";
-import { TSESTree } from "@typescript-eslint/types";
-import * as ESTree from "estree";
-import { ESNode, MemoStatus, MemoStatusToReport } from "src/types";
+import type { Rule, Scope } from "eslint";
+import type { TSESTree } from "@typescript-eslint/types";
+import type * as ESTree from "estree";
+import { type ESNode, MemoStatus, type MemoStatusToReport } from "src/types";
 import { getIsHook, isImpossibleToFix } from "src/require-usememo/utils";
 import getVariableInScope from "src/utils/getVariableInScope";
 import {Minimatch} from 'minimatch'

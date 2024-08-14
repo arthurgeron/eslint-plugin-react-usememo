@@ -1,6 +1,6 @@
-import { Rule } from "eslint";
-import * as ESTree from "estree";
-import { TSESTree } from "@typescript-eslint/types";
+import type { Rule } from "eslint";
+import type * as ESTree from "estree";
+import type { TSESTree } from "@typescript-eslint/types";
 import {
   getExpressionMemoStatus,
   isComplexComponent,
