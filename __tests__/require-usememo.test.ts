@@ -88,6 +88,15 @@ describe('Rule - Require-usememo', () =>  {
         }`
       },
       {
+        code: `
+        const labels = ['data']
+      const Content = <Text labels={labels} />
+        const Component = () => {
+          const myArray = useMemo(() => new Object(), []);
+          return <Child prop={myArray} />;
+        }`
+      },
+      {
         code: `function Component() {
         const myArray = useMemo(() => new Object(), []);
         return <Child prop={myArray} />;
