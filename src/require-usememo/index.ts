@@ -25,7 +25,7 @@ const rule: Rule.RuleModule  = {
         type: "object",
         properties: { strict: { type: "boolean" }, checkHookReturnObject: { type: "boolean" }, checkHookCalls: { type: "boolean"}, ignoredHookCallsNames: {type: "object"}, fix: {
           addImports: "boolean",
-        } },
+        }, ignoredPropNames: { type: "array" } },
         additionalProperties: false,
       },
     ],
@@ -67,10 +67,16 @@ const rule: Rule.RuleModule  = {
     }
 
     function JSXAttribute<T extends Rule.Node | TSESTree.MethodDefinitionComputedName>(node: T) {
+
+      const ignoredPropNames = context.options?.[0]?.ignoredPropNames ?? [];
+
       const { parent, value } = node as TSESTree.MethodDefinitionComputedName;
       if (value === null) return null;
       if (parent && !isComplexComponent(parent as TSESTree.JSXIdentifier)) return null;
       if ((value.type as string) === "JSXExpressionContainer") {
+        if (ignoredPropNames.includes((node as unknown as TSESTree.JSXAttribute).name?.name)) {
+          return null;
+        }
         process(node as TSESTree.MethodDefinitionComputedName, undefined, undefined, true);
       }
       return null;
