@@ -327,6 +327,14 @@ describe('Rule - Require-usememo', () =>  {
           return {x, y};
         }`,
       },
+      // ignoredPropNames
+      {
+        code: `const Component = () => {
+          const myObject = {};
+          return <Child ignoreProp={myObject} />;
+        }`,
+        options: [{ ignoredPropNames: ["ignoreProp"] }],
+      },
     ],
     invalid: [
       {
