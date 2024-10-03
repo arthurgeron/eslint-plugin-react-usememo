@@ -335,6 +335,25 @@ describe('Rule - Require-usememo', () =>  {
         }`,
         options: [{ ignoredPropNames: ["ignoreProp"] }],
       },
+      {
+        code: `const Component = () => {
+          const myCallback = () => {};
+          return <button onClick={myCallback}>Click me</button>;
+        }`,
+        options: [{ ignoredPropNames: ["onClick"] }],
+      },
+      {
+        code: `const Component = () => {
+          return <div style={{ width: '200px' }} />;
+        }`,
+        options: [{ ignoredPropNames: ["style"] }],
+      },
+      {
+        code: `const Component = () => {
+          return <button onClick={() => {}}>Click me</button>;
+        }`,
+        options: [{ ignoredPropNames: ["onClick"] }],
+      },
     ],
     invalid: [
       {
