@@ -150,7 +150,7 @@ function fixFunction(node: TSESTree.FunctionDeclaration | TSESTree.FunctionExpre
   const { body, params = [] } = node;
   const funcBody = sourceCode.getText(body as ESTree.Node);
   const funcParams = (params as Array<ESTree.Node>).map(node => sourceCode.getText(node));
-  let fixedCode = `useCallback((${funcParams.join(', ')}) => ${funcBody}, [])${shouldSetName ? ';' : ''}`
+  let fixedCode = `useCallback(${node.async ? 'async ' : ''}(${funcParams.join(', ')}) => ${funcBody}, [])${shouldSetName ? ';' : ''}`
   if (shouldSetName && node?.id?.name) {
     const name = node?.id?.name;
     fixedCode = `const ${name} = ${fixedCode}`;

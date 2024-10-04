@@ -259,6 +259,34 @@ describe('Rule - Require-usecallback', () =>  {
         }`,
         errors: [{ messageId: "function-usecallback-props" }, { messageId: "function-usecallback-props" }],
       },
+      {
+        code: `
+        const Component = () => {
+          const myFn = async function test() {};
+          return <Child prop={myFn} />;
+        }`,
+        output: `import { useCallback } from 'react';
+
+        const Component = () => {
+          const myFn = useCallback(async () => {}, []);
+          return <Child prop={myFn} />;
+        }`,
+        errors: [{ messageId: "function-usecallback-props" }],
+      },
+      {
+        code: `
+        const Component = () => {
+          const myFn = async () => [];
+          return <Child prop={myFn} />;
+        }`,
+        output: `import { useCallback } from 'react';
+
+        const Component = () => {
+          const myFn = useCallback(async () => [], []);
+          return <Child prop={myFn} />;
+        }`,
+        errors: [{ messageId: "function-usecallback-props" }],
+      },
     ],
   });
 });
