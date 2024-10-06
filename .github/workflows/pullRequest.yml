@@ -144,6 +144,9 @@ jobs:
           if [ "$PR_VERSION" = "$MAIN_VERSION" ]; then
             echo "Error: Package version has not been updated"
             exit 1
+          elif ! npx semver -r ">$MAIN_VERSION" "$PR_VERSION" > /dev/null; then
+            echo "Error: New version ($PR_VERSION) is not greater than current version ($MAIN_VERSION)"
+            exit 1
           else
-            echo "Package version has been updated"
+            echo "Package version has been updated correctly"
           fi
