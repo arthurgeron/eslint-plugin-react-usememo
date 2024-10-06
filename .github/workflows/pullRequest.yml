@@ -112,3 +112,27 @@ jobs:
 
       - name: Find dead code
         run: yarn deadCode
+
+  version-check:
+    name: Check package version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@v3
+
+      - name: Checkout main
+        uses: actions/checkout@v3
+        with:
+          ref: main
+          path: main
+
+      - name: Compare versions
+        run: |
+          PR_VERSION=$(node -p "require('./package.json').version")
+          MAIN_VERSION=$(node -p "require('./main/package.json').version")
+          if [ "$PR_VERSION" = "$MAIN_VERSION" ]; then
+            echo "Error: Package version has not been updated"
+            exit 1
+          else
+            echo "Package version has been updated"
+          fi
