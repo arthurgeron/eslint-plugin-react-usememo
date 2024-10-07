@@ -11,6 +11,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
 
       - name: Use Node.js 16.x
         uses: actions/setup-node@v3
@@ -41,6 +43,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
 
       - name: Use Node.js 16.x
         uses: actions/setup-node@v3
@@ -72,6 +76,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
 
       - name: Use Node.js 16.x
         uses: actions/setup-node@v3
@@ -97,6 +103,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
 
       - name: Use Node.js 16.x
         uses: actions/setup-node@v3
@@ -122,6 +130,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
 
       - name: Use Node.js 16.x
         uses: actions/setup-node@v3
@@ -148,4 +158,3 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_command: npm publish --access public
           generate_release_notes: true
-          

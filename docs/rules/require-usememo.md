@@ -18,6 +18,7 @@ The rule takes an optional object:
       "fix": { "addImports": true },
       "checkHookCalls": true,
       "ignoredHookCallsNames": { "useStateManagement": false },
+      "ignoredPropNames": ["style"]
     }],
 }
 ```
@@ -42,6 +43,9 @@ You can use strict 1:1 comparisons (e.g., `"useCustomHook"`) or employ Minimatch
 - `fix`: Contains rules that only apply during eslint's fix routine.
 
   - `addImports`: Creates imports for useMemo and useCallback when one or both are added by this rule. Will increment to a existing import declaration or create a new one. Setting this to false disables it, defaults to true.
+
+- `ignoredPropNames`: This allows you to add specific prop name, thereby disabling them to be checked when used.
+
 ## Autofix Examples (Function Components & Hooks only)
 
 To illustrate the autofix feature in action, below are some examples with input code and the corresponding fixed output:

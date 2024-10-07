@@ -9,6 +9,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
 
       - name: Use Node.js 18.x
         uses: actions/setup-node@v3
@@ -39,6 +41,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
 
       - name: Use Node.js 18.x
         uses: actions/setup-node@v3
@@ -70,6 +74,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
 
       - name: Use Node.js 18.x
         uses: actions/setup-node@v3
@@ -95,6 +101,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
 
       - name: Use Node.js 18.x
         uses: actions/setup-node@v3
@@ -112,3 +120,47 @@ jobs:
 
       - name: Find dead code
         run: yarn deadCode
+
+  version-check:
+    name: Check package version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+
+      - name: Checkout main
+        uses: actions/checkout@v3
+        with:
+          ref: main
+          path: main
+          fetch-depth: 1
+
+      - name: Compare versions
+        id: version_check
+        run: |
+          PR_VERSION=$(node -p "require('./package.json').version")
+          MAIN_VERSION=$(node -p "require('./main/package.json').version")
+          if [ "$PR_VERSION" = "$MAIN_VERSION" ]; then
+            echo "ERROR_MESSAGE=Error: Package version has not been updated" >> $GITHUB_OUTPUT
+            exit 1
+          elif ! npx semver -r ">$MAIN_VERSION" "$PR_VERSION" > /dev/null; then
+            echo "ERROR_MESSAGE=Error: New version ($PR_VERSION) is not greater than current version ($MAIN_VERSION)" >> $GITHUB_OUTPUT
+            exit 1
+          else
+            echo "Package version has been updated correctly"
+          fi
+
+      - name: Comment PR
+        if: failure()
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '${{ steps.version_check.outputs.ERROR_MESSAGE }}'
+            })
