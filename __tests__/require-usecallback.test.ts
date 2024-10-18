@@ -287,6 +287,13 @@ describe('Rule - Require-usecallback', () =>  {
         }`,
         errors: [{ messageId: "function-usecallback-props" }],
       },
+      {
+        code: `
+        const Component = () => {
+          return <Child prop={async () => []} />;
+        }`,
+        errors: [{ messageId: "function-usecallback-props" }],
+      },
     ],
   });
 });
