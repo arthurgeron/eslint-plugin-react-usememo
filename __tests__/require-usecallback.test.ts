@@ -153,16 +153,30 @@ describe('Rule - Require-usecallback', () =>  {
         errors: [{ messageId: "usememo-const" }],
       },
       {
-        code: `const Component = () => {
+        code: `
+        const Component = () => {
           return <Child prop={() => {}} />;
         }`,
         errors: [{ messageId: "function-usecallback-props" }],
+        output: `import { useCallback } from 'react';
+
+        const Component = () => {
+          const prop = useCallback(() => {}, []);
+          return <Child prop={prop} />;
+        }`,
       },
       {
-        code: `const Component = () => {
+        code: `
+        const Component = () => {
           return <Child prop={() => []} />;
         }`,
         errors: [{ messageId: "function-usecallback-props" }],
+        output: `import { useCallback } from 'react';
+
+        const Component = () => {
+          const prop = useCallback(() => [], []);
+          return <Child prop={prop} />;
+        }`,
       },
       {
         code: `class Component {
@@ -291,6 +305,12 @@ describe('Rule - Require-usecallback', () =>  {
         code: `
         const Component = () => {
           return <Child prop={async () => []} />;
+        }`,
+         output: `import { useCallback } from 'react';
+
+        const Component = () => {
+          const prop = useCallback(async () => [], []);
+          return <Child prop={prop} />;
         }`,
         errors: [{ messageId: "function-usecallback-props" }],
       },

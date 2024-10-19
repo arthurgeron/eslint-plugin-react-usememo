@@ -178,10 +178,9 @@ export function fixBasedOnMessageId(node: Rule.Node, messageId: keyof typeof Mes
   const hook = messageIdToHookDict[messageId] || 'useMemo';
   const isObjExpression = node.type === 'ObjectExpression';
   const isJSXElement = (node as unknown as TSESTree.JSXElement).type === 'JSXElement';
-  const parentIsVariableDeclarator = (node as Rule.Node).parent.type === 'VariableDeclarator';
   const isArrowFunctionExpression = node.type === 'ArrowFunctionExpression';
   const isFunctionExpression = node.type === 'FunctionExpression';
-  const isCorrectableFunctionExpression = isFunctionExpression || (isArrowFunctionExpression && parentIsVariableDeclarator);
+  const isCorrectableFunctionExpression = isFunctionExpression || isArrowFunctionExpression;
   const fixes: Array<Rule.Fix> = [];
 
   // Determine what type of behavior to follow according to the error message
