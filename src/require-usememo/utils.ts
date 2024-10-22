@@ -150,7 +150,7 @@ function fixFunction(node: TSESTree.FunctionDeclaration | TSESTree.FunctionExpre
   const { body, params = [] } = node;
   const funcBody = sourceCode.getText(body as ESTree.Node);
   const funcParams = (params as Array<ESTree.Node>).map(node => sourceCode.getText(node));
-  let fixedCode = `useCallback((${funcParams.join(', ')}) => ${funcBody}, [])${shouldSetName ? ';' : ''}`
+  let fixedCode = `useCallback(${node.async ? 'async ' : ''}(${funcParams.join(', ')}) => ${funcBody}, [])${shouldSetName ? ';' : ''}`
   if (shouldSetName && node?.id?.name) {
     const name = node?.id?.name;
     fixedCode = `const ${name} = ${fixedCode}`;
@@ -178,10 +178,9 @@ export function fixBasedOnMessageId(node: Rule.Node, messageId: keyof typeof Mes
   const hook = messageIdToHookDict[messageId] || 'useMemo';
   const isObjExpression = node.type === 'ObjectExpression';
   const isJSXElement = (node as unknown as TSESTree.JSXElement).type === 'JSXElement';
-  const parentIsVariableDeclarator = (node as Rule.Node).parent.type === 'VariableDeclarator';
   const isArrowFunctionExpression = node.type === 'ArrowFunctionExpression';
   const isFunctionExpression = node.type === 'FunctionExpression';
-  const isCorrectableFunctionExpression = isFunctionExpression || (isArrowFunctionExpression && parentIsVariableDeclarator);
+  const isCorrectableFunctionExpression = isFunctionExpression || isArrowFunctionExpression;
   const fixes: Array<Rule.Fix> = [];
 
   // Determine what type of behavior to follow according to the error message
