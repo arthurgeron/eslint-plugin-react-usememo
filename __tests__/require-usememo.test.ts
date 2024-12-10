@@ -569,8 +569,8 @@ describe('Rule - Require-usememo', () =>  {
 
         const Component = () => {
           const userData = undefined;
-          const _userData = useMemo(() => ({}), []);
-          return <Child userData={_userData} />;
+          const userDataOne = useMemo(() => ({}), []);
+          return <Child userData={userDataOne} />;
         }`,
         errors: [{ messageId: "object-usememo-props" }],
       },
@@ -584,8 +584,8 @@ describe('Rule - Require-usememo', () =>  {
 
         const Component = () => {
           const userData = undefined;
-          const _userData = useMemo(() => ({}), []);
-          return <Child userData={_userData} />;
+          const userDataOne = useMemo(() => ({}), []);
+          return <Child userData={userDataOne} />;
         }`,
         errors: [{ messageId: "object-usememo-props" }],
       },
@@ -593,16 +593,16 @@ describe('Rule - Require-usememo', () =>  {
         code: `
         const Component = () => {
           const userData = undefined;
-          const _userData = undefined;
+          const userDataOne = undefined;
           return <Child userData={{}} />;
         }`,
         output: `import { useMemo } from 'react';
 
         const Component = () => {
           const userData = undefined;
-          const _userData = undefined;
-          const __userData = useMemo(() => ({}), []);
-          return <Child userData={__userData} />;
+          const userDataOne = undefined;
+          const userDataOneTwo = useMemo(() => ({}), []);
+          return <Child userData={userDataOneTwo} />;
         }`,
         errors: [{ messageId: "object-usememo-props" }],
       },
@@ -610,24 +610,24 @@ describe('Rule - Require-usememo', () =>  {
         code: `
         const Component = () => {
           const userData = undefined;
-          const _userData = undefined;
-          const __userData = undefined;
-          const ___userData = undefined;
-          const ____userData = undefined;
-          const _____userData = undefined;
+          const userDataOne = undefined;
+          const userDataTwo = undefined;
+          const userDataThree = undefined;
+          const userDataFour = undefined;
+          const userDataFive = undefined;
           return <Child userData={{}} />;
         }`,
         output: `import { useMemo } from 'react';
 
         const Component = () => {
           const userData = undefined;
-          const _userData = undefined;
-          const __userData = undefined;
-          const ___userData = undefined;
-          const ____userData = undefined;
-          const _____userData = undefined;
-          const renameMe = useMemo(() => ({}), []);
-          return <Child userData={renameMe} />;
+          const userDataOne = undefined;
+          const userDataTwo = undefined;
+          const userDataThree = undefined;
+          const userDataFour = undefined;
+          const userDataFive = undefined;
+          const userDataOneTwo = useMemo(() => ({}), []);
+          return <Child userData={userDataOneTwo} />;
         }`,
         errors: [{ messageId: "object-usememo-props" }],
       },
@@ -635,11 +635,11 @@ describe('Rule - Require-usememo', () =>  {
         code: `
         const Component = () => {
           const userData = undefined;
-          const _userData = undefined;
-          const __userData = undefined;
-          const ___userData = undefined;
-          const ____userData = undefined;
-          const _____userData = undefined;
+          const userDataOne = undefined;
+          const userDataTwo = undefined;
+          const userDataThree = undefined;
+          const userDataFour = undefined;
+          const userDataFive = undefined;
           const renameMe = undefined;
           return <Child userData={{}} />;
         }`,
@@ -647,14 +647,14 @@ describe('Rule - Require-usememo', () =>  {
 
         const Component = () => {
           const userData = undefined;
-          const _userData = undefined;
-          const __userData = undefined;
-          const ___userData = undefined;
-          const ____userData = undefined;
-          const _____userData = undefined;
+          const userDataOne = undefined;
+          const userDataTwo = undefined;
+          const userDataThree = undefined;
+          const userDataFour = undefined;
+          const userDataFive = undefined;
           const renameMe = undefined;
-          const renameMe_99c32a94 = useMemo(() => ({}), []);
-          return <Child userData={renameMe_99c32a94} />;
+          const userDataOneTwo = useMemo(() => ({}), []);
+          return <Child userData={userDataOneTwo} />;
         }`,
         errors: [{ messageId: "object-usememo-props" }],
       },

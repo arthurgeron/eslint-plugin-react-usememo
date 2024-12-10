@@ -158,6 +158,31 @@ function fixFunction(node: TSESTree.FunctionDeclaration | TSESTree.FunctionExpre
   return fixedCode;
 }
 
+const single_digit = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
+const double_digit = ['Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+const below_hundred = ['Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+
+function numberToWord(n: number): string {
+  let word = "";
+  if (n < 10) {
+      word = single_digit[n];
+  } else if (n < 20) {
+      word = double_digit[n - 10];
+  } else if (n < 100) {
+      let rem = numberToWord(n % 10);
+      word = below_hundred[(n - n % 10) / 10 - 2] + rem;
+  } else if (n < 1000) {
+      word = single_digit[Math.trunc(n / 100)] + 'Hundred' + numberToWord(n % 100);
+  } else if (n < 1000000) {
+      word = numberToWord(parseInt(n / 1000 + "")).trim() + 'Thousand' + numberToWord(n % 1000);
+  } else if (n < 1000000000) {
+      word = numberToWord(parseInt(n / 1000000 + "")).trim() + 'Million' + numberToWord(n % 1000000);
+  } else {
+      word = numberToWord(parseInt(n / 1000000000 + "")).trim() + 'Billion' + numberToWord(n % 1000000000);
+  }
+  return word;
+}
+
 function getSafeVariableName(context: Rule.RuleContext, name: string, attempts = 0): string {
   const tempVarPlaceholder = 'renameMe';
 
@@ -166,9 +191,10 @@ function getSafeVariableName(context: Rule.RuleContext, name: string, attempts =
   }
   if (attempts >= 5) {
     const nameExtensionIfExists = getVariableInScope(context, tempVarPlaceholder) ? uuidV5(name, nameGeneratorUUID).split('-')[0] : '';
-    return `${tempVarPlaceholder}${nameExtensionIfExists ? `_${nameExtensionIfExists}` : ''}`;
+    return `${tempVarPlaceholder}${nameExtensionIfExists ? `${nameExtensionIfExists}${numberToWord(attempts)}` : ''}`;
   }
-  return getSafeVariableName(context, `_${name}`, ++attempts);
+  ++attempts;
+  return getSafeVariableName(context, `${name}${numberToWord(attempts)}`, attempts);
 
 }
 
