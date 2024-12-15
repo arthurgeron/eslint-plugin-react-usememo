@@ -47,6 +47,12 @@
   "overrides": {
     "braces": ">=3.0.3"
   },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
   "eslintConfig": {
     "configs": {
       "flat": {
