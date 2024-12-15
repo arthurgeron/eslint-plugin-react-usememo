@@ -21,7 +21,7 @@
     "@types/uuid": "9.0.6",
     "@typescript-eslint/parser": "5.30.6",
     "@typescript-eslint/types": "5.30.6",
-    "eslint": "8.19.0",
+    "eslint": "9.17.0",
     "husky": "8.0.1",
     "jest": "28.1.3",
     "rollup": "2.76.0",
@@ -46,5 +46,15 @@
   },
   "overrides": {
     "braces": ">=3.0.3"
+  },
+  "eslintConfig": {
+    "configs": {
+      "flat": {
+        "$ref": "./src/eslint-configs.ts#flatConfig"
+      }
+    }
+  },
+  "peerDependencies": {
+    "eslint": "^8.0.0 || ^9.0.0"
   }
 }

@@ -8,7 +8,8 @@
 
 - [ ] **Tests**: I have created multiple test case scenarios for my changes.
 - [ ] **Passing Tests**: All existing and new tests are passing.
-- [ ] **Version Bump**: I have increased the package version number in `package.json` following the [Semantic Versioning](https://semver.org/) (SEMVER) standard.
+- [ ] **Version Bump**: I have increased the package version number in `package.json` following 
+- [ ] **Version Bump**: I have increased the package version number in `src/eslitnConfig.ts`'s `meta` object, following the [Semantic Versioning](https://semver.org/) (SEMVER) standard.
 - [ ] **Focused Changes**: My code changes are focused solely on the matter described above.
 
 ## Additional Information

@@ -131,21 +131,49 @@ or npm:
 npm install @arthurgeron/eslint-plugin-react-usememo --save-dev
 ```
 
-## Usage
+## Usage with Traditional ESLint Configuration
 
-Add the plugin to your `eslintrc` file:
+Add the plugin and enable the rules in your `.eslintrc` file:
+
 ```json
 "plugins": ["@arthurgeron/react-usememo"],
-```
-
-Then enable any rules as you like:
-
-```json
 "rules": {
-    "@arthurgeron/react-usememo/require-usememo": [2],
-},
+    "@arthurgeron/react-usememo/require-usememo": "error",
+    "@arthurgeron/react-usememo/require-memo": "error",
+    "@arthurgeron/react-usememo/require-usememo-children": "error"
+}
 ```
-In this guide, we will cover three rules - `require-usememo`, `require-memo`, and `require-usememo-children`.
+
+### Usage with Flat ESLint Configuration
+Add the plugin and enable the rules in your `eslint.config.js` file by either:   
+- Importing the default config
+
+```JS
+
+import flatConfig from '@arthurgeron/eslint-plugin-react-usememo';
+
+export default [
+  flatConfig,
+  // ... other configurations
+];
+```
+
+- Defining the rules manually
+
+```JS
+import { flatConfig } from '@arthurgeron/eslint-plugin-react-usememo';
+
+export default [
+  {
+    plugins: ["@arthurgeron/react-usememo"],
+    rules: {
+      "@arthurgeron/react-usememo/require-usememo": "error",
+      "@arthurgeron/react-usememo/require-memo": "warn",
+      "@arthurgeron/react-usememo/require-usememo-children": "warn",
+    },
+  }
+];
+```
 
 ## Rule #1: `require-usememo` ***(recommended)***
 This rule requires complex values (objects, arrays, functions, and JSX) that get passed props or referenced as a hook dependency to be wrapped in useMemo() or useCallback().
