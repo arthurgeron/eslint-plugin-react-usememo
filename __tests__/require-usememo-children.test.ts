@@ -1,12 +1,6 @@
-import { RuleTester } from "eslint";
-import rule from "src/require-usememo-children";
+import { ruleTester } from './ruleTester';
+import rule from 'src/require-usememo-children';
 
-const ruleTester = new RuleTester({
-  parser: require.resolve("@typescript-eslint/parser"),
-  parserOptions: {
-    ecmaFeatures: { jsx: true },
-  },
-});
 describe('Rule - Require-usememo-children', () =>  {
   ruleTester.run("useMemo children", rule, {
     valid: [

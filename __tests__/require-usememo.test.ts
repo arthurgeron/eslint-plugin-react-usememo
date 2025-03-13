@@ -1,13 +1,7 @@
-import { Rule, RuleTester } from "eslint";
-import rule from "src/require-usememo";
+import type { Rule} from 'eslint';
+import { ruleTester } from './ruleTester';
+import rule from 'src/require-usememo';
 import { findParentType } from "src/require-usememo/utils";
-
-const ruleTester = new RuleTester({
-  parser: require.resolve("@typescript-eslint/parser"),
-  parserOptions: {
-    ecmaFeatures: { jsx: true },
-  },
-});
 
 describe('Rule - Require-usememo', () =>  {
   ruleTester.run("useMemo", rule as Rule.RuleModule, {

@@ -148,7 +148,7 @@ export function findParentType(node: Rule.Node, type: string): Rule.Node | undef
 function fixFunction(node: TSESTree.FunctionDeclaration | TSESTree.FunctionExpression | TSESTree.ArrowFunctionExpression, context: Rule.RuleContext, shouldSetName?: boolean) {
   const sourceCode = context.getSourceCode();
   const { body, params = [] } = node;
-  const funcBody = sourceCode.getText(body as ESTree.Node);
+  const funcBody = sourceCode.getText(body as unknown as ESTree.Node);
   const funcParams = (params as Array<ESTree.Node>).map(node => sourceCode.getText(node));
   let fixedCode = `useCallback(${node.async ? 'async ' : ''}(${funcParams.join(', ')}) => ${funcBody}, [])${shouldSetName ? ';' : ''}`
   if (shouldSetName && node?.id?.name) {

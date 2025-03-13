@@ -1,12 +1,17 @@
 module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
-
+  globals: {
+    'ts-jest': {
+      diagnostics: false,
+    },
+  },
   moduleNameMapper: {
     "src/(.*)": "<rootDir>/src/$1"
   },
   testPathIgnorePatterns : [
     "<rootDir>/src/index.ts", 
+    "<rootDir>/__tests__/ruleTester.ts", 
   ],
   collectCoverage: true,
   collectCoverageFrom: [
