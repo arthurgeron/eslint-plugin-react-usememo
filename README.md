@@ -131,56 +131,32 @@ or npm:
 npm install @arthurgeron/eslint-plugin-react-usememo --save-dev
 ```
 
-## Usage with Traditional ESLint Configuration
+## Compatibility
+
+This plugin supports both ESLint v8 (traditional configuration) and ESLint v9 (flat configuration).
+
+### ESLint v8 Configuration (.eslintrc)
 
 Add the plugin and enable the rules in your `.eslintrc` file:
 
 ```json
-"plugins": ["@arthurgeron/react-usememo"],
-"rules": {
+{
+  "plugins": ["@arthurgeron/react-usememo"],
+  "rules": {
     "@arthurgeron/react-usememo/require-usememo": "error",
     "@arthurgeron/react-usememo/require-memo": "error",
     "@arthurgeron/react-usememo/require-usememo-children": "error"
+  }
 }
 ```
 
-### Usage with Flat ESLint Configuration
-Add the plugin and enable the rules in your `eslint.config.js` file by either:   
-- Importing the default config
+### ESLint v9 Configuration (eslint.config.js)
 
-```JS
+ESLint v9 uses the flat config format. You can use this plugin in two ways:
 
-import flatConfig from '@arthurgeron/eslint-plugin-react-usememo';
-
-export default [
-  flatConfig,
-  // ... other configurations
-];
-```
-
-- Defining the rules manually
-
-```JS
-import { flatConfig } from '@arthurgeron/eslint-plugin-react-usememo';
-
-export default [
-  {
-    plugins: ["@arthurgeron/react-usememo"],
-    rules: {
-      "@arthurgeron/react-usememo/require-usememo": "error",
-      "@arthurgeron/react-usememo/require-memo": "warn",
-      "@arthurgeron/react-usememo/require-usememo-children": "warn",
-    },
-  }
-];
-```
-
-## ESLint V9 Flat Config Support
-
-Starting with version 2.5.0, this plugin supports ESLint V9 flat config format. To use the plugin with ESLint V9 flat config, you can import it in your `eslint.config.js` file:
+#### Option 1: Importing the default config
 
 ```js
-// ESLint V9 Flat Config
 import { flatConfig } from '@arthurgeron/eslint-plugin-react-usememo';
 
 export default [
@@ -189,10 +165,8 @@ export default [
     languageOptions: {
       ecmaVersion: 2020,
       sourceType: 'module',
-      parserOptions: {
-        ecmaFeatures: {
-          jsx: true,
-        },
+      ecmaFeatures: {
+        jsx: true,
       },
     },
     plugins: {
@@ -207,10 +181,10 @@ export default [
 ];
 ```
 
-Alternatively, you can import the recommended configuration:
+#### Option 2: Using the recommended config
 
 ```js
-import flatConfig from '@arthurgeron/eslint-plugin-react-usememo';
+import { flatConfig } from '@arthurgeron/eslint-plugin-react-usememo';
 
 export default [
   // Other configs...
@@ -218,7 +192,7 @@ export default [
 ];
 ```
 
-Or if you're using CommonJS:
+#### Option 3: Using CommonJS syntax
 
 ```js
 const { flatConfig } = require('@arthurgeron/eslint-plugin-react-usememo');
