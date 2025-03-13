@@ -25,6 +25,4 @@ export const flatConfig = {
       },
     },
   },
-};
-
-export default flatConfig; 
+}; 
