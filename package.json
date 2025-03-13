@@ -17,6 +17,7 @@
     "@rollup/plugin-node-resolve": "13.3.0",
     "@rollup/plugin-typescript": "8.3.3",
     "@types/eslint": "8.4.5",
+    "@types/estree": "1.0.6",
     "@types/jest": "28.1.5",
     "@types/uuid": "9.0.6",
     "@typescript-eslint/parser": "5.30.6",
@@ -25,9 +26,9 @@
     "eslint": "8.19.0",
     "husky": "9.1.7",
     "jest": "28.1.3",
+    "knip": "5.45.0",
     "rollup": "2.76.0",
     "ts-jest": "28.0.6",
-    "ts-prune": "0.10.3",
     "typescript": "4.7.4"
   },
   "scripts": {
@@ -37,7 +38,7 @@
     "prepare": "husky",
     "prepublishOnly": "npm run build",
     "publish:public": "npm publish --access public",
-    "deadCode": "./node_modules/.bin/ts-prune --error --ignore"
+    "deadCode": "knip"
   },
   "files": [
     "dist"
