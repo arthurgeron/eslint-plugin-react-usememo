@@ -1,11 +1,9 @@
-import { RuleTester } from "eslint";
+/**
+ * Legacy ruleTester export
+ * This file is maintained for backward compatibility
+ * New tests should use ruleTesterV8.ts or ruleTesterV9.ts directly
+ */
+import { ruleTesterV8 } from './ruleTesterV8';
 
-// ESLint V8 compatible configuration for tests
-export const ruleTester = new RuleTester({
-  parser: require.resolve("@typescript-eslint/parser"),
-  parserOptions: {
-    ecmaVersion: 2020,
-    sourceType: "module",
-    ecmaFeatures: { jsx: true },
-  },
-});
+// Export the V8 ruleTester for backward compatibility
+export const ruleTester = ruleTesterV8;

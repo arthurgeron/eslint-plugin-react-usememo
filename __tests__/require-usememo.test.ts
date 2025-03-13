@@ -870,6 +870,7 @@ import type { ComponentProps } from 'react';
 
 describe('require-usememo utils', () => {
   it("should return undefined if can't find parent",() => {
+    // biome-ignore lint/suspicious/noExplicitAny: <explanation>
     expect(findParentType({ } as any, 'nothing')).toBeUndefined();
   })
 });
