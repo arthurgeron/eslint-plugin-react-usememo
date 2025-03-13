@@ -1,7 +1,7 @@
 import type { Rule } from "eslint";
 import type { TSESTree } from "@typescript-eslint/types";
 import { defaultReactHookNames, jsxEmptyExpressionClassData, jsxEmptyExpressionData, callExpressionData, hookReturnExpressionData  } from './constants';
-import { MessagesRequireUseMemo  } from '../constants';
+import { MessagesRequireUseMemo  } from '../constants/messages';
 import {
   getExpressionMemoStatus,
   isComplexComponent,

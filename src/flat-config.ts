@@ -3,7 +3,7 @@ import requireUseMemoRule from "./require-usememo";
 import requireUseMemoChildrenRule from "./require-usememo-children";
 
 /**
- * Plugin definition for ESLint flat config format
+ * Plugin definition for ESLint flat config format (v9)
  */
 export const flatConfig = {
   meta: {

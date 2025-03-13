@@ -1,7 +1,7 @@
 import type { Rule } from "eslint";
 import type { TSESTree } from "@typescript-eslint/types";
 import type * as ESTree from "estree";
-import type { MessagesRequireUseMemo } from '../constants';
+import type { MessagesRequireUseMemo } from '../constants/messages';
 import type {  ExpressionData, ReactImportInformation } from "./types";
 import { MemoStatus, type MemoStatusToReport } from "src/types";
 import { messageIdToHookDict, nameGeneratorUUID, defaultImportRangeStart } from "./constants";

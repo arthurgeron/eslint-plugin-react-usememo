@@ -1,8 +1,8 @@
-import { configs, rules } from "./eslintConfig";
-import { flatConfig } from "./eslint-configs";
+import { configs, rules } from "./traditional-config";
+import { flatConfig } from "./flat-config";
 
-export { configs, rules } from "./eslintConfig";
-export { flatConfig } from "./eslint-configs";
+export { configs, rules } from "./traditional-config";
+export { flatConfig } from "./flat-config";
 
 export default {
   rules,

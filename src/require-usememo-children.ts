@@ -5,7 +5,7 @@ import {
   getExpressionMemoStatus,
   isComplexComponent,
 } from "./utils";
-import { MessagesRequireUseMemoChildren } from "./constants";
+import { MessagesRequireUseMemoChildren } from "./constants/messages";
 import { MemoStatus } from "src/types";
 
 const rule: Rule.RuleModule = {

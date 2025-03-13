@@ -3,6 +3,10 @@
   "entry": ["src/index.ts"],
   "project": "**/*.ts",
   "ignoreUnusedDependencies": ["estree"],
+  "ignoreFiles": [
+    "src/flat-config.ts",
+    "src/traditional-config.ts"
+  ],
   "rules": {
     "exports": "error"
   },
