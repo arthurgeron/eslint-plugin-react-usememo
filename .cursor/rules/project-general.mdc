@@ -34,4 +34,4 @@ The project is designed to work with both ESLint v8 and v9. The `src/utils/compa
 
 ## Documentation
 
-For more details on project setup and overall guidelines, please refer to [README.md](../../README.md) and the documentation in the `docs/` directory.
+For more details on project setup and overall guidelines, please refer to [README.md](mdc:../../README.md) and the documentation in the `docs/` directory.

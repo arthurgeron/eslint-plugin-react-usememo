@@ -39,7 +39,15 @@ The plugin is designed to be compatible with both ESLint v8 and v9, using utilit
 
 For more details on individual rules and migration guides, refer to the documentation files in the `docs/rules` directory:
 
-- [require-memo](../docs/rules/require-memo.md)
-- [require-usememo](../docs/rules/require-usememo.md)
-- [require-usememo-children](../docs/rules/require-usememo-children.md)
-- [ESLint v9 Migration Guide](../docs/rules/eslint-v9-migration-guide.md)
+- [require-memo](mdc:../docs/rules/require-memo.md)
+- [require-usememo](mdc:../docs/rules/require-usememo.md)
+- [require-usememo-children](mdc:../docs/rules/require-usememo-children.md)
+- [Migrating to V9.x](mdc:https:/eslint.org/docs/latest/use/migrate-to-9.0.0)
+- [ESLint v9 Migration Guide](mdc:../docs/rules/eslint-v9-migration-guide.md)
+- [Creating ESLint V9 Plugins](mdc:https:/eslint.org/docs/latest/extend/plugins)
+- [Sharing ESLint V9 Configurations](mdc:https:/eslint.org/docs/latest/extend/shareable-configs)
+- [Custom ESLint V9 Processors](mdc:https:/eslint.org/docs/latest/extend/custom-processors)
+- [Custom ESLint V9 Parsers](mdc:https:/eslint.org/docs/latest/extend/custom-parsers)
+- [Custom ESLint V9 Formatters](mdc:https:/eslint.org/docs/latest/extend/custom-formatters)
+- [Custom ESLint V9 Rules](mdc:https:/eslint.org/docs/latest/extend/custom-rules)
+- [Custom ESLint V9 Rule Tutorial](mdc:https:/eslint.org/docs/latest/extend/custom-rule-tutorial)
