@@ -22,7 +22,6 @@
     "@types/uuid": "9.0.6",
     "@typescript-eslint/parser": "5.30.6",
     "@typescript-eslint/types": "5.30.6",
-    "cross-env": "7.0.3",
     "eslint": "8.19.0",
     "eslint-v9": "npm:eslint@9.23.0",
     "husky": "9.1.7",
@@ -34,7 +33,7 @@
   },
   "scripts": {
     "test": "./node_modules/.bin/jest",
-    "test:v9": "cross-env TEST_ESLINT_V9=true ./node_modules/.bin/jest",
+    "test:v9": "./node_modules/.bin/jest",
     "build": "rm -rf dist && rollup -c",
     "prepare": "husky",
     "prepublishOnly": "npm run build",
