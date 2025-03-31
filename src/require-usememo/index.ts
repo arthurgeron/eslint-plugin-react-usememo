@@ -10,6 +10,7 @@ import {
 import type {ExpressionTypes, NodeType, ExpressionData, ReactImportInformation, ImportNode} from './types';
 import { checkForErrors, fixBasedOnMessageId, getIsHook } from './utils';
 import { type ESNode, MemoStatus } from "src/types";
+import { safeGetScope } from 'src/require-memo/utils';
 
 const rule: Rule.RuleModule  = {
   meta: {
@@ -47,7 +48,7 @@ const rule: Rule.RuleModule  = {
 
     function process(node: NodeType, _expression?: ExpressionTypes, expressionData?: ExpressionData, checkContext = false) {
 
-      const isGlobalScope = context.getScope().block.type === 'Program';
+      const isGlobalScope = safeGetScope(context)?.(node)?.block.type === 'Program';
       if (checkContext && isGlobalScope) {
         return;
       }
