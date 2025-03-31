@@ -5,7 +5,8 @@
   "ignoreUnusedDependencies": ["estree"],
   "ignoreFiles": [
     "src/flat-config.ts",
-    "src/traditional-config.ts"
+    "src/traditional-config.ts",
+    "__tests__/testcases/*.ts"
   ],
   "rules": {
     "exports": "error"
