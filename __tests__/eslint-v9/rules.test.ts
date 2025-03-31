@@ -29,18 +29,16 @@ const {
 } = createRequireUseMemoChildrenTestCases();
 
 describe("ESLint v9", () => {
-	describe("Require-memo", () => {
+	describe("Require", () => {
 		ruleTesterV9.run(
-			"Require-memo",
+			"Memo",
 			requireMemo as unknown as Rule.RuleModule,
 			{
 				valid: validMemoTestCases as any,
 				invalid: invalidMemoTestCases as any,
 			},
 		);
-	});
 
-	describe("Require-useCallback", () => {
 		ruleTesterV9.run(
 			"useCallback",
 			requireUseCallback as unknown as Rule.RuleModule,
@@ -49,16 +47,12 @@ describe("ESLint v9", () => {
 				invalid: invalidUseCallbackTestCases as any,
 			},
 		);
-	});
 
-	describe("Require-useMemo", () => {
 		ruleTesterV9.run("useMemo", requireUseMemo as unknown as Rule.RuleModule, {
 			valid: validUseMemoTestCases as any,
 			invalid: invalidUseMemoTestCases as any,
 		});
-	});
 
-	describe("Require-useMemo-children", () => {
 		ruleTesterV9.run(
 			"useMemo children",
 			requireUseMemoChildren as unknown as Rule.RuleModule,

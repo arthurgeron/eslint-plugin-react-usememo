@@ -30,31 +30,33 @@ const {
 } = createRequireUseMemoChildrenTestCases();
 
 describe("ESLint v8", () => {
-	describe("Require-memo", () => {
-		ruleTester.run("Require-memo", requireMemo as unknown as Rule.RuleModule, {
+	describe("Require", () => {
+		ruleTester.run("Memo", requireMemo as unknown as Rule.RuleModule, {
 			valid: validMemoTestCases as any,
 			invalid: invalidMemoTestCases as any,
 		});
-	});
 
-	describe("Require-usecallback", () => {
-		ruleTester.run("useCallback", requireUseCallback as unknown as Rule.RuleModule, {
-			valid: validUseCallbackTestCases as any,
-			invalid: invalidUseCallbackTestCases as any,
-		});
-	});
+		ruleTester.run(
+			"useCallback",
+			requireUseCallback as unknown as Rule.RuleModule,
+			{
+				valid: validUseCallbackTestCases as any,
+				invalid: invalidUseCallbackTestCases as any,
+			},
+		);
 
-	describe("Require-usememo", () => {
 		ruleTester.run("useMemo", requireUseMemo as unknown as Rule.RuleModule, {
 			valid: validUseMemoTestCases as any,
 			invalid: invalidUseMemoTestCases as any,
 		});
-	});
 
-	describe("Require-usememo-children", () => {
-		ruleTester.run("useMemo children", requireUseMemoChildren as unknown as Rule.RuleModule, {
-			valid: validUseMemoChildrenTestCases as any,
-			invalid: invalidUseMemoChildrenTestCases as any,
-		});
+		ruleTester.run(
+			"useMemo children",
+			requireUseMemoChildren as unknown as Rule.RuleModule,
+			{
+				valid: validUseMemoChildrenTestCases as any,
+				invalid: invalidUseMemoChildrenTestCases as any,
+			},
+		);
 	});
 });
