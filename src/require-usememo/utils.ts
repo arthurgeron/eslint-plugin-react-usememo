@@ -254,7 +254,7 @@ export function fixBasedOnMessageId(
 ) {
 	// Get source code in a way that works with both v8 and v9
 	const sourceCode =
-		"getSourceCode" in context ? context.getSourceCode() : context.sourceCode;
+		"getSourceCode" in context ? context.getSourceCode() : (context as RuleV9.RuleContext)?.sourceCode;
 
 	const hook = messageIdToHookDict[messageId] || "useMemo";
 	const isObjExpression = node.type === "ObjectExpression";
