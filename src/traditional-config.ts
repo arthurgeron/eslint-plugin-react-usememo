@@ -2,6 +2,7 @@ import requireMemoRule from "./require-memo";
 import requireUseMemoRule from "./require-usememo";
 import requireUseMemoChildrenRule from "./require-usememo-children";
 import type { Rule } from "eslint";
+import type { CompatibleRuleModule } from "./utils/compatibility";
 
 // Define plugin metadata for ESLint v8 compatibility
 const meta = {
@@ -10,7 +11,8 @@ const meta = {
 };
 
 // Traditional rule exports with proper typing (ESLint v8)
-export const rules: Record<string, Rule.RuleModule> = {
+// Use a more flexible typing that works for both v8 and v9
+export const rules: Record<string, Rule.RuleModule | CompatibleRuleModule> = {
   "require-memo": requireMemoRule,
   "require-usememo": requireUseMemoRule,
   "require-usememo-children": requireUseMemoChildrenRule,
@@ -30,10 +32,11 @@ export const configs = {
 
 // Add meta information to each rule
 for (const ruleName of Object.keys(rules)) {
-  rules[ruleName].meta = {
-    ...rules[ruleName].meta,
+  const rule = rules[ruleName] as CompatibleRuleModule;
+  rule.meta = {
+    ...rule.meta,
     docs: {
-      ...rules[ruleName].meta?.docs,
+      ...rule.meta.docs,
       url: `https://github.com/arthurgeron/eslint-plugin-react-usememo/blob/main/docs/rules/${ruleName}.md`
     }
   };

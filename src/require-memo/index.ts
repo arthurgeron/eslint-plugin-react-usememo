@@ -1,10 +1,13 @@
 import type { Rule } from "eslint-v9";
+import type { Rule as RuleV8 } from "eslint";
 import { findVariable, isComponentName } from "../utils";
-import { checkVariableDeclaration, checkFunction, safeGetScope } from "./utils";
+import { checkVariableDeclaration, checkFunction } from "./utils";
 import type { MemoFunctionDeclaration, MemoFunctionExpression } from "./types";
 import type { TSESTree } from "@typescript-eslint/types";
+import { getCompatibleScope, type CompatibleNode } from "../utils/compatibility";
+import type { CompatibleRuleModule } from "../utils/compatibility";
 
-const rule: Rule.RuleModule = {
+const rule: CompatibleRuleModule = {
 	meta: {
 		messages: {
 			"memo-required": "Component definition not wrapped in React.memo()",
@@ -17,51 +20,55 @@ const rule: Rule.RuleModule = {
 			},
 		],
 	},
-	create: (context) => {
+	create: (context: RuleV8.RuleContext | Rule.RuleContext) => {
 		return {
-			ExportNamedDeclaration(node) {
+			ExportNamedDeclaration(node: CompatibleNode) {
+				// Use type assertions to help TypeScript understand the node structure
+				const tsNode = node as TSESTree.ExportNamedDeclaration;
 				// Check if the node has declaration and is a function
 				if (
-					node.declaration &&
-					node.declaration.type === "VariableDeclaration"
+					tsNode.declaration &&
+					tsNode.declaration.type === "VariableDeclaration"
 				) {
-					const declarations = node.declaration.declarations;
+					const declarations = tsNode.declaration.declarations;
 					for (const declaration of declarations) {
 						if (
 							isComponentName((declaration?.id as TSESTree.Identifier)?.name)
 						) {
 							checkVariableDeclaration(
 								context,
-								declaration as TSESTree.VariableDeclarator,
+								declaration,
 							);
 						}
 					}
 					return;
 				}
-				if (node?.declaration?.type === "FunctionDeclaration") {
-					checkFunction(context, node.declaration as MemoFunctionDeclaration);
+				if (tsNode.declaration?.type === "FunctionDeclaration") {
+					checkFunction(context, tsNode.declaration as MemoFunctionDeclaration);
 				}
 			},
-			ExportDefaultDeclaration(node) {
+			ExportDefaultDeclaration(node: CompatibleNode) {
+				// Use type assertions to help TypeScript understand the node structure
+				const tsNode = node as TSESTree.ExportDefaultDeclaration;
+				
 				// Handle default export of arrow functions and function expressions directly
 				if (
-					node.declaration.type === "ArrowFunctionExpression" ||
-					node.declaration.type === "FunctionExpression"
+					tsNode.declaration.type === "ArrowFunctionExpression" ||
+					tsNode.declaration.type === "FunctionExpression"
 				) {
 					// Direct export default of a function should use memo
 					context.report({
-						node: node.declaration,
+						node: tsNode.declaration as any,
 						messageId: "memo-required",
 					});
 					return;
 				}
 
 				// It was exported in one place but declared elsewhere
-				if (node.declaration.type === "Identifier") {
-					const variable = findVariable(
-						safeGetScope(context)?.(node),
-						node.declaration,
-					);
+				if (tsNode.declaration.type === "Identifier") {
+					const scope = getCompatibleScope(context, node);
+					if (scope) {
+						const variable = findVariable(scope, tsNode.declaration);
 
 					if (variable?.defs[0]?.type === "Variable") {
 						const variableNode = variable.defs[0].node;
@@ -71,14 +78,15 @@ const rule: Rule.RuleModule = {
 						) {
 							checkVariableDeclaration(
 								context,
-								variableNode as TSESTree.VariableDeclarator,
+								variableNode,
 							);
 						}
 					}
+					}
 					return;
 				}
-				if (node.declaration.type === "FunctionDeclaration") {
-					checkFunction(context, node.declaration as MemoFunctionDeclaration);
+				if (tsNode.declaration.type === "FunctionDeclaration") {
+					checkFunction(context, tsNode.declaration as MemoFunctionDeclaration);
 				}
 			},
 		};

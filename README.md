@@ -133,7 +133,9 @@ npm install @arthurgeron/eslint-plugin-react-usememo --save-dev
 
 ## Compatibility
 
-This plugin supports both ESLint v8 (traditional configuration) and ESLint v9 (flat configuration).
+This plugin supports ESLint v8 (traditional configuration) and is preparing support for ESLint v9 (flat configuration).
+
+> **Important Note**: While the plugin exports the proper structure for ESLint v9, there are some compatibility issues with ESLint v9's new architecture. We're actively working on resolving these issues. For now, please continue using ESLint v8 with the traditional configuration.
 
 ### ESLint v8 Configuration (.eslintrc)
 
@@ -152,7 +154,7 @@ Add the plugin and enable the rules in your `.eslintrc` file:
 
 ### ESLint v9 Configuration (eslint.config.js)
 
-ESLint v9 uses the flat config format. You can use this plugin in two ways:
+ESLint v9 support is in progress. Once fully compatible, you'll be able to use the plugin in the following ways:
 
 #### Option 1: Importing the default config
 
@@ -211,6 +213,12 @@ module.exports = [
   },
 ];
 ```
+
+For detailed migration guidance from ESLint v8 to ESLint v9, please refer to our [ESLint v9 Migration Guide](https://github.com/arthurgeron/eslint-plugin-react-usememo/blob/main/docs/rules/eslint-v9-migration-guide.md).
+
+## Examples
+
+For working examples of both ESLint v8 (traditional config) and ESLint v9 (flat config) implementations, please check the [examples directory](https://github.com/arthurgeron/eslint-plugin-react-usememo/tree/main/examples).
 
 ## Rule #1: `require-usememo` ***(recommended)***
 This rule requires complex values (objects, arrays, functions, and JSX) that get passed props or referenced as a hook dependency to be wrapped in useMemo() or useCallback().

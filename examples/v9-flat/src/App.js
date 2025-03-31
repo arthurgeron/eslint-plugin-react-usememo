@@ -25,17 +25,34 @@ function CountDisplay({ count, label, onClick }) {
     age: 30
   };
   
+  // This should trigger a lint error - a function that should use useCallback
+  const handleClick = () => {
+    console.log('Clicked!', count);
+    onClick();
+  };
+  
+  // This should trigger a lint error - an array that should use useMemo
+  const items = ['item1', 'item2', 'item3'];
+  
   return (
     <div style={styles.container}>
       <p style={styles.text}>{label}: {count}</p>
       <Custom data={data} />
-      <button type="button" onClick={onClick}>Increment</button>
+      <button type="button" onClick={handleClick}>Increment</button>
+      <ul>
+        {items.map(item => <li key={item}>{item}</li>)}
+      </ul>
     </div>
   );
 }
 
 // Wrap with React.memo to prevent re-renders when props don't change
 const MemoizedCountDisplay = React.memo(CountDisplay);
+
+// This component should trigger errors because it's not wrapped in React.memo
+function UnmemoizedComponent({ value }) {
+  return <div>{value}</div>;
+}
 
 function App() {
   const [count1, setCount1] = useState(0);
@@ -84,6 +101,8 @@ function App() {
         label="Counter 2" 
         onClick={incrementCount2} 
       />
+      
+      <UnmemoizedComponent value={count1} />
     </div>
   );
 }

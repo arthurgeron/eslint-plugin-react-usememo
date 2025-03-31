@@ -1,4 +1,4 @@
-import type { Rule } from "eslint";
+import type { Rule } from "eslint-v9";
 import type { TSESTree } from "@typescript-eslint/types";
 import type { MessagesRequireUseMemo} from '../constants/messages';
 

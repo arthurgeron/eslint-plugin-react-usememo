@@ -1,4 +1,5 @@
 import type { Rule } from "eslint";
+import type { Rule as RuleV9 } from "eslint-v9";
 import type * as ESTree from "estree";
 import type { TSESTree } from "@typescript-eslint/types";
 import {
@@ -7,8 +8,10 @@ import {
 } from "./utils";
 import { MessagesRequireUseMemoChildren } from "./constants/messages";
 import { MemoStatus } from "src/types";
+import type { CompatibleContext } from "./require-usememo/utils";
+import type { CompatibleNode, CompatibleRuleModule } from "./utils/compatibility";
 
-const rule: Rule.RuleModule = {
+const rule: CompatibleRuleModule = {
   meta: {
     messages: MessagesRequireUseMemoChildren,
     schema: [
@@ -19,10 +22,10 @@ const rule: Rule.RuleModule = {
       },
     ],
   },
-  create: (context) => {
+  create: (context: CompatibleContext) => {
     let isClass = false;
-    function report(node: Rule.Node, messageId: keyof typeof MessagesRequireUseMemoChildren) {
-      context.report({ node, messageId: messageId as string });
+    function report(node: CompatibleNode, messageId: keyof typeof MessagesRequireUseMemoChildren) {
+      context.report({ node: node as any, messageId: messageId as string });
     }
 
     return {
@@ -30,11 +33,12 @@ const rule: Rule.RuleModule = {
         isClass = true;
       },
 
-      JSXElement: (node: ESTree.Node & Rule.NodeParentExtension) => {
+      JSXElement: (node: CompatibleNode) => {
+        const tsNode = node as unknown as TSESTree.JSXElement;
         const {
           children,
           openingElement,
-        } = (node as unknown) as TSESTree.JSXElement & Rule.NodeParentExtension;
+        } = tsNode;
         if (isClass || !isComplexComponent(openingElement)) return;
 
         for (const child of children) {

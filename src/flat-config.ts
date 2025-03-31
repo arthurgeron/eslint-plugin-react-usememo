@@ -1,5 +1,5 @@
 import requireMemoRule from "./require-memo";
-import requireUseMemoRule from "./require-usememo";
+import requireUseMemoRule from "./require-usememo/index";
 import requireUseMemoChildrenRule from "./require-usememo-children";
 
 /**
@@ -14,15 +14,21 @@ export const flatConfig = {
     'require-memo': requireMemoRule,
     'require-usememo': requireUseMemoRule,
     'require-usememo-children': requireUseMemoChildrenRule,
-  },
-  configs: {
+  }
+};
+
+// Add configs after defining the plugin to reference the plugin itself
+Object.defineProperty(flatConfig, 'configs', {
+  value: {
     recommended: {
-      plugins: ['@arthurgeron/react-usememo'],
+      plugins: {
+        '@arthurgeron/react-usememo': flatConfig
+      },
       rules: {
         '@arthurgeron/react-usememo/require-usememo': 'error',
         '@arthurgeron/react-usememo/require-memo': 'error',
         '@arthurgeron/react-usememo/require-usememo-children': 'error',
       },
     },
-  },
-}; 
+  }
+}); 
