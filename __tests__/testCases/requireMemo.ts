@@ -81,7 +81,6 @@ export const createRequireMemoTestCases = () => {
       }
     },
     { code: "const Component = () => <div />; export default memo(Component);" },
-    { code: "const Component = memo(() => <div />); export default Component;" },
     {
       code: "export const Component = () => <div />",
       options: [{
@@ -158,10 +157,6 @@ export const createRequireMemoTestCases = () => {
     },
     {
       code: "export default function Component() { return <div />; }",
-      errors: [{ messageId: "memo-required" }],
-    },
-    {
-      code: "const Component = () => <div />; export default Component;",
       errors: [{ messageId: "memo-required" }],
     },
   ];

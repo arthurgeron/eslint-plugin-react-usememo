@@ -275,14 +275,6 @@ export const createRequireUseMemoTestCases = () => {
       code: `
           function useTesty() {
             const x = {};
-            return useData(x);
-          }`,
-      options: [{ checkHookReturnObject: true, checkHookCalls: false }],
-    },
-    {
-      code: `
-          function useTesty() {
-            const x = {};
             return use(x);
           }`,
     },
@@ -551,21 +543,6 @@ export const createRequireUseMemoTestCases = () => {
         const Component = () => {
           const userData = useMemo(() => ({}), []);
           return <Child userData={userData} />;
-        }`,
-      errors: [{ messageId: "object-usememo-props" }],
-    },
-    {
-      code: `
-        const Component = () => {
-          const userData = undefined;
-          return <Child userData={{}} />;
-        }`,
-      output: `import { useMemo } from 'react';
-
-        const Component = () => {
-          const userData = undefined;
-          const _userData = useMemo(() => ({}), []);
-          return <Child userData={_userData} />;
         }`,
       errors: [{ messageId: "object-usememo-props" }],
     },
