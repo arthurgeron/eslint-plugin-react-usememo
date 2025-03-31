@@ -1,0 +1,23 @@
+---
+description: 
+globs: src/**/*
+alwaysApply: false
+---
+
+# Code Style Guidelines
+
+## TypeScript
+
+The project uses TypeScript.
+
+## React Best Practices
+
+Follow React best practices for component design, state management, and performance optimization.
+
+## Memoization
+
+Use `useMemo`, `useCallback`, and `React.memo` appropriately to optimize performance.
+
+## Error Handling
+
+Implement robust error handling and validation.

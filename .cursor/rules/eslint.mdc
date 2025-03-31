@@ -1,0 +1,45 @@
+---
+description: 
+globs: *.js,*.jsx,*.ts,*.tsx
+alwaysApply: false
+---
+
+# ESLint Guidelines
+
+## What is ESLint?
+
+ESLint is a static code analysis tool for identifying problematic patterns found in ECMAScript/JavaScript code.
+
+## Purpose
+
+To enforce code style, catch potential errors, and improve code quality.
+
+## Configuration
+
+This project supports both ESLint v8 (traditional configuration using `.eslintrc.json`) and ESLint v9 (flat configuration using `eslint.config.js`).
+
+## Plugin
+
+This project provides an ESLint plugin named `@arthurgeron/eslint-plugin-react-usememo`.
+
+## Rules
+
+The plugin includes the following rules:
+
+- `require-usememo`: Requires complex values passed as props or used as hook dependencies to be wrapped in `useMemo` or `useCallback`.
+- `require-memo`: Requires all function components to be wrapped in `React.memo()`.
+- `require-usememo-children`: Requires complex values passed as children to be wrapped in `useMemo` or `useCallback`.
+
+## Compatibility
+
+The plugin is designed to be compatible with both ESLint v8 and v9, using utility functions in `src/utils/compatibility.ts` to handle differences between the versions.
+
+
+## Documentation
+
+For more details on individual rules and migration guides, refer to the documentation files in the `docs/rules` directory:
+
+- [require-memo](../docs/rules/require-memo.md)
+- [require-usememo](../docs/rules/require-usememo.md)
+- [require-usememo-children](../docs/rules/require-usememo-children.md)
+- [ESLint v9 Migration Guide](../docs/rules/eslint-v9-migration-guide.md)
