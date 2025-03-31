@@ -1,30 +1,22 @@
 /**
  * ESLint v9 tests for require-memo rule
- * 
+ *
  * To run these tests with ESLint v9:
  * 1. Temporarily update package.json to use eslint v9
  * 2. Run: yarn install
  * 3. Run: yarn test __tests__/require-memo-v9.test.ts
  */
-import { createRequireMemoTestCases } from './testCases';
-import { createRuleTesterV9 } from './ruleTesterV9';
-import rule from '../src/require-memo';
+import { createRequireMemoTestCases } from "../testCases";
+import { createRuleTesterV9 } from "./ruleTester";
+import rule from "../../src/require-memo";
+import type { Rule } from "eslint-v9";
 
-if (process.env.TEST_ESLINT_V9 === 'true') {
-  const ruleTesterV9 = createRuleTesterV9();
-  
-  const { validTestCases, invalidTestCases } = createRequireMemoTestCases();
+const ruleTesterV9 = createRuleTesterV9();
 
-  // Use type assertion to handle incompatibility between v8 and v9 rule formats
-  // @ts-expect-error ESLint v8 rule used with v9 tester (compatible but types don't match)
-  ruleTesterV9.run('Require-memo (ESLint v9)', rule, {
-    valid: validTestCases,
-    invalid: invalidTestCases,
-  });
-} else {
-  describe('ESLint v9 Tests - require-memo', () => {
-    test('Skipped in ESLint v8 environment', () => {
-      console.log('Skipping ESLint v9 tests in v8 environment. Set TEST_ESLINT_V9=true to run.');
-    });
-  });
-} 
+const { validTestCases, invalidTestCases } = createRequireMemoTestCases();
+
+// Use type assertion to handle incompatibility between v8 and v9 rule formats
+ruleTesterV9.run("Require-memo (ESLint v9)", rule as unknown as Rule.RuleModule, {
+	valid: validTestCases,
+	invalid: invalidTestCases,
+});
