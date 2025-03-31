@@ -4,7 +4,7 @@
  */
 import { RuleTester } from "eslint";
 
-export const ruleTesterV8 = new RuleTester({
+export const ruleTester = new RuleTester({
   parser: require.resolve("@typescript-eslint/parser"),
   parserOptions: {
     ecmaVersion: 2020,
@@ -18,7 +18,7 @@ export const ruleTesterV8 = new RuleTester({
 if (process.env.NODE_ENV === 'test') {
   describe('ESLint V8 RuleTester', () => {
     test('exports a valid RuleTester', () => {
-      expect(ruleTesterV8).toBeDefined();
+      expect(ruleTester).toBeDefined();
     });
   });
 } 
