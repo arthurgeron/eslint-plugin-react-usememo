@@ -48,6 +48,17 @@ const rule: Rule.RuleModule = {
         }
       },
       ExportDefaultDeclaration(node) {
+        // Handle default export of arrow functions and function expressions directly
+        if (node.declaration.type === 'ArrowFunctionExpression' || 
+            node.declaration.type === 'FunctionExpression') {
+          // Direct export default of a function should use memo
+          context.report({ 
+            node: node.declaration,
+            messageId: "memo-required" 
+          });
+          return;
+        }
+        
         // It was exported in one place but declared elsewhere
         if (node.declaration.type === 'Identifier') {
           const variable = findVariable(getScope(node), node.declaration);

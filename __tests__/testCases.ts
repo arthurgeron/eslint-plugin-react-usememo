@@ -62,7 +62,7 @@ export const createRequireMemoTestCases = () => {
         const Component = () => <div />;
         export default Component;
       `,
-      errors: [{ messageId: 'wrapWithMemo' }],
+      errors: [{ messageId: 'memo-required' }],
     },
     // Invalid case: Default export not wrapped in memo
     {
@@ -70,7 +70,7 @@ export const createRequireMemoTestCases = () => {
         import React from 'react';
         export default () => <div />;
       `,
-      errors: [{ messageId: 'wrapWithMemo' }],
+      errors: [{ messageId: 'memo-required' }],
     },
     // Invalid case: Named export not wrapped in memo
     {
@@ -78,7 +78,7 @@ export const createRequireMemoTestCases = () => {
         import React from 'react';
         export const Component = () => <div />;
       `,
-      errors: [{ messageId: 'wrapWithMemo' }],
+      errors: [{ messageId: 'memo-required' }],
     },
     // Invalid case: Component with expression not wrapped in memo
     {
@@ -89,7 +89,7 @@ export const createRequireMemoTestCases = () => {
         };
         export default Component;
       `,
-      errors: [{ messageId: 'wrapWithMemo' }],
+      errors: [{ messageId: 'memo-required' }],
     },
   ];
 

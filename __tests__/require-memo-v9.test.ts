@@ -15,6 +15,8 @@ if (process.env.TEST_ESLINT_V9 === 'true') {
   
   const { validTestCases, invalidTestCases } = createRequireMemoTestCases();
 
+  // Use type assertion to handle incompatibility between v8 and v9 rule formats
+  // @ts-expect-error ESLint v8 rule used with v9 tester (compatible but types don't match)
   ruleTesterV9.run('Require-memo (ESLint v9)', rule, {
     valid: validTestCases,
     invalid: invalidTestCases,
