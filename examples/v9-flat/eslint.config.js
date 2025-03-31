@@ -48,8 +48,8 @@ export default [
     },
     rules: {
       '@arthurgeron/react-usememo/require-usememo': 'error',
-      '@arthurgeron/react-usememo/require-memo': 'error',
-      '@arthurgeron/react-usememo/require-usememo-children': 'error'
+      '@arthurgeron/react-usememo/require-memo': 'warn',
+      '@arthurgeron/react-usememo/require-usememo-children': 'warn'
     }
   }
 ];

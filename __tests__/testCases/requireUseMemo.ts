@@ -295,6 +295,7 @@ export const createRequireUseMemoTestCases = () => {
     },
     {
       code: `function useTest() {
+          // @ts-ignore
           const y: boolean | undefined = false;
           const x = useMemo(() => x, [y]);
           return {x};
@@ -469,12 +470,6 @@ export const createRequireUseMemoTestCases = () => {
     },
     {
       code: `class Component {
-          render() {
-            const myInstance = new Object();
-            return <Child prop={myInstance} />;
-          }
-        }`,
-      output: `class Component {
           render() {
             const myInstance = new Object();
             return <Child prop={myInstance} />;
@@ -661,6 +656,7 @@ export const createRequireUseMemoTestCases = () => {
     {
       code: `
         const useTest = () => {
+          // @ts-ignore
           const x: boolean | undefined = false;
           function y() {}
           return {x, y};
@@ -668,6 +664,7 @@ export const createRequireUseMemoTestCases = () => {
       output: `import { useCallback } from 'react';
 
         const useTest = () => {
+          // @ts-ignore
           const x: boolean | undefined = false;
           const y = useCallback(() => {}, []);
           return {x, y};
@@ -846,15 +843,3 @@ import type { ComponentProps } from 'react';
 
   return { validTestCases, invalidTestCases };
 };
-
-// Add a dummy test to prevent Jest errors
-if (process.env.NODE_ENV === 'test') {
-  describe('Test Cases Utility', () => {
-    test('exports test case generator functions', () => {
-      expect(createRequireUseMemoTestCases).toBeDefined();
-      const testCases = createRequireUseMemoTestCases();
-      expect(testCases.validTestCases.length).toBeGreaterThan(0);
-      expect(testCases.invalidTestCases.length).toBeGreaterThan(0);
-    });
-  });
-} 

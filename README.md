@@ -159,20 +159,21 @@ ESLint v9 support is in progress. Once fully compatible, you'll be able to use t
 #### Option 1: Importing the default config
 
 ```js
-import { flatConfig } from '@arthurgeron/eslint-plugin-react-usememo';
-
+import plugin from '@arthurgeron/eslint-plugin-react-usememo';
 export default [
   {
     files: ['**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx'],
     languageOptions: {
-      ecmaVersion: 2020,
+      ecmaVersion: 2020,  
       sourceType: 'module',
-      ecmaFeatures: {
-        jsx: true,
-      },
+      parserOptions: {
+        ecmaFeatures: {
+          jsx: true
+        }
+      }
     },
     plugins: {
-      '@arthurgeron/react-usememo': flatConfig,
+      '@arthurgeron/react-usememo': plugin.flatConfig,
     },
     rules: {
       '@arthurgeron/react-usememo/require-usememo': 'error',

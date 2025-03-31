@@ -314,15 +314,3 @@ export const createRequireUseCallbackTestCases = () => {
 
   return { validTestCases, invalidTestCases };
 };
-
-// Add a dummy test to prevent Jest errors
-if (process.env.NODE_ENV === 'test') {
-  describe('Test Cases Utility', () => {
-    test('exports test case generator functions', () => {
-      expect(createRequireUseCallbackTestCases).toBeDefined();
-      const testCases = createRequireUseCallbackTestCases();
-      expect(testCases.validTestCases.length).toBeGreaterThan(0);
-      expect(testCases.invalidTestCases.length).toBeGreaterThan(0);
-    });
-  });
-} 

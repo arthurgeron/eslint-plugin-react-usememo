@@ -75,10 +75,6 @@ export const createRequireMemoTestCases = () => {
     { 
       code: "export default function() { return <div /> };",
       filename: "dir/myFunction.js",
-      parserOptions: {
-        ecmaVersion: 6,
-        sourceType: "module"
-      }
     },
     { code: "const Component = () => <div />; export default memo(Component);" },
     {

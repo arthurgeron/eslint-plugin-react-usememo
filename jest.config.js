@@ -12,6 +12,7 @@ module.exports = {
   testPathIgnorePatterns : [
     "<rootDir>/src/index.ts", 
     "<rootDir>/__tests__/(.*)/ruleTester.ts", 
+    "<rootDir>/__tests__/testcases/(.*)", 
   ],
   collectCoverage: true,
   collectCoverageFrom: [

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { createRequireMemoTestCases } from "../testcases/requireMemo";
 import { createRequireUseCallbackTestCases } from "../testcases/requireUseCallback";
 import { createRequireUseMemoTestCases } from "../testcases/requireUseMemo";

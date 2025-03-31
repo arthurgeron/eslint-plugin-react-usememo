@@ -6,30 +6,20 @@
  * This file is designed to work when you switch to ESLint v9
  */
 import { RuleTester } from "eslint-v9";
-import tsParser from "@typescript-eslint/parser";
 
 export const createRuleTesterV9 = () => {
-  // When using ESLint v9, we need to use the right configuration
-  return new RuleTester({ 
+  // For ESLint v9, we need to use the flat config format with jsx support
+  return new RuleTester({
     languageOptions: {
-      parser: tsParser,
+      parser: require('@typescript-eslint/parser'),
       ecmaVersion: 2020,
-      sourceType: "module",
+      sourceType: 'module',
       parserOptions: {
         ecmaFeatures: {
           jsx: true
         }
       }
-    },
+    }
   });
 };
 
-// Add a dummy test to prevent Jest errors
-// This is only for the file itself and won't be used by rule tests
-if (process.env.NODE_ENV === 'test') {
-  describe('ESLint V9 RuleTester', () => {
-    test('exports a valid RuleTester factory', () => {
-      expect(createRuleTesterV9).toBeDefined();
-    });
-  });
-} 
