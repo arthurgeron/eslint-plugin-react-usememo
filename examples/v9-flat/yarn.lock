@@ -24,7 +24,7 @@
     jsonpointer "^5.0.0"
     leven "^3.1.0"
 
-"@arthurgeron/eslint-plugin-react-usememo@file:../..":
+"@arthurgeron/eslint-plugin-react-usememo@../../":
   version "2.5.0"
   dependencies:
     minimatch "9.0.3"

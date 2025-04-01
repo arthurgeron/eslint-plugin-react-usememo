@@ -1,4 +1,6 @@
-{
+const path = require('node:path');
+
+module.exports = {
   "env": {
     "browser": true,
     "es2021": true,
@@ -6,7 +8,7 @@
   },
   "extends": [
     "eslint:recommended",
-    "plugin:react/recommended"
+    // "plugin:react/recommended"
   ],
   "parserOptions": {
     "ecmaFeatures": {
@@ -16,14 +18,14 @@
     "sourceType": "module"
   },
   "plugins": [
-    "react",
-    "react-hooks",
+    // "react",
+    // "react-hooks",
     "@arthurgeron/react-usememo"
   ],
   "rules": {
-    "react/react-in-jsx-scope": "off",
-    "react-hooks/rules-of-hooks": "error",
-    "react-hooks/exhaustive-deps": "warn",
+    // "react/react-in-jsx-scope": "off",
+    // "react-hooks/rules-of-hooks": "error",
+    // "react-hooks/exhaustive-deps": "warn",
     "@arthurgeron/react-usememo/require-usememo": "error",
     "@arthurgeron/react-usememo/require-memo": "error",
     "@arthurgeron/react-usememo/require-usememo-children": "error"

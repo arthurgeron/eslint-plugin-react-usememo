@@ -1,4 +1,4 @@
-import plugin from '@arthurgeron/eslint-plugin-react-usememo';
+import { flatConfig } from '@arthurgeron/eslint-plugin-react-usememo';
 import js from '@eslint/js';
 import reactPlugin from 'eslint-plugin-react';
 import reactHooksPlugin from 'eslint-plugin-react-hooks';
@@ -44,7 +44,7 @@ export default [
   {
     files: ['**/*.js', '**/*.jsx'],
     plugins: {
-      '@arthurgeron/react-usememo': plugin.flatConfig
+      '@arthurgeron/react-usememo': flatConfig
     },
     rules: {
       '@arthurgeron/react-usememo/require-usememo': 'error',

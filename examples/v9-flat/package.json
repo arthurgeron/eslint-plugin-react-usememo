@@ -16,6 +16,7 @@
     "react-scripts": "5.0.1"
   },
   "devDependencies": {
+    "@arthurgeron/eslint-plugin-react-usememo": "../../",
     "@eslint/js": "^9.0.0",
     "eslint": "^9.0.0",
     "eslint-plugin-react": "^7.33.2",
