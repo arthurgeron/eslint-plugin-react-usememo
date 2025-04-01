@@ -17,7 +17,13 @@ export default [
         sourcemap: true,
       },
     ],
-    plugins: [resolve(), commonjs(), typescript()],
+    plugins: [
+      resolve(), 
+      commonjs(), 
+      typescript({
+        exclude: ['**/__tests__/**', '**/*.test.ts', '**/testcases/**']
+      })
+    ],
     external: ['eslint', '@typescript-eslint/types'],
   },
 ];
