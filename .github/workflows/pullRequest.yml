@@ -164,3 +164,79 @@ jobs:
               repo: context.repo.repo,
               body: '${{ steps.version_check.outputs.ERROR_MESSAGE }}'
             })
+
+  check-v9-example:
+    name: Check v9-flat example for eslint errors
+    runs-on: ubuntu-latest
+    needs: install
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+
+      - name: Use Node.js 18.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+          cache: 'yarn'
+          cache-dependency-path: '**/yarn.lock'
+
+      - name: Restore node_modules
+        uses: actions/cache@v3
+        id: restore-build
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}
+
+      - name: Build plugin
+        run: |
+          yarn
+          yarn build
+
+      - name: Check for eslint errors in v9-flat example
+        run: |
+          cd examples/v9-flat
+          yarn
+          if ! yarn lint 2>&1 | grep -q "@arthurgeron/react-usememo/require-usememo"; then
+            echo "Error: Expected eslint error '@arthurgeron/react-usememo/require-usememo' not found in v9-flat example"
+            exit 1
+          fi
+
+  check-v8-example:
+    name: Check v8-traditional example for eslint errors
+    runs-on: ubuntu-latest
+    needs: install
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+
+      - name: Use Node.js 18.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+          cache: 'yarn'
+          cache-dependency-path: '**/yarn.lock'
+
+      - name: Restore node_modules
+        uses: actions/cache@v3
+        id: restore-build
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}
+
+      - name: Build plugin
+        run: |
+          yarn
+          yarn build
+
+      - name: Check for eslint errors in v8-traditional example
+        run: |
+          cd examples/v8-traditional
+          yarn
+          if ! yarn lint 2>&1 | grep -q "@arthurgeron/react-usememo/require-usememo"; then
+            echo "Error: Expected eslint error '@arthurgeron/react-usememo/require-usememo' not found in v8-traditional example"
+            exit 1
+          fi
