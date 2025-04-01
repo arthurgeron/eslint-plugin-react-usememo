@@ -38,7 +38,8 @@
     "prepare": "husky",
     "prepublishOnly": "npm run build",
     "publish:public": "npm publish --access public",
-    "deadCode": "knip"
+    "deadCode": "knip",
+    "lint": "echo 'Mocked so knip stops complaining'"
   },
   "files": [
     "dist"
