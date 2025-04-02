@@ -26,17 +26,17 @@ export const createRequireUseMemoChildrenTestCases = () => {
   ];
 
   const invalidTestCases = [
-    // {
-    //   code: `const Component = () => {
-    //     const children = React.useMemo(() => <div><Grandchild /></div>, []);
-    //     return <Child>
-    //       <>
-    //         {children}
-    //       </>
-    //     </Child>;
-    //   }`,
-    //   errors: [{ messageId: "jsx-usememo-children" }],
-    // },
+    {
+      code: `const Component = () => {
+        const children = React.useMemo(() => <div><Grandchild /></div>, []);
+        return <Child>
+          <>
+            {children}
+          </>
+        </Child>;
+      }`,
+      errors: [{ messageId: "jsx-usememo-children" }],
+    },
     {
       code: `const Component = () => {
         const children = <div />;
@@ -44,21 +44,21 @@ export const createRequireUseMemoChildrenTestCases = () => {
       }`,
       errors: [{ messageId: "jsx-usememo-children" }],
     },
-    // {
-    //   code: `const Component = () => {
-    //     const children = [<div />, <Child1 />, <Child2 />];
-    //     return <Child>{children}</Child>
-    //   }`,
-    //   errors: [{ messageId: "array-usememo-children" }],
-    // },
-    // {
-    //   code: `const Component = () => {
-    //     return <Child>
-    //       {() => <div />}
-    //     </Child>
-    //   }`,
-    //   errors: [{ messageId: "function-usecallback-children" }],
-    // }
+    {
+      code: `const Component = () => {
+        const children = [<div />, <Child1 />, <Child2 />];
+        return <Child>{children}</Child>
+      }`,
+      errors: [{ messageId: "array-usememo-children" }],
+    },
+    {
+      code: `const Component = () => {
+        return <Child>
+          {() => <div />}
+        </Child>
+      }`,
+      errors: [{ messageId: "function-usecallback-children" }],
+    }
   ];
 
   return { validTestCases, invalidTestCases };
