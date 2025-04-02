@@ -1,7 +1,7 @@
 ---
 description: 
-globs: *.js,*.jsx,*.ts,*.tsx
-alwaysApply: false
+globs: 
+alwaysApply: true
 ---
 
 # ESLint Guidelines
@@ -51,3 +51,11 @@ For more details on individual rules and migration guides, refer to the document
 - [Custom ESLint V9 Formatters](mdc:https:/eslint.org/docs/latest/extend/custom-formatters)
 - [Custom ESLint V9 Rules](mdc:https:/eslint.org/docs/latest/extend/custom-rules)
 - [Custom ESLint V9 Rule Tutorial](mdc:https:/eslint.org/docs/latest/extend/custom-rule-tutorial)
+
+## ESLint Plugin Development
+
+- Remember rules run frequently in IDE environments
+- Optimize core operations that run on every node visit
+- Cache results where possible
+- Use simple type checks and string operations over complex regex
+- Consider the impact on IDE performance
