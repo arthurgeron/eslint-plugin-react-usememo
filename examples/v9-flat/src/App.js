@@ -50,8 +50,54 @@ function CountDisplay({ count, label, onClick }) {
 const MemoizedCountDisplay = React.memo(CountDisplay);
 
 // This component should trigger errors because it's not wrapped in React.memo
-function UnmemoizedComponent({ value }) {
-  return <div>{value}</div>;
+export function UnmemoizedComponent({ value }) {
+  // Add some complexity to make sure it triggers the require-memo rule
+  const formattedValue = `Value: ${value}`;
+  const styles = {
+    container: {
+      padding: '10px',
+      margin: '5px',
+      border: '1px solid #ddd',
+      borderRadius: '3px'
+    }
+  };
+  
+  return (
+    <div style={styles.container}>
+      <p>{formattedValue}</p>
+      <span>This component should be memoized</span>
+    </div>
+  );
+}
+
+// Won't trigger ESLint errors because it's in ignoredComponents
+export function Header({ title }) {
+  return (
+    <header style={{ backgroundColor: '#f8f9fa', padding: '1rem' }}>
+      <h1>{title}</h1>
+    </header>
+  );
+}
+// Won't trigger ESLint errors because it's in ignoredComponents
+export function Footer() {
+  return (
+    <footer style={{ backgroundColor: '#f8f9fa', padding: '1rem', marginTop: '2rem' }}>
+      <p>© 2023 My Application</p>
+    </footer>
+  );
+}
+
+export function SimpleText({ text }) {
+  return <p>{text}</p>;
+}
+
+// A component with complex children that should trigger the require-usememo-children rule
+function ComplexChildContainer({ children }) {
+  return (
+    <div className="container">
+      {children}
+    </div>
+  );
 }
 
 function App() {
@@ -84,9 +130,29 @@ function App() {
     lastUpdated: new Date().toISOString()
   }), [count1, count2, total]);
   
+  // These objects would normally require useMemo, but won't throw errors because their props are in ignoredPropNames
+  const customStyle = { color: 'blue', fontWeight: 'bold' };
+  const customClassName = { primary: true, secondary: false };
+  
+  // Calling a hook that would normally require its arguments to be memoized
+  const useStateManagementResult = useStateManagement({ count1, count2 });
+  
+  // This complex JSX structure should be memoized when used as children
+  const complexChildren = (
+    <div>
+      <h2>Complex Children</h2>
+      <p>These children should be memoized with useMemo</p>
+      <ul>
+        <li>Item 1</li>
+        <li>Item 2</li>
+      </ul>
+    </div>
+  );
+  
   return (
     <div className="App">
       <h1>ESLint React useMemo Plugin Example (v9 Flat Config)</h1>
+      <Header title="Custom Header Component" />
       <p>Total: {total}</p>
       <p>Last Updated: {userData.lastUpdated}</p>
       
@@ -103,8 +169,32 @@ function App() {
       />
       
       <UnmemoizedComponent value={count1} />
+      
+      <div style={customStyle}>
+        This div has a style prop that would normally require useMemo
+      </div>
+      
+      <div className={customClassName}>
+        This div has a className prop that would normally require useMemo
+      </div>
+      
+      <SimpleText text="This component doesn't need memo" />
+      
+      <div>{useStateManagementResult}</div>
+      
+      <ComplexChildContainer>
+        {complexChildren}
+      </ComplexChildContainer>
+      
+      <Footer />
     </div>
   );
 }
 
+// Mock hook for demonstration
+function useStateManagement(state) {
+  return JSON.stringify(state);
+}
+
+export { MemoizedCountDisplay, ComplexChildContainer };
 export default App; 

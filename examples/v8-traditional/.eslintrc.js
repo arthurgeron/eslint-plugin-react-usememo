@@ -26,9 +26,30 @@ module.exports = {
     // "react/react-in-jsx-scope": "off",
     // "react-hooks/rules-of-hooks": "error",
     // "react-hooks/exhaustive-deps": "warn",
-    "@arthurgeron/react-usememo/require-usememo": "error",
-    "@arthurgeron/react-usememo/require-memo": "error",
-    "@arthurgeron/react-usememo/require-usememo-children": "error"
+    
+    // require-usememo rule with custom options
+    "@arthurgeron/react-usememo/require-usememo": ["error", {
+      strict: true,
+      checkHookReturnObject: true,
+      fix: { addImports: true },
+      checkHookCalls: true,
+      ignoredHookCallsNames: { "useStateManagement": true },
+      ignoredPropNames: ["style", "className"]
+    }],
+    
+    // require-memo rule with custom options
+    "@arthurgeron/react-usememo/require-memo": ["error", {
+      ignoredComponents: {
+        "Header": true,
+        "Footer": true,
+        "SimpleText": true
+      }
+    }],
+    
+    // require-usememo-children rule with custom options
+    "@arthurgeron/react-usememo/require-usememo-children": ["error", {
+      strict: true
+    }]
   },
   "settings": {
     "react": {
