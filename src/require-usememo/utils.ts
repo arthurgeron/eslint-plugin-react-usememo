@@ -14,7 +14,6 @@ import getVariableInScope from "src/utils/getVariableInScope";
 import { v5 as uuidV5 } from "uuid";
 import type { CompatibleNode } from "../utils/compatibility";
 
-// Define a compatible context type that works for both v8 and v9
 export type CompatibleContext = Rule.RuleContext | RuleV9.RuleContext;
 
 export function isImpossibleToFix(

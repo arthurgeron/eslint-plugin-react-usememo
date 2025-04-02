@@ -21,7 +21,6 @@ export function isComplexComponent(
 }
 
 export function isComponentName(name: string | undefined) {
-	// All components are PascalCased, thoroughly checking for this only adds processing time and opens more chance to bugs/issues.
 	return (
 		typeof name === "string" && !!name && name?.[0] === name?.[0]?.toUpperCase()
 	);
@@ -61,7 +60,6 @@ function getIdentifierMemoStatus(
 	const isProps =
 		node?.id?.type === "Identifier" &&
 		(isComponentName(node.id.name) || getIsHook(node.id));
-	// Avoid assuming a Hook or Component's props to be unmemoized
 	if (isProps) {
 		return;
 	}
@@ -197,17 +195,14 @@ export function shouldIgnoreNode(
 
 	const matchedValue = ignoredNames[nameToCheck];
 
-	// Checking for 1:1 matches
 	if (matchedValue !== undefined) {
 		return matchedValue;
 	}
 
-	// This rule ignores React's "use" hook by default, more info in the rule's README
 	if (nameToCheck === "use") {
 		return true;
 	}
 
-	// Checking via patterns
 	let shouldIgnore: boolean | undefined;
 
 	Object.keys(ignoredNames).find((key) => {

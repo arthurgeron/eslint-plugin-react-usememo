@@ -4,14 +4,6 @@ import requireUseMemoChildrenRule from "./require-usememo-children";
 import type { Rule } from "eslint";
 import type { CompatibleRuleModule } from "./utils/compatibility";
 
-// Define plugin metadata for ESLint v8 compatibility
-const meta = {
-  name: "@arthurgeron/eslint-plugin-react-usememo",
-  version: "2.5.0"
-};
-
-// Traditional rule exports with proper typing (ESLint v8)
-// Use a more flexible typing that works for both v8 and v9
 export const rules: Record<string, Rule.RuleModule | CompatibleRuleModule> = {
   "require-memo": requireMemoRule,
   "require-usememo": requireUseMemoRule,
