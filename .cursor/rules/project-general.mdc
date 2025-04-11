@@ -1,0 +1,37 @@
+---
+description: 
+globs: package.json,README.md,src/**/*
+alwaysApply: false
+---
+# Project General Guidelines
+
+## Project Objective
+
+The primary goal of this project is to provide an ESLint plugin that helps developers optimize React applications by enforcing the use of `useMemo`, `useCallback`, and `React.memo` to prevent unnecessary re-renders and improve performance.
+
+## General Structure
+
+- `src/`: Contains the source code for the ESLint plugin, including the rule implementations and utility functions.
+- `docs/`: Contains documentation for the plugin and its rules.
+- `examples/`: Contains example React projects demonstrating the use of the plugin with different ESLint configurations.
+- `__tests__/`: Contains test cases for the plugin rules.
+- `src/utils/compatibility.ts`: Provides compatibility utilities for ESLint v8 and v9.
+
+## Key Dependencies
+
+- `yarn`: Package manager
+- `eslint`: The core ESLint library. Both V8 and V9 (eslint-v9).
+- `react`: The React library (used in examples and tests).
+
+## ESLint Version Support
+
+The project is designed to work with both ESLint v8 and v9. The `src/utils/compatibility.ts` file provides utilities to handle differences between the two versions.
+
+## Configuration Files
+
+- ESLint v8: `.eslintrc.json`
+- ESLint v9: `eslint.config.js`
+
+## Documentation
+
+For more details on project setup and overall guidelines, please refer to [README.md](mdc:../../README.md) and the documentation in the `docs/` directory.

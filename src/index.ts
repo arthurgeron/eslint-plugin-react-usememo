@@ -1,10 +1,11 @@
-import requireMemoRule from "./require-memo";
-import requireUseMemoRule from "./require-usememo";
-import requireUseMemoChildrenRule from "./require-usememo-children";
+import { configs, rules } from "./traditional-config";
+import { flatConfig } from "./flat-config";
 
-// ts-prune-ignore-next
-export const rules = {
-  "require-memo": requireMemoRule,
-  "require-usememo": requireUseMemoRule,
-  "require-usememo-children": requireUseMemoChildrenRule,
+export { configs, rules } from "./traditional-config";
+export { flatConfig } from "./flat-config";
+
+export default {
+  rules,
+  configs,
+  flatConfig,
 };

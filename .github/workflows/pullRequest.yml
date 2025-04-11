@@ -11,13 +11,25 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 1
+          
+      - name: Read .tool-versions
+        id: tool-versions
+        run: |
+          NODE_VERSION=$(grep "nodejs" .tool-versions | awk '{print $2}')
+          YARN_VERSION=$(grep "yarn" .tool-versions | awk '{print $2}')
+          echo "node_version=$NODE_VERSION" >> $GITHUB_OUTPUT
+          echo "yarn_version=$YARN_VERSION" >> $GITHUB_OUTPUT
 
-      - name: Use Node.js 18.x
+      - name: Use Node.js from .tool-versions
         uses: actions/setup-node@v3
         with:
-          node-version: 18.x
+          node-version: ${{ steps.tool-versions.outputs.node_version }}
           cache: 'yarn'
           cache-dependency-path: '**/yarn.lock'
+          
+      - name: Setup Yarn from .tool-versions
+        run: |
+          npm install -g yarn@${{ steps.tool-versions.outputs.yarn_version }}
 
       - name: Cache node modules
         uses: actions/cache@v3
@@ -43,13 +55,25 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 1
+          
+      - name: Read .tool-versions
+        id: tool-versions
+        run: |
+          NODE_VERSION=$(grep "nodejs" .tool-versions | awk '{print $2}')
+          YARN_VERSION=$(grep "yarn" .tool-versions | awk '{print $2}')
+          echo "node_version=$NODE_VERSION" >> $GITHUB_OUTPUT
+          echo "yarn_version=$YARN_VERSION" >> $GITHUB_OUTPUT
 
-      - name: Use Node.js 18.x
+      - name: Use Node.js from .tool-versions
         uses: actions/setup-node@v3
         with:
-          node-version: 18.x
+          node-version: ${{ steps.tool-versions.outputs.node_version }}
           cache: 'yarn'
           cache-dependency-path: '**/yarn.lock'
+          
+      - name: Setup Yarn from .tool-versions
+        run: |
+          npm install -g yarn@${{ steps.tool-versions.outputs.yarn_version }}
 
       - name: Restore node_modules
         uses: actions/cache@v3
@@ -76,13 +100,25 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 1
+          
+      - name: Read .tool-versions
+        id: tool-versions
+        run: |
+          NODE_VERSION=$(grep "nodejs" .tool-versions | awk '{print $2}')
+          YARN_VERSION=$(grep "yarn" .tool-versions | awk '{print $2}')
+          echo "node_version=$NODE_VERSION" >> $GITHUB_OUTPUT
+          echo "yarn_version=$YARN_VERSION" >> $GITHUB_OUTPUT
 
-      - name: Use Node.js 18.x
+      - name: Use Node.js from .tool-versions
         uses: actions/setup-node@v3
         with:
-          node-version: 18.x
+          node-version: ${{ steps.tool-versions.outputs.node_version }}
           cache: 'yarn'
           cache-dependency-path: '**/yarn.lock'
+          
+      - name: Setup Yarn from .tool-versions
+        run: |
+          npm install -g yarn@${{ steps.tool-versions.outputs.yarn_version }}
 
       - name: Restore node_modules
         uses: actions/cache@v3
@@ -103,13 +139,25 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 1
+          
+      - name: Read .tool-versions
+        id: tool-versions
+        run: |
+          NODE_VERSION=$(grep "nodejs" .tool-versions | awk '{print $2}')
+          YARN_VERSION=$(grep "yarn" .tool-versions | awk '{print $2}')
+          echo "node_version=$NODE_VERSION" >> $GITHUB_OUTPUT
+          echo "yarn_version=$YARN_VERSION" >> $GITHUB_OUTPUT
 
-      - name: Use Node.js 18.x
+      - name: Use Node.js from .tool-versions
         uses: actions/setup-node@v3
         with:
-          node-version: 18.x
+          node-version: ${{ steps.tool-versions.outputs.node_version }}
           cache: 'yarn'
           cache-dependency-path: '**/yarn.lock'
+          
+      - name: Setup Yarn from .tool-versions
+        run: |
+          npm install -g yarn@${{ steps.tool-versions.outputs.yarn_version }}
 
       - name: Restore node_modules
         uses: actions/cache@v3
@@ -164,3 +212,87 @@ jobs:
               repo: context.repo.repo,
               body: '${{ steps.version_check.outputs.ERROR_MESSAGE }}'
             })
+
+  check-v9-example:
+    name: Check v9-flat example for eslint errors
+    runs-on: ubuntu-latest
+    needs: install
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+
+      - name: Use Node.js 23.10.0
+        uses: actions/setup-node@v3
+        with:
+          node-version: 23.10.0
+          cache: 'yarn'
+          cache-dependency-path: '**/yarn.lock'
+          
+      - name: Setup Yarn 1.22.22
+        run: |
+          npm install -g yarn@1.22.22
+
+      - name: Restore node_modules
+        uses: actions/cache@v3
+        id: restore-build
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}
+
+      - name: Build plugin
+        run: |
+          yarn
+          yarn build
+
+      - name: Check for eslint errors in v9-flat example
+        run: |
+          cd examples/v9-flat
+          yarn
+          if ! yarn lint 2>&1 | grep -q "@arthurgeron/react-usememo/require-usememo"; then
+            echo "Error: Expected eslint error '@arthurgeron/react-usememo/require-usememo' not found in v9-flat example"
+            exit 1
+          fi
+
+  check-v8-example:
+    name: Check v8-traditional example for eslint errors
+    runs-on: ubuntu-latest
+    needs: install
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+
+      - name: Use Node.js 23.10.0
+        uses: actions/setup-node@v3
+        with:
+          node-version: 23.10.0
+          cache: 'yarn'
+          cache-dependency-path: '**/yarn.lock'
+          
+      - name: Setup Yarn 1.22.22
+        run: |
+          npm install -g yarn@1.22.22
+
+      - name: Restore node_modules
+        uses: actions/cache@v3
+        id: restore-build
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}
+
+      - name: Build plugin
+        run: |
+          yarn
+          yarn build
+
+      - name: Check for eslint errors in v8-traditional example
+        run: |
+          cd examples/v8-traditional
+          yarn
+          if ! yarn lint 2>&1 | grep -q "@arthurgeron/react-usememo/require-usememo"; then
+            echo "Error: Expected eslint error '@arthurgeron/react-usememo/require-usememo' not found in v8-traditional example"
+            exit 1
+          fi

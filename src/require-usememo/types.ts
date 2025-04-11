@@ -1,6 +1,6 @@
-import type { Rule } from "eslint";
+import type { Rule } from "eslint-v9";
 import type { TSESTree } from "@typescript-eslint/types";
-import type { MessagesRequireUseMemo} from '../constants';
+import type { MessagesRequireUseMemo} from '../constants/messages';
 
 export type ExpressionTypes = TSESTree.ArrowFunctionExpression | TSESTree.JSXExpressionContainer | TSESTree.Expression | TSESTree.ObjectExpression | TSESTree.ArrayExpression | TSESTree.Identifier | TSESTree.LogicalExpression | TSESTree.JSXEmptyExpression;
 

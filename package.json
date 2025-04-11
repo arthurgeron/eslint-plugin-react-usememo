@@ -1,6 +1,6 @@
 {
   "name": "@arthurgeron/eslint-plugin-react-usememo",
-  "version": "2.4.4",
+  "version": "2.5.0",
   "description": "",
   "main": "dist/index.js",
   "author": "Stefano J. Attardi <github@attardi.org> & Arthur Geron <github@arthurgeron.org",
@@ -17,25 +17,29 @@
     "@rollup/plugin-node-resolve": "13.3.0",
     "@rollup/plugin-typescript": "8.3.3",
     "@types/eslint": "8.4.5",
+    "@types/estree": "1.0.6",
     "@types/jest": "28.1.5",
     "@types/uuid": "9.0.6",
     "@typescript-eslint/parser": "5.30.6",
     "@typescript-eslint/types": "5.30.6",
     "eslint": "8.19.0",
-    "husky": "8.0.1",
+    "eslint-v9": "npm:eslint@9.23.0",
+    "husky": "9.1.7",
     "jest": "28.1.3",
+    "knip": "5.45.0",
     "rollup": "2.76.0",
     "ts-jest": "28.0.6",
-    "ts-prune": "0.10.3",
     "typescript": "4.7.4"
   },
   "scripts": {
     "test": "./node_modules/.bin/jest",
+    "test:v9": "./node_modules/.bin/jest",
     "build": "rm -rf dist && rollup -c",
-    "prepare": "husky install",
+    "prepare": "husky",
     "prepublishOnly": "npm run build",
     "publish:public": "npm publish --access public",
-    "deadCode": "./node_modules/.bin/ts-prune --error --ignore"
+    "deadCode": "knip",
+    "lint": "echo 'Mocked so knip stops complaining'"
   },
   "files": [
     "dist"
@@ -46,5 +50,24 @@
   },
   "overrides": {
     "braces": ">=3.0.3"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "eslintConfig": {
+    "plugins": [
+      "@arthurgeron/react-usememo"
+    ],
+    "rules": {
+      "@arthurgeron/react-usememo/require-usememo": "error",
+      "@arthurgeron/react-usememo/require-memo": "error",
+      "@arthurgeron/react-usememo/require-usememo-children": "error"
+    }
+  },
+  "peerDependencies": {
+    "eslint": "^8.0.0 || ^9.0.0"
   }
 }

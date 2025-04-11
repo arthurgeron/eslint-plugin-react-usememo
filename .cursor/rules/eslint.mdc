@@ -1,0 +1,61 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# ESLint Guidelines
+
+## What is ESLint?
+
+ESLint is a static code analysis tool for identifying problematic patterns found in ECMAScript/JavaScript code.
+
+## Purpose
+
+To enforce code style, catch potential errors, and improve code quality.
+
+## Configuration
+
+This project supports both ESLint v8 (traditional configuration using `.eslintrc.json`) and ESLint v9 (flat configuration using `eslint.config.js`).
+
+## Plugin
+
+This project provides an ESLint plugin named `@arthurgeron/eslint-plugin-react-usememo`.
+
+## Rules
+
+The plugin includes the following rules:
+
+- `require-usememo`: Requires complex values passed as props or used as hook dependencies to be wrapped in `useMemo` or `useCallback`.
+- `require-memo`: Requires all function components to be wrapped in `React.memo()`.
+- `require-usememo-children`: Requires complex values passed as children to be wrapped in `useMemo` or `useCallback`.
+
+## Compatibility
+
+The plugin is designed to be compatible with both ESLint v8 and v9, using utility functions in `src/utils/compatibility.ts` to handle differences between the versions.
+
+
+## Documentation
+
+For more details on individual rules and migration guides, refer to the documentation files in the `docs/rules` directory:
+
+- [require-memo](mdc:../docs/rules/require-memo.md)
+- [require-usememo](mdc:../docs/rules/require-usememo.md)
+- [require-usememo-children](mdc:../docs/rules/require-usememo-children.md)
+- [Migrating to V9.x](mdc:https:/eslint.org/docs/latest/use/migrate-to-9.0.0)
+- [ESLint v9 Migration Guide](mdc:../docs/rules/eslint-v9-migration-guide.md)
+- [Creating ESLint V9 Plugins](mdc:https:/eslint.org/docs/latest/extend/plugins)
+- [Sharing ESLint V9 Configurations](mdc:https:/eslint.org/docs/latest/extend/shareable-configs)
+- [Custom ESLint V9 Processors](mdc:https:/eslint.org/docs/latest/extend/custom-processors)
+- [Custom ESLint V9 Parsers](mdc:https:/eslint.org/docs/latest/extend/custom-parsers)
+- [Custom ESLint V9 Formatters](mdc:https:/eslint.org/docs/latest/extend/custom-formatters)
+- [Custom ESLint V9 Rules](mdc:https:/eslint.org/docs/latest/extend/custom-rules)
+- [Custom ESLint V9 Rule Tutorial](mdc:https:/eslint.org/docs/latest/extend/custom-rule-tutorial)
+
+## ESLint Plugin Development
+
+- Remember rules run frequently in IDE environments
+- Optimize core operations that run on every node visit
+- Cache results where possible
+- Use simple type checks and string operations over complex regex
+- Consider the impact on IDE performance

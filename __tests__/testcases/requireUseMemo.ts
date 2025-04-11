@@ -1,19 +1,13 @@
-import { Rule, RuleTester } from "eslint";
-import rule from "src/require-usememo";
-import { findParentType } from "src/require-usememo/utils";
+/**
+ * Shared test cases for ESLint plugin rules
+ * This file contains test cases that can be used by both ESLint v8 and v9 test configurations
+ */
 
-const ruleTester = new RuleTester({
-  parser: require.resolve("@typescript-eslint/parser"),
-  parserOptions: {
-    ecmaFeatures: { jsx: true },
-  },
-});
-
-describe('Rule - Require-usememo', () =>  {
-  ruleTester.run("useMemo", rule as Rule.RuleModule, {
-    valid: [
-      {
-        code: `function renderItem({
+// Helper to create a standard set of test cases for require-usememo
+export const createRequireUseMemoTestCases = () => {
+  const validTestCases = [
+    {
+      code: `function renderItem({
           field,
           fieldState,
         }) {
@@ -24,102 +18,102 @@ describe('Rule - Require-usememo', () =>  {
             state={fieldState}
             />);
         }`,
-      },
-      {
-        code: `function Component() {
+    },
+    {
+      code: `function Component() {
         let myObject = 'hi';
         return <Child prop={myObject} />;
       }`,
-      },
-      {
-        code: `function Component({index = 0}) {
+    },
+    {
+      code: `function Component({index = 0}) {
         const isNotFirst = index > 0;
         return <Child isNotFirst={isNotFirst} />;
       }`,
-      },
-      {
-        code: `function Component() {
+    },
+    {
+      code: `function Component() {
           return <Child>{/* Empty Expression Should Not Error :) */}</Child>;
         }`,
-      },
-      {
-        code: `const Component = () => {
+    },
+    {
+      code: `const Component = () => {
         const myObject = useMemo(() => ({}), []);
         return <Child prop={myObject} />;
       }`,
-      },
-      {
-        code: `const Component = () => {
+    },
+    {
+      code: `const Component = () => {
         const myArray = useMemo(() => [], []);
         return <Child prop={myArray} />;
         }`
-      },
-      {
-        code: `
+    },
+    {
+      code: `
         function Component({data}) {
         return <Child prop={data} />;
       }`,
-      },
-      {
-        code: `
+    },
+    {
+      code: `
         function x() {}
         function Component() {
         return <Child prop={x} />;
       }`,
-      },
-      {// Not a hook, would fail the rule but shouldn't be checked
-        code: `
+    },
+    {
+      code: `
         function userTest() {
           const y = (data) => {};
           return y;
         }`,
-      },
-      {// Not a hook, short name crash test
-        code: `
+    },
+    {
+      code: `
         function hi() {
           const y = (data) => {};
           return y;
         }`,
-      },
-      {
-        code: `const Component = () => {
+    },
+    {
+      code: `const Component = () => {
         const myArray = useMemo(() => new Object(), []);
         return <Child prop={myArray} />;
         }`
-      },
-      {
-        code: `
+    },
+    {
+      code: `
         const labels = ['data']
       const Content = <Text labels={labels} />
         const Component = () => {
           const myArray = useMemo(() => new Object(), []);
           return <Child prop={myArray} />;
         }`
-      },
-      {
-        code: `function Component() {
+    },
+    {
+      code: `function Component() {
         const myArray = useMemo(() => new Object(), []);
         return <Child prop={myArray} />;
         }`
-      },
-      {
-        code: `
+    },
+    {
+      code: `
         const myArray = new Object();
         class Component {
           render() {
             return <Child prop={myArray} />;
           }
         }`,
-      },
-      {
-        code: `
+    },
+    {
+      code: `
         const myArray = new Object();
         function Component() {
           return <Child prop={myArray} />;
         }`,
-      },
-      {
-        code: `class Component {
+    },
+    {
+      code: `class Component {
           constructor(props){
             super(props);
             this.state = {
@@ -131,9 +125,9 @@ describe('Rule - Require-usememo', () =>  {
             return <Child prop={myData} />;
           }
         }`,
-      },
-      {
-        code: `class Component {
+    },
+    {
+      code: `class Component {
           constructor(props){
             super(props);
             this.state = {
@@ -145,219 +139,213 @@ describe('Rule - Require-usememo', () =>  {
             return <Child prop={myArray} />;
           }
         }`,
-      },
-      {
-        code: `
+    },
+    {
+      code: `
         const myArray = [];
         class Component {
           render() {
             return <Child prop={myArray} />;
           }
         }`,
-      },
-      {
-        code: `
+    },
+    {
+      code: `
         function test() {}
         class Component {
           render() {
             return <Child prop={test} />;
           }
         }`,
-      },
-      {
-        code: `const Component = () => {
+    },
+    {
+      code: `const Component = () => {
           const myObject = {};
           return <div prop={myObject} />;
         }`,
-      },
-      {
-        code: `const Component = () => {
+    },
+    {
+      code: `const Component = () => {
           const myArray = [];
           return <div prop={myArray} />;
         }`,
-      },
-      {
-        code: `class Component {
+    },
+    {
+      code: `class Component {
           render() {
             const myArray = [];
             return <div prop={myArray} />;
           }
         }`,
-      },
-      {
-        code: `const Component = () => {
+    },
+    {
+      code: `const Component = () => {
           const myNumber1 = 123;
           const myNumber2 = 123 + 456;
           const myString1 = 'abc';
           const myString2 = \`abc\`;
           return <div n1={myNumber} n2={myNumber2} s1={myString1} s2={myString2} />;
         }`,
-      },
-      {
-        code: `const Component = () => {
+    },
+    {
+      code: `const Component = () => {
           const myObject = memoize({});
           return <Child prop={myObject} />;
         }`,
-      },
-      {
-        code: `
+    },
+    {
+      code: `
         function test() {}
         const Component = () => {
           return <Child prop={test} />;
         }`,
-      },
-      {
-        code: `
+    },
+    {
+      code: `
         function test() {}
         function Component() {
           return <Child prop={test} />;
         }`,
-      },
-      {
-        code: `const Component = () => {
+    },
+    {
+      code: `const Component = () => {
           const myArray = lodash.memoize([]);
           return <Child prop={myArray} />;
         }`,
-      },
-      {
-        code: `const Component = () => {
+    },
+    {
+      code: `const Component = () => {
           const myBool = false;
           return <Child prop={myArray} />;
         }`,
-      },
-      {
-        code: `const Component = () => {
+    },
+    {
+      code: `const Component = () => {
           const myString = 'test';
           return <Child prop={myArray} />;
         }`,
-      },
-      {
-        code: `const Component = () => {
+    },
+    {
+      code: `const Component = () => {
           const myComplexString = css\`color: red;\`;
           return <Child prop={myComplexString} />;
         }`,
-      },
-      {
-        code: `function useTest() {
+    },
+    {
+      code: `function useTest() {
           const myBool = false;
           return myBool;
         }`,
-      },
-      {
-        code: `
+    },
+    {
+      code: `
         const x = {};
         function useTest() {
           return {x};
         }`,
-      },
-      {
-        code: `function useTesty() {
+    },
+    {
+      code: `function useTesty() {
           const myString = '';
           return myString;
         }`,
-      },
-      {
-        code: `function useTesty() {
+    },
+    {
+      code: `function useTesty() {
           const myBool = useMemo(() => !!{}, []);
           return myBool;
         }`,
-      },
-      {
-        code: `function useTesty() {
+    },
+    {
+      code: `function useTesty() {
           const x = {};
           const myBool = useMemo(() => x, [x]);
           return myBool;
         }`,
-      },
-      {
-          code: `
+    },
+    {
+      code: `
           function useTesty() {
             const x = {};
             return useData(x);
           }`,
-          options: [{ checkHookReturnObject: true, checkHookCalls: false }],
-        },
-      {
-          code: `
-          function useTesty() {
-            const x = {};
-            return useData(x);
-          }`,
-          options: [{ checkHookReturnObject: true, checkHookCalls: false }],
-        },
-      {
-          code: `
+      options: [{ checkHookReturnObject: true, checkHookCalls: false }],
+    },
+    {
+      code: `
           function useTesty() {
             const x = {};
             return use(x);
           }`,
-        },
-      {
-          code: `
+    },
+    {
+      code: `
           function useTesty() {
             const x = {};
             return useDataManager(x);
           }`,
-          options: [{ checkHookReturnObject: true, ignoredHookCallsNames: {"!useDate*": true} }],
-        },
-      {
-        code: `const Component = () => {
+      options: [{ checkHookReturnObject: true, ignoredHookCallsNames: {"!useDate*": true} }],
+    },
+    {
+      code: `const Component = () => {
           const myArray1 = [];
           const myArray2 = useMemo(() => myArray1, [myArray1]);
           return <Child prop={myArray2} />;
         }`,
-      },
-      {
-        code: `function useTest() {
+    },
+    {
+      code: `function useTest() {
+          // @ts-ignore
           const y: boolean | undefined = false;
           const x = useMemo(() => x, [y]);
           return {x};
         }`,
-      },
-      {
-        code: `function useTest({data}: {data: boolean | undefined}) {
+    },
+    {
+      code: `function useTest({data}: {data: boolean | undefined}) {
           const x = useMemo(() => !data, [data]);
           return {x};
         }`,
-      },
-      {
-        code: `function useTest() {
+    },
+    {
+      code: `function useTest() {
           let y = '';
           const x = useMemo(() => '', []);
           return {x, y};
         }`,
-      },
-      // ignoredPropNames
-      {
-        code: `const Component = () => {
+    },
+    // ignoredPropNames
+    {
+      code: `const Component = () => {
           const myObject = {};
           return <Child ignoreProp={myObject} />;
         }`,
-        options: [{ ignoredPropNames: ["ignoreProp"] }],
-      },
-      {
-        code: `const Component = () => {
+      options: [{ ignoredPropNames: ["ignoreProp"] }],
+    },
+    {
+      code: `const Component = () => {
           const myCallback = () => {};
           return <button onClick={myCallback}>Click me</button>;
         }`,
-        options: [{ ignoredPropNames: ["onClick"] }],
-      },
-      {
-        code: `const Component = () => {
+      options: [{ ignoredPropNames: ["onClick"] }],
+    },
+    {
+      code: `const Component = () => {
           return <div style={{ width: '200px' }} />;
         }`,
-        options: [{ ignoredPropNames: ["style"] }],
-      },
-      {
-        code: `const Component = () => {
+      options: [{ ignoredPropNames: ["style"] }],
+    },
+    {
+      code: `const Component = () => {
           return <button onClick={() => {}}>Click me</button>;
         }`,
-        options: [{ ignoredPropNames: ["onClick"] }],
-      },
-    ],
-    invalid: [
-      {
-        code: `
+      options: [{ ignoredPropNames: ["onClick"] }],
+    },
+  ];
+
+  const invalidTestCases = [
+    {
+      code: `
           import React, { useMemo } from 'react';
           const MyComponent = () => {
             const items = [1, 2];
@@ -374,18 +362,18 @@ describe('Rule - Require-usememo', () =>  {
             );
           };
         `,
-        errors: [
-          { messageId: "error-in-invalid-context" },
-          { messageId: "error-in-invalid-context" },
-          { messageId: "error-in-invalid-context" },
-          { messageId: "error-in-invalid-context" },
-          { messageId: "error-in-invalid-context" },
-          { messageId: "error-in-invalid-context" }, 
-          { messageId: "error-in-invalid-context" }
-        ],
-      },
-      {
-        code: `
+      errors: [
+        { messageId: "error-in-invalid-context" },
+        { messageId: "error-in-invalid-context" },
+        { messageId: "error-in-invalid-context" },
+        { messageId: "error-in-invalid-context" },
+        { messageId: "error-in-invalid-context" },
+        { messageId: "error-in-invalid-context" }, 
+        { messageId: "error-in-invalid-context" }
+      ],
+    },
+    {
+      code: `
           import React, { useMemo } from 'react';
           const MyComponent = () => {
             const itemsJSX = useMemo(() => <ChildComponent key={item} prop={{}} />, []);
@@ -394,13 +382,13 @@ describe('Rule - Require-usememo', () =>  {
             return null;
           };
         `,
-        errors: [
-          { messageId: "error-in-invalid-context" },
-          { messageId: "error-in-invalid-context" }
-        ],
-      },
-      {
-        code: `
+      errors: [
+        { messageId: "error-in-invalid-context" },
+        { messageId: "error-in-invalid-context" }
+      ],
+    },
+    {
+      code: `
           import React, { useCallback } from 'react';
           const MyComponent = () => {
             const handleClick = useCallback(() => {
@@ -409,194 +397,173 @@ describe('Rule - Require-usememo', () =>  {
             return <div onClick={handleClick}>Click me</div>;
           };
         `,
-        errors: [{ messageId: "error-in-invalid-context" }],
-      },
-      {
-        code: `
+      errors: [{ messageId: "error-in-invalid-context" }],
+    },
+    {
+      code: `
         const Component = () => {
           return <Child prop={<SomeComponent />} />;
         }`,
-        errors: [{ messageId: "jsx-usememo-props" }],
-        output: `import { useMemo } from 'react';
+      errors: [{ messageId: "jsx-usememo-props" }],
+      output: `import { useMemo } from 'react';
 
         const Component = () => {
           const prop = useMemo(() => (<SomeComponent />), []);
           return <Child prop={prop} />;
         }`,
-      },
-      {
-        code: `
+    },
+    {
+      code: `
         const Component = () => {
           const myObject = {};
           return <Child prop={myObject} />;
         }`,
-        errors: [{ messageId: "object-usememo-props" }],
-        output: `import { useMemo } from 'react';
+      errors: [{ messageId: "object-usememo-props" }],
+      output: `import { useMemo } from 'react';
 
         const Component = () => {
           const myObject = useMemo(() => ({}), []);
           return <Child prop={myObject} />;
         }`,
-      },
-      {
-        code: `
+    },
+    {
+      code: `
         const Component = () => {
           const myArray = [];
           return <Child prop={myArray} />;
         }`,
-        output: `import { useMemo } from 'react';
+      output: `import { useMemo } from 'react';
 
         const Component = () => {
           const myArray = useMemo(() => [], []);
           return <Child prop={myArray} />;
         }`,
-        errors: [{ messageId: "array-usememo-props" }],
-      },
-      {
-        code: `
+      errors: [{ messageId: "array-usememo-props" }],
+    },
+    {
+      code: `
         const Component = () => {
           const myArray = [];
           return <Child prop={myArray} />;
         }`,
-        output: `
+      output: `
         const Component = () => {
           const myArray = useMemo(() => [], []);
           return <Child prop={myArray} />;
         }`,
-        options: [{ fix: { addImports: false } }],
-        errors: [{ messageId: "array-usememo-props" }],
-      },
-      {
-        code: `
+      options: [{ fix: { addImports: false } }],
+      errors: [{ messageId: "array-usememo-props" }],
+    },
+    {
+      code: `
         const Component = () => {
           const myInstance = new Object();
           return <Child prop={myInstance} />;
         }`,
-        output: `import { useMemo } from 'react';
+      output: `import { useMemo } from 'react';
 
         const Component = () => {
           const myInstance = useMemo(() => new Object(), []);
           return <Child prop={myInstance} />;
         }`,
-        errors: [{ messageId: "instance-usememo-props" }],
-      },
-      {
-        code: `class Component {
+      errors: [{ messageId: "instance-usememo-props" }],
+    },
+    {
+      code: `class Component {
           render() {
             const myInstance = new Object();
             return <Child prop={myInstance} />;
           }
         }`,
-        output: `class Component {
-          render() {
-            const myInstance = new Object();
-            return <Child prop={myInstance} />;
-          }
-        }`,
-        errors: [{ messageId: "instance-class-memo-props" }],
-      },
-      {
-        code: `import { useCallback } from 'react';
+      errors: [{ messageId: "instance-class-memo-props" }],
+    },
+    {
+      code: `import { useCallback } from 'react';
 
         const Component = () => {
           const firstInstance = useMemo(() => new Object(), []);
           const second = new Object();
           return <Child prop={firstInstance || second} />;
         }`,
-        output: `import { useCallback, useMemo } from 'react';
+      output: `import { useCallback, useMemo } from 'react';
 
         const Component = () => {
           const firstInstance = useMemo(() => new Object(), []);
           const second = useMemo(() => new Object(), []);
           return <Child prop={firstInstance || second} />;
         }`,
-        errors: [{ messageId: "instance-usememo-props" }],
-      },
-      {
-        code: `
+      errors: [{ messageId: "instance-usememo-props" }],
+    },
+    {
+      code: `
         const Component = () => {
           const firstInstance = useMemo(() => new Object(), []);
           const second = new Object();
           return <Child prop={firstInstance || second} />;
         }`,
-        output: `import { useMemo } from 'react';
+      output: `import { useMemo } from 'react';
 
         const Component = () => {
           const firstInstance = useMemo(() => new Object(), []);
           const second = useMemo(() => new Object(), []);
           return <Child prop={firstInstance || second} />;
         }`,
-        errors: [{ messageId: "instance-usememo-props" }],
-      },
-      {
-        code: `
+      errors: [{ messageId: "instance-usememo-props" }],
+    },
+    {
+      code: `
         const Component = () => {
           let myObject = useMemo(() => ({}), []);
           myObject = {a: 'b'};
           return <Child prop={myObject} />;
         }`,
-        output: `
+      output: `
         const Component = () => {
           const myObject = useMemo(() => ({}), []);
           myObject = {a: 'b'};
           return <Child prop={myObject} />;
         }`,
-        errors: [{ messageId: "usememo-const" }],
-      },
-      {
-        code: `
+      errors: [{ messageId: "usememo-const" }],
+    },
+    {
+      code: `
         import { useCallback } from 'react';
 
         const Component = () => {
           return <Child userData={{}} />;
         }`,
-        output: `
+      output: `
         import { useCallback, useMemo } from 'react';
 
         const Component = () => {
           const userData = useMemo(() => ({}), []);
           return <Child userData={userData} />;
         }`,
-        errors: [{ messageId: "object-usememo-props" }],
-      },
-      {
-        code: `
+      errors: [{ messageId: "object-usememo-props" }],
+    },
+    {
+      code: `
         const Component = () => {
           const userData = undefined;
           return <Child userData={{}} />;
         }`,
-        output: `import { useMemo } from 'react';
+      output: `import { useMemo } from 'react';
 
         const Component = () => {
           const userData = undefined;
           const _userData = useMemo(() => ({}), []);
           return <Child userData={_userData} />;
         }`,
-        errors: [{ messageId: "object-usememo-props" }],
-      },
-      {
-        code: `
-        const Component = () => {
-          const userData = undefined;
-          return <Child userData={{}} />;
-        }`,
-        output: `import { useMemo } from 'react';
-
-        const Component = () => {
-          const userData = undefined;
-          const _userData = useMemo(() => ({}), []);
-          return <Child userData={_userData} />;
-        }`,
-        errors: [{ messageId: "object-usememo-props" }],
-      },
-      {
-        code: `
+      errors: [{ messageId: "object-usememo-props" }],
+    },
+    {
+      code: `
         const Component = () => {
           const userData = undefined;
           const _userData = undefined;
           return <Child userData={{}} />;
         }`,
-        output: `import { useMemo } from 'react';
+      output: `import { useMemo } from 'react';
 
         const Component = () => {
           const userData = undefined;
@@ -604,10 +571,10 @@ describe('Rule - Require-usememo', () =>  {
           const __userData = useMemo(() => ({}), []);
           return <Child userData={__userData} />;
         }`,
-        errors: [{ messageId: "object-usememo-props" }],
-      },
-      {
-        code: `
+      errors: [{ messageId: "object-usememo-props" }],
+    },
+    {
+      code: `
         const Component = () => {
           const userData = undefined;
           const _userData = undefined;
@@ -617,7 +584,7 @@ describe('Rule - Require-usememo', () =>  {
           const _____userData = undefined;
           return <Child userData={{}} />;
         }`,
-        output: `import { useMemo } from 'react';
+      output: `import { useMemo } from 'react';
 
         const Component = () => {
           const userData = undefined;
@@ -629,10 +596,10 @@ describe('Rule - Require-usememo', () =>  {
           const renameMe = useMemo(() => ({}), []);
           return <Child userData={renameMe} />;
         }`,
-        errors: [{ messageId: "object-usememo-props" }],
-      },
-      {
-        code: `
+      errors: [{ messageId: "object-usememo-props" }],
+    },
+    {
+      code: `
         const Component = () => {
           const userData = undefined;
           const _userData = undefined;
@@ -643,7 +610,7 @@ describe('Rule - Require-usememo', () =>  {
           const renameMe = undefined;
           return <Child userData={{}} />;
         }`,
-        output: `import { useMemo } from 'react';
+      output: `import { useMemo } from 'react';
 
         const Component = () => {
           const userData = undefined;
@@ -656,54 +623,56 @@ describe('Rule - Require-usememo', () =>  {
           const renameMe_99c32a94 = useMemo(() => ({}), []);
           return <Child userData={renameMe_99c32a94} />;
         }`,
-        errors: [{ messageId: "object-usememo-props" }],
-      },
-      {
-        code: `
+      errors: [{ messageId: "object-usememo-props" }],
+    },
+    {
+      code: `
         const Component = () => {
           let x = {};
           return <Child prop={x} />;
         }`,
-        output: `import { useMemo } from 'react';
+      output: `import { useMemo } from 'react';
 
         const Component = () => {
           const x = useMemo(() => ({}), []);
           return <Child prop={x} />;
         }`,
-        errors: [{ messageId: "object-usememo-props" }],
-      },
-      {
-        code: `import { useMemo } from 'react';
+      errors: [{ messageId: "object-usememo-props" }],
+    },
+    {
+      code: `import { useMemo } from 'react';
         function useTesty() {
           const x = {};
           return useDataManager(x);
         }`,
-        options: [{ checkHookReturnObject: true, ignoredHookCallsNames: {"useData*": false} }],
-        output: `import { useMemo } from 'react';
+      options: [{ checkHookReturnObject: true, ignoredHookCallsNames: {"useData*": false} }],
+      output: `import { useMemo } from 'react';
         function useTesty() {
           const x = useMemo(() => ({}), []);
           return useDataManager(x);
         }`,
-        errors: [{ messageId: "object-usememo-deps" }],
-      },
-      {
-        code: `
+      errors: [{ messageId: "object-usememo-deps" }],
+    },
+    {
+      code: `
         const useTest = () => {
+          // @ts-ignore
           const x: boolean | undefined = false;
           function y() {}
           return {x, y};
         }`,
-        output: `import { useCallback } from 'react';
+      output: `import { useCallback } from 'react';
 
         const useTest = () => {
+          // @ts-ignore
           const x: boolean | undefined = false;
           const y = useCallback(() => {}, []);
           return {x, y};
         }`,
-        errors: [{ messageId: "function-usecallback-hook" }],
-      },
-      {
-        code: `
+      errors: [{ messageId: "function-usecallback-hook" }],
+    },
+    {
+      code: `
         function Component() {
           const component = <OtherChild />;
           return <Child component={component} />;
@@ -715,9 +684,9 @@ describe('Rule - Require-usememo', () =>  {
           const component = useMemo(() => (<OtherChild />), []);
           return <Child component={component} />;
         }`
-      },
-      {
-        code: `
+    },
+    {
+      code: `
         import {} from 'react';
         function useTesty() {
           const user = {};
@@ -726,7 +695,7 @@ describe('Rule - Require-usememo', () =>  {
           };
           return useData(x);
         }`,
-        output:  `
+      output:  `
         import { useMemo } from 'react';
         function useTesty() {
           const user = {};
@@ -735,49 +704,49 @@ describe('Rule - Require-usememo', () =>  {
           };
           return useData(x);
         }`,
-        errors: [{ messageId: "object-usememo-deps" }, { messageId: "array-usememo-props" }, { messageId: "unknown-usememo-hook" }],
-        options: [{ strict: true,
-          checkHookReturnObject: true,
-          fix: { addImports: true },
-          checkHookCalls: true,
-          ignoredHookCallsNames: {},
-         }],
-      },
-      {
-        code: `import type { ComponentProps } from 'react';
+      errors: [{ messageId: "object-usememo-deps" }, { messageId: "array-usememo-props" }, { messageId: "unknown-usememo-hook" }],
+      options: [{ strict: true,
+        checkHookReturnObject: true,
+        fix: { addImports: true },
+        checkHookCalls: true,
+        ignoredHookCallsNames: {},
+       }],
+    },
+    {
+      code: `import type { ComponentProps } from 'react';
         import React from 'react';
 
         const Component = () => {
           const myArray = [];
           return <Child prop={myArray} />;
         }`,
-        output: `import type { ComponentProps } from 'react';
+      output: `import type { ComponentProps } from 'react';
         import React, { useMemo } from 'react';
 
         const Component = () => {
           const myArray = useMemo(() => [], []);
           return <Child prop={myArray} />;
         }`,
-        errors: [{ messageId: "array-usememo-props" }],
-      },
-      {
-        code: `import type { ComponentProps } from 'react';
+      errors: [{ messageId: "array-usememo-props" }],
+    },
+    {
+      code: `import type { ComponentProps } from 'react';
 
         const Component = () => {
           const myArray = [];
           return <Child prop={myArray} />;
         }`,
-        output: `import { useMemo } from 'react';
+      output: `import { useMemo } from 'react';
 import type { ComponentProps } from 'react';
 
         const Component = () => {
           const myArray = useMemo(() => [], []);
           return <Child prop={myArray} />;
         }`,
-        errors: [{ messageId: "array-usememo-props" }],
-      },
-      {
-        code: `import type { ComponentProps } from 'react';
+      errors: [{ messageId: "array-usememo-props" }],
+    },
+    {
+      code: `import type { ComponentProps } from 'react';
         import React, { useRef } from 'react';
 
         const Component = () => {
@@ -785,7 +754,7 @@ import type { ComponentProps } from 'react';
           const myArray = [];
           return <Child ref={myRef} prop={myArray} />;
         }`,
-        output: `import type { ComponentProps } from 'react';
+      output: `import type { ComponentProps } from 'react';
         import React, { useRef, useMemo } from 'react';
 
         const Component = () => {
@@ -793,66 +762,66 @@ import type { ComponentProps } from 'react';
           const myArray = useMemo(() => [], []);
           return <Child ref={myRef} prop={myArray} />;
         }`,
-        errors: [{ messageId: "array-usememo-props" }],
-      },
-      {
-        code: `
+      errors: [{ messageId: "array-usememo-props" }],
+    },
+    {
+      code: `
         function useTest() {
           return { x: 1 };
         }`,
-        output: `import { useMemo } from 'react';
+      output: `import { useMemo } from 'react';
 
         function useTest() {
           return useMemo(() => ({ x: 1 }), []);
         }`,
-        errors: [{ messageId: "object-usememo-hook" }],
-        options: [{ checkHookReturnObject: true, strict: true }],
-      },
-      {
-        code: `
+      errors: [{ messageId: "object-usememo-hook" }],
+      options: [{ checkHookReturnObject: true, strict: true }],
+    },
+    {
+      code: `
         function useTest() {
           return (data) => {};
         }`,
-        output: `import { useCallback } from 'react';
+      output: `import { useCallback } from 'react';
 
         function useTest() {
           return useCallback((data) => {}, []);
         }`,
-        errors: [{ messageId: "function-usecallback-hook" }],
-        options: [{ checkHookReturnObject: true, strict: true }],
-      },
-      {
-        code: `
+      errors: [{ messageId: "function-usecallback-hook" }],
+      options: [{ checkHookReturnObject: true, strict: true }],
+    },
+    {
+      code: `
         function useTest() {
           const y = { x: 1 };
           return y;
         }`,
-        output: `import { useMemo } from 'react';
+      output: `import { useMemo } from 'react';
 
         function useTest() {
           const y = useMemo(() => ({ x: 1 }), []);
           return y;
         }`,
-        errors: [{ messageId: "object-usememo-hook" }],
-        options: [{ checkHookReturnObject: true, strict: true }],
-      },
-      {
-        code: `
+      errors: [{ messageId: "object-usememo-hook" }],
+      options: [{ checkHookReturnObject: true, strict: true }],
+    },
+    {
+      code: `
         function useTest() {
           const y = (data) => {};
           return y;
         }`,
-        output: `import { useCallback } from 'react';
+      output: `import { useCallback } from 'react';
 
         function useTest() {
           const y = useCallback((data) => {}, []);
           return y;
         }`,
-        errors: [{ messageId: "function-usecallback-hook" }],
-        options: [{ checkHookReturnObject: true, strict: true }],
-      },
-      {
-        code: `import { anything } from 'react'
+      errors: [{ messageId: "function-usecallback-hook" }],
+      options: [{ checkHookReturnObject: true, strict: true }],
+    },
+    {
+      code: `import { anything } from 'react'
 
         const useMyHook = () => {
           useAnotherHook(
@@ -860,7 +829,7 @@ import type { ComponentProps } from 'react';
             []
           );
         };`,
-        output: `import { anything, useCallback } from 'react'
+      output: `import { anything, useCallback } from 'react'
 
         const useMyHook = () => {
           useAnotherHook(
@@ -868,14 +837,9 @@ import type { ComponentProps } from 'react';
             []
           );
         };`,
-        errors: [{ messageId: "function-usecallback-deps" }, { messageId: "array-usememo-deps" }],
-      },
-    ],
-  });
-});
+      errors: [{ messageId: "function-usecallback-deps" }, { messageId: "array-usememo-deps" }],
+    },
+  ];
 
-describe('require-usememo utils', () => {
-  it("should return undefined if can't find parent",() => {
-    expect(findParentType({ } as any, 'nothing')).toBeUndefined();
-  })
-});
+  return { validTestCases, invalidTestCases };
+};

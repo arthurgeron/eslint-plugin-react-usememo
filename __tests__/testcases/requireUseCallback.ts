@@ -1,319 +1,316 @@
-import { Rule, RuleTester } from "eslint";
-import rule from "src/require-usememo";
+/**
+ * Shared test cases for ESLint plugin rules
+ * This file contains test cases that can be used by both ESLint v8 and v9 test configurations
+ */
 
-const ruleTester = new RuleTester({
-  parser: require.resolve("@typescript-eslint/parser"),
-  parserOptions: {
-    ecmaFeatures: { jsx: true },
-  },
-});
-describe('Rule - Require-usecallback', () =>  {
-  ruleTester.run("useCallback", rule as Rule.RuleModule , {
-    valid: [
-      {
-        code: `const Component = () => {
+// Helper to create a standard set of test cases for require-usecallback
+export const createRequireUseCallbackTestCases = () => {
+  const validTestCases = [
+    {
+      code: `const Component = () => {
         const myFn = useCallback(function() {}, []);
         return <Child prop={myFn} />;
       }`,
-      },
-      {
-        code: `const Component = () => {
+    },
+    {
+      code: `const Component = () => {
         const myFn = useCallback(() => {}, []);
         return <Child prop={myFn} />;
       }`,
-      },
-      {
-        code: `const Component = () => {
+    },
+    {
+      code: `const Component = () => {
           const myFn = function() {};
           return <div prop={myFn} />;
         }`,
-      },
-      {
-        code: `class Component {
+    },
+    {
+      code: `class Component {
           render() {
             const myFn = function() {};
             return <div prop={myFn} />;
           }
         }`,
-      },
-      {
-        code: `
+    },
+    {
+      code: `
         const myFn = function() {};
         const Component = () => {
           return <Child prop={myFn} />;
         }`,
-      },
-      {
-        code: `
+    },
+    {
+      code: `
         const myFn = function() {};
         class Component {
           render() {
             return <Child prop={myFn} />;
           }
         }`,
-      },
-      {
-        code: `const Component = () => {
+    },
+    {
+      code: `const Component = () => {
           const myFn = () => {};
           return <div prop={myFn} />;
         }`,
-      },
-      {
-        code: `
+    },
+    {
+      code: `
         const myFn = () => {};
         const Component = () => {
           return <div prop={myFn} />;
         }`,
-      },
-      {
-        code: `const Component = () => {
+    },
+    {
+      code: `const Component = () => {
         const myFn1 = useCallback(() => [], []);
         const myFn2 = useCallback(() => myFn1, [myFn1]);
         return <Child prop={myFn2} />;
         }`,
-      },
-      {
-        code: `
+    },
+    {
+      code: `
         class Component {
           myFn() {}
           render() {
             return <Child prop={this.myFn} />;
           }
         }`,
-      },
-      {
-        code: `const Component = () => {
+    },
+    {
+      code: `const Component = () => {
           const myFn = memoize(() => {});
           return <Child prop={myFn} />;
         }`,
-      },
-      {
-        code: `const Component = () => {
+    },
+    {
+      code: `const Component = () => {
           const myFn = lodash.memoize(() => []);
           return <Child prop={myFn} />;
         }`,
-      },
-      {
-        code:`const Component = () => {
+    },
+    {
+      code:`const Component = () => {
           const myFn1 = () => [];
           const myFn2 = useCallback(() => myFn1, [myFn1]);
           return <Child prop={myFn2} />;
         }`,
-      },
-      {
-        code: `const Component = () => {
+    },
+    {
+      code: `const Component = () => {
           const myFn = useMemo(() => function() {}, []);
           return <Child prop={myFn} />;
         }`,
-      },
-    ],
-    invalid: [
-      {
-        code: `
+    }
+  ];
+
+  const invalidTestCases = [
+    {
+      code: `
         const Component = () => {
           const myFn = function myFn() {};
           return <Child prop={myFn} />;
         }`,
-        output: `import { useCallback } from 'react';
+      output: `import { useCallback } from 'react';
 
         const Component = () => {
           const myFn = useCallback(() => {}, []);
           return <Child prop={myFn} />;
         }`,
-        errors: [{ messageId: "function-usecallback-props" }],
-      },
-      {
-        code: `
+      errors: [{ messageId: "function-usecallback-props" }],
+    },
+    {
+      code: `
         const Component = () => {
           const myFn = () => {};
           return <Child prop={myFn} />;
         }`,
-        output: `import { useCallback } from 'react';
+      output: `import { useCallback } from 'react';
 
         const Component = () => {
           const myFn = useCallback(() => {}, []);
           return <Child prop={myFn} />;
         }`,
-        errors: [{ messageId: "function-usecallback-props" }],
-      },
-      {
-        code: `
+      errors: [{ messageId: "function-usecallback-props" }],
+    },
+    {
+      code: `
         const Component = () => {
           let myFn = useCallback(() => ({}));
           myFn = () => ({});
           return <Child prop={myFn} />;
         }`,
-        // Variable reassignment is not safe to fix, hence it's expected that the generated code will require a manual fix
-        output: `
+      output: `
         const Component = () => {
           const myFn = useCallback(() => ({}));
           myFn = () => ({});
           return <Child prop={myFn} />;
         }`,
-        errors: [{ messageId: "usememo-const" }],
-      },
-      {
-        code: `
+      errors: [{ messageId: "usememo-const" }],
+    },
+    {
+      code: `
         const Component = () => {
           return <Child prop={() => {}} />;
         }`,
-        errors: [{ messageId: "function-usecallback-props" }],
-        output: `import { useCallback } from 'react';
+      errors: [{ messageId: "function-usecallback-props" }],
+      output: `import { useCallback } from 'react';
 
         const Component = () => {
           const prop = useCallback(() => {}, []);
           return <Child prop={prop} />;
         }`,
-      },
-      {
-        code: `
+    },
+    {
+      code: `
         const Component = () => {
           return <Child prop={() => []} />;
         }`,
-        errors: [{ messageId: "function-usecallback-props" }],
-        output: `import { useCallback } from 'react';
+      errors: [{ messageId: "function-usecallback-props" }],
+      output: `import { useCallback } from 'react';
 
         const Component = () => {
           const prop = useCallback(() => [], []);
           return <Child prop={prop} />;
         }`,
-      },
-      {
-        code: `class Component {
+    },
+    {
+      code: `class Component {
           return () {
             return <Child prop={() => []} />;
           }
         }`,
-        errors: [{ messageId: "instance-class-memo-props" }],
-      },
-      {
-        code: `
+      errors: [{ messageId: "instance-class-memo-props" }],
+    },
+    {
+      code: `
         const Component = () => {
           const myFn1 = () => [];
           const myFn2 = useCallback(() => [], []);
           return <Child prop={myFn2 || myFn1} />;
         }`,
-        output: `import { useCallback } from 'react';
+      output: `import { useCallback } from 'react';
 
         const Component = () => {
           const myFn1 = useCallback(() => [], []);
           const myFn2 = useCallback(() => [], []);
           return <Child prop={myFn2 || myFn1} />;
         }`,
-        errors: [{ messageId: "function-usecallback-props" }],
-      },
-      {
-        code: `const Component = () => {
+      errors: [{ messageId: "function-usecallback-props" }],
+    },
+    {
+      code: `const Component = () => {
           const myFn = memoize(() => {});
           return <Child prop={myFn} />;
         }`,
-        options: [{ strict: true }],
-        errors: [{ messageId: "unknown-usememo-props" }],
-      },
-      {
-        code: `const Component = () => {
+      options: [{ strict: true }],
+      errors: [{ messageId: "unknown-usememo-props" }],
+    },
+    {
+      code: `const Component = () => {
           const myFn = lodash.memoize(() => []);
           return <Child prop={myFn} />;
         }`,
-        options: [{ strict: true }],
-        errors: [{ messageId: "unknown-usememo-props" }],
-      },
-      {
-        code: `class Component {
+      options: [{ strict: true }],
+      errors: [{ messageId: "unknown-usememo-props" }],
+    },
+    {
+      code: `class Component {
           render() {
             const myFn = lodash.memoize(() => []);
             return <Child prop={myFn} />;
           }
         }`,
-        options: [{ strict: true }],
-        errors: [{ messageId: "unknown-class-memo-props" }],
-      },
-      {
-        code: `
+      options: [{ strict: true }],
+      errors: [{ messageId: "unknown-class-memo-props" }],
+    },
+    {
+      code: `
         const Component = () => {
           const myFn = function test() {};
           return <Child prop={myFn} />;
         }`,
-        output: `import { useCallback } from 'react';
+      output: `import { useCallback } from 'react';
 
         const Component = () => {
           const myFn = useCallback(() => {}, []);
           return <Child prop={myFn} />;
         }`,
-        errors: [{ messageId: "function-usecallback-props" }],
-      },
-      {
-        code: `
+      errors: [{ messageId: "function-usecallback-props" }],
+    },
+    {
+      code: `
         const Component = () => {
           const myFn = () => [];
           return <Child prop={myFn} />;
         }`,
-        output: `import { useCallback } from 'react';
+      output: `import { useCallback } from 'react';
 
         const Component = () => {
           const myFn = useCallback(() => [], []);
           return <Child prop={myFn} />;
         }`,
-        errors: [{ messageId: "function-usecallback-props" }],
-      },
-      {
-        code: `import { useMemo } from 'react';
+      errors: [{ messageId: "function-usecallback-props" }],
+    },
+    {
+      code: `import { useMemo } from 'react';
 
         const Component = () => {
           const myFn = () => [];
           const myFn2 = () => [];
           return <Child prop={myFn} props2={myFn2} />;
         }`,
-        output: `import { useMemo, useCallback } from 'react';
+      output: `import { useMemo, useCallback } from 'react';
 
         const Component = () => {
           const myFn = useCallback(() => [], []);
           const myFn2 = useCallback(() => [], []);
           return <Child prop={myFn} props2={myFn2} />;
         }`,
-        errors: [{ messageId: "function-usecallback-props" }, { messageId: "function-usecallback-props" }],
-      },
-      {
-        code: `
+      errors: [{ messageId: "function-usecallback-props" }, { messageId: "function-usecallback-props" }],
+    },
+    {
+      code: `
         const Component = () => {
           const myFn = async function test() {};
           return <Child prop={myFn} />;
         }`,
-        output: `import { useCallback } from 'react';
+      output: `import { useCallback } from 'react';
 
         const Component = () => {
           const myFn = useCallback(async () => {}, []);
           return <Child prop={myFn} />;
         }`,
-        errors: [{ messageId: "function-usecallback-props" }],
-      },
-      {
-        code: `
+      errors: [{ messageId: "function-usecallback-props" }],
+    },
+    {
+      code: `
         const Component = () => {
           const myFn = async () => [];
           return <Child prop={myFn} />;
         }`,
-        output: `import { useCallback } from 'react';
+      output: `import { useCallback } from 'react';
 
         const Component = () => {
           const myFn = useCallback(async () => [], []);
           return <Child prop={myFn} />;
         }`,
-        errors: [{ messageId: "function-usecallback-props" }],
-      },
-      {
-        code: `
+      errors: [{ messageId: "function-usecallback-props" }],
+    },
+    {
+      code: `
         const Component = () => {
           return <Child prop={async () => []} />;
         }`,
-         output: `import { useCallback } from 'react';
+      output: `import { useCallback } from 'react';
 
         const Component = () => {
           const prop = useCallback(async () => [], []);
           return <Child prop={prop} />;
         }`,
-        errors: [{ messageId: "function-usecallback-props" }],
-      },
-    ],
-  });
-});
+      errors: [{ messageId: "function-usecallback-props" }],
+    }
+  ];
+
+  return { validTestCases, invalidTestCases };
+};

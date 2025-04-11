@@ -1,0 +1,32 @@
+---
+description: 
+globs: src/**/*,*.tsx,*.ts,*.js
+alwaysApply: false
+---
+
+# Code Style Guidelines
+
+## TypeScript
+
+The project uses TypeScript.
+
+## React Best Practices
+
+Follow React best practices for component design, state management, and performance optimization.
+
+## Memoization
+
+Use `useMemo`, `useCallback`, and `React.memo` appropriately to optimize performance.
+
+## Error Handling
+
+Implement robust error handling and validation.
+
+## Performance Considerations
+
+- Avoid RegExp where simple string operations suffice
+- Consider the real-time nature of ESLint plugins in IDEs
+- Optimize for frequent calls and minimal overhead
+- Profile critical paths before making optimizations
+- Prefer simple, direct implementations over complex ones
+- Be especially careful with operations that run on every file parse
