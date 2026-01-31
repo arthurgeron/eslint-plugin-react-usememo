@@ -1,21 +1,15 @@
 # ESLint v9 Migration Guide
 
-Starting from version 2.5.0, `@arthurgeron/eslint-plugin-react-usememo` exports configurations compatible with both ESLint v8 (traditional config) and ESLint v9 (flat config). This guide will help you migrate to ESLint v9 once full compatibility is achieved.
-
-## Current Status
-
-**Important Note:** While the plugin exports the proper structure for ESLint v9 compatibility, there are some underlying compatibility issues with the current rule implementations and ESLint v9's new architecture. We're actively working on resolving these issues for complete ESLint v9 compatibility.
-
-For now, please continue using ESLint v8 with the traditional configuration.
+Starting from version 3.0.0, `@arthurgeron/eslint-plugin-react-usememo` targets ESLint v9 using the flat config format. This guide shows how to configure ESLint v9 with the plugin.
 
 ## Prerequisites
 
-1. Install ESLint v9 (once full compatibility is released):
+1. Install ESLint v9:
    ```bash
    npm install eslint@^9.0.0 --save-dev
    ```
 
-2. Ensure your `@arthurgeron/eslint-plugin-react-usememo` version is at least 2.5.0:
+2. Ensure your `@arthurgeron/eslint-plugin-react-usememo` version is at least 3.0.0:
    ```bash
    npm install @arthurgeron/eslint-plugin-react-usememo@^2.5.0 --save-dev
    ```
@@ -24,7 +18,7 @@ For now, please continue using ESLint v8 with the traditional configuration.
 
 ### 1. Create a New Configuration File
 
-Once full compatibility is achieved, create a new `eslint.config.js` file in your project root:
+Create a new `eslint.config.js` file in your project root:
 
 ```js
 // eslint.config.js

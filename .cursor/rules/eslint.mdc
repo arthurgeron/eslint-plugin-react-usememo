@@ -16,7 +16,7 @@ To enforce code style, catch potential errors, and improve code quality.
 
 ## Configuration
 
-This project supports both ESLint v8 (traditional configuration using `.eslintrc.json`) and ESLint v9 (flat configuration using `eslint.config.js`).
+This project targets ESLint v9 using the flat configuration format (`eslint.config.js`).
 
 ## Plugin
 
@@ -32,7 +32,7 @@ The plugin includes the following rules:
 
 ## Compatibility
 
-The plugin is designed to be compatible with both ESLint v8 and v9, using utility functions in `src/utils/compatibility.ts` to handle differences between the versions.
+The plugin targets ESLint v9. Utility functions in `src/utils/compatibility.ts` abstract ESLint API differences.
 
 
 ## Documentation

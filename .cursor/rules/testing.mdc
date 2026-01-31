@@ -18,9 +18,8 @@ Test cases are located in the `__tests__` directory and are separated into `vali
 
 ## Version Compatibility Testing
 
-The same test cases are executed against both ESLint v8 and ESLint v9 to ensure compatibility. This is achieved by extracting shared test cases into the `__tests__/testcases` directory and utilizing the appropriate ESLint runner in:
-- `__tests__/eslint-v8/rules.test.ts` for ESLint v8
-- `__tests__/eslint-v9/rules.test.ts` for ESLint v9
+Test cases are executed with ESLint v9 using:
+- `__tests__/eslint-v9/rules.test.ts`
 
 ## Test Execution
 

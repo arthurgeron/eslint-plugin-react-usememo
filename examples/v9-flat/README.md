@@ -18,17 +18,17 @@ This project uses:
 
 1. Install dependencies:
    ```
-   npm install
+   yarn install
    ```
 
-2. Run the linter:
+2. Run the linter (expected to report rule violations in this example):
    ```
-   npm run lint
+   yarn lint
    ```
 
 3. Start the development server:
    ```
-   npm start
+   yarn start
    ```
 
 ## ESLint Plugin Configuration
