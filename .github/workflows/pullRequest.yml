@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
         with:
           fetch-depth: 1
           
@@ -21,7 +21,7 @@ jobs:
           echo "yarn_version=$YARN_VERSION" >> $GITHUB_OUTPUT
 
       - name: Use Node.js from .tool-versions
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ steps.tool-versions.outputs.node_version }}
           cache: 'yarn'
@@ -32,7 +32,7 @@ jobs:
           npm install -g yarn@${{ steps.tool-versions.outputs.yarn_version }}
 
       - name: Cache node modules
-        uses: actions/cache@v3
+        uses: actions/cache@v5
         id: cache
         with:
           path: node_modules
@@ -52,7 +52,7 @@ jobs:
     needs: install
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
         with:
           fetch-depth: 1
           
@@ -65,7 +65,7 @@ jobs:
           echo "yarn_version=$YARN_VERSION" >> $GITHUB_OUTPUT
 
       - name: Use Node.js from .tool-versions
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ steps.tool-versions.outputs.node_version }}
           cache: 'yarn'
@@ -76,14 +76,14 @@ jobs:
           npm install -g yarn@${{ steps.tool-versions.outputs.yarn_version }}
 
       - name: Restore node_modules
-        uses: actions/cache@v3
+        uses: actions/cache@v5
         id: restore-build
         with:
           path: node_modules
           key: ${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}
 
       - name: Restore jest cache
-        uses: actions/cache@v3
+        uses: actions/cache@v5
         with:
           path: .jest-cache
           key: ${{ runner.os }}-${{ hashFiles('**/.jest-cache/**') }}
@@ -97,7 +97,7 @@ jobs:
     needs: install
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
         with:
           fetch-depth: 1
           
@@ -110,7 +110,7 @@ jobs:
           echo "yarn_version=$YARN_VERSION" >> $GITHUB_OUTPUT
 
       - name: Use Node.js from .tool-versions
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ steps.tool-versions.outputs.node_version }}
           cache: 'yarn'
@@ -121,7 +121,7 @@ jobs:
           npm install -g yarn@${{ steps.tool-versions.outputs.yarn_version }}
 
       - name: Restore node_modules
-        uses: actions/cache@v3
+        uses: actions/cache@v5
         id: restore-build
         with:
           path: node_modules
@@ -136,7 +136,7 @@ jobs:
     needs: install
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
         with:
           fetch-depth: 1
           
@@ -149,7 +149,7 @@ jobs:
           echo "yarn_version=$YARN_VERSION" >> $GITHUB_OUTPUT
 
       - name: Use Node.js from .tool-versions
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ steps.tool-versions.outputs.node_version }}
           cache: 'yarn'
@@ -160,7 +160,7 @@ jobs:
           npm install -g yarn@${{ steps.tool-versions.outputs.yarn_version }}
 
       - name: Restore node_modules
-        uses: actions/cache@v3
+        uses: actions/cache@v5
         id: restore-build
         with:
           path: node_modules
@@ -174,12 +174,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout PR
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
         with:
           fetch-depth: 1
 
       - name: Checkout main
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
         with:
           ref: main
           path: main
@@ -202,7 +202,7 @@ jobs:
 
       - name: Comment PR
         if: failure()
-        uses: actions/github-script@v6
+        uses: actions/github-script@v8
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
@@ -219,12 +219,12 @@ jobs:
     needs: install
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
         with:
           fetch-depth: 1
 
       - name: Use Node.js 23.10.0
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v6
         with:
           node-version: 23.10.0
           cache: 'yarn'
@@ -235,7 +235,7 @@ jobs:
           npm install -g yarn@1.22.22
 
       - name: Restore node_modules
-        uses: actions/cache@v3
+        uses: actions/cache@v5
         id: restore-build
         with:
           path: node_modules
@@ -261,12 +261,12 @@ jobs:
     needs: install
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
         with:
           fetch-depth: 1
 
       - name: Use Node.js 23.10.0
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v6
         with:
           node-version: 23.10.0
           cache: 'yarn'
@@ -277,7 +277,7 @@ jobs:
           npm install -g yarn@1.22.22
 
       - name: Restore node_modules
-        uses: actions/cache@v3
+        uses: actions/cache@v5
         id: restore-build
         with:
           path: node_modules
