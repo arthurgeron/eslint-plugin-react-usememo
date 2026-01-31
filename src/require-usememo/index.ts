@@ -5,6 +5,8 @@ import { MessagesRequireUseMemo  } from '../constants/messages';
 import {
   getExpressionMemoStatus,
   getIsHook,
+  isFunctionNode,
+  isHookName,
   isComplexComponent,
   isComponentName,
   shouldIgnoreNode,
@@ -86,31 +88,12 @@ const rule: CompatibleRuleModule = {
       return undefined;
     }
 
-    type FunctionNode =
-      | TSESTree.FunctionDeclaration
-      | TSESTree.FunctionExpression
-      | TSESTree.ArrowFunctionExpression;
-
-    function isFunctionNode(node: CompatibleNode): node is FunctionNode {
-      return (
-        node.type === "FunctionDeclaration" ||
-        node.type === "FunctionExpression" ||
-        node.type === "ArrowFunctionExpression"
-      );
-    }
-
-    function isHookName(name: string): boolean {
-      return (
-        name === "use" ||
-        (name.length >= 4 &&
-          name[0] === "u" &&
-          name[1] === "s" &&
-          name[2] === "e" &&
-          name[3] === name[3]?.toUpperCase?.())
-      );
-    }
-
-    function getFunctionName(node: FunctionNode): string | undefined {
+    function getFunctionName(
+      node:
+        | TSESTree.FunctionDeclaration
+        | TSESTree.FunctionExpression
+        | TSESTree.ArrowFunctionExpression,
+    ): string | undefined {
       if (node.type === "FunctionDeclaration") {
         return node.id?.type === "Identifier" ? node.id.name : undefined;
       }

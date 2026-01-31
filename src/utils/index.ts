@@ -27,17 +27,20 @@ export function isComponentName(name: string | undefined) {
 	);
 }
 
+export function isHookName(name: string): boolean {
+	return (
+		name === "use" ||
+		((name?.length ?? 0) >= 4 &&
+			name[0] === "u" &&
+			name[1] === "s" &&
+			name[2] === "e" &&
+			name[3] === name[3]?.toUpperCase?.())
+	);
+}
+
 export function getIsHook(node: TSESTree.Node | TSESTree.Identifier) {
 	if (node.type === "Identifier") {
-		const { name } = node;
-		return (
-			name === "use" ||
-			((name?.length ?? 0) >= 4 &&
-				name[0] === "u" &&
-				name[1] === "s" &&
-				name[2] === "e" &&
-				name[3] === name[3]?.toUpperCase?.())
-		);
+		return isHookName(node.name);
 	}
 
 	if (
@@ -52,12 +55,12 @@ export function getIsHook(node: TSESTree.Node | TSESTree.Identifier) {
 	return false;
 }
 
-type FunctionNode =
+export type FunctionNode =
 	| TSESTree.FunctionDeclaration
 	| TSESTree.FunctionExpression
 	| TSESTree.ArrowFunctionExpression;
 
-function isFunctionNode(node: CompatibleNode): node is FunctionNode {
+export function isFunctionNode(node: CompatibleNode): node is FunctionNode {
 	return (
 		node.type === "FunctionDeclaration" ||
 		node.type === "FunctionExpression" ||
