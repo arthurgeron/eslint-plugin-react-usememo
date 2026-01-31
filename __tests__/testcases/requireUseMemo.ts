@@ -341,6 +341,24 @@ export const createRequireUseMemoTestCases = () => {
         }`,
       options: [{ ignoredPropNames: ["onClick"] }],
     },
+    {
+      code: `
+        const ComponentA = ({ comp }) => {
+          return <div>{comp}</div>;
+        };
+
+        const ComponentB = () => {
+          return <div>ComponentB</div>;
+        };
+
+        export const MyServerComponent = async () => {
+          return (
+            <div>
+              <ComponentA comp={<ComponentB />} />
+            </div>
+          );
+        };`,
+    },
   ];
 
   const invalidTestCases = [

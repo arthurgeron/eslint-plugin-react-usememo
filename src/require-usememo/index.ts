@@ -6,6 +6,7 @@ import {
   getExpressionMemoStatus,
   getIsHook,
   isComplexComponent,
+  isComponentName,
   shouldIgnoreNode,
 } from "../utils";
 import type { ExpressionTypes, ExpressionData, ReactImportInformation } from './types';
@@ -85,6 +86,68 @@ const rule: CompatibleRuleModule = {
       return undefined;
     }
 
+    type FunctionNode =
+      | TSESTree.FunctionDeclaration
+      | TSESTree.FunctionExpression
+      | TSESTree.ArrowFunctionExpression;
+
+    function isFunctionNode(node: CompatibleNode): node is FunctionNode {
+      return (
+        node.type === "FunctionDeclaration" ||
+        node.type === "FunctionExpression" ||
+        node.type === "ArrowFunctionExpression"
+      );
+    }
+
+    function isHookName(name: string): boolean {
+      return (
+        name === "use" ||
+        (name.length >= 4 &&
+          name[0] === "u" &&
+          name[1] === "s" &&
+          name[2] === "e" &&
+          name[3] === name[3]?.toUpperCase?.())
+      );
+    }
+
+    function getFunctionName(node: FunctionNode): string | undefined {
+      if (node.type === "FunctionDeclaration") {
+        return node.id?.type === "Identifier" ? node.id.name : undefined;
+      }
+      const parent = node.parent;
+      if (parent?.type === "VariableDeclarator" && parent.id.type === "Identifier") {
+        return parent.id.name;
+      }
+      return undefined;
+    }
+
+    function isAsyncComponentOrHook(node: CompatibleNode): boolean {
+      let current: CompatibleNode | null | undefined = node;
+      while (current && "parent" in (current as Rule.NodeParentExtension)) {
+        const parent = (current as Rule.NodeParentExtension).parent as
+          | CompatibleNode
+          | null
+          | undefined;
+        if (!parent) {
+          break;
+        }
+        current = parent;
+        if (isFunctionNode(current)) {
+          if (!current.async) {
+            continue;
+          }
+          const name = getFunctionName(current);
+          if (!name) {
+            continue;
+          }
+          if (isComponentName(name) || isHookName(name)) {
+            return true;
+          }
+        }
+      }
+      return false;
+    }
+
     function process(node: CompatibleNode, _expression?: ExpressionTypes, expressionData?: ExpressionData, checkContext = false) {
       const isGlobalScope = getCompatibleScope(context, node)?.block.type === 'Program';
       
@@ -117,6 +180,10 @@ const rule: CompatibleRuleModule = {
     function JSXAttribute(node: CompatibleNode) {
       const ignoredPropNames = context.options?.[0]?.ignoredPropNames ?? [];
       const tsNode = node as TSESTree.JSXAttribute;
+
+      if (isAsyncComponentOrHook(tsNode)) {
+        return null;
+      }
 
       const { parent, value } = tsNode;
       if (value === null) return null;
@@ -155,6 +222,10 @@ const rule: CompatibleRuleModule = {
         const anonFuncVariableDeclarationNode = tsNode.parent?.parent?.type === 'ArrowFunctionExpression' && tsNode?.parent?.parent?.parent?.type === 'VariableDeclarator' && tsNode?.parent?.parent?.parent?.id;
         const validNode = functionDeclarationNode || anonFuncVariableDeclarationNode;
         
+        if (isAsyncComponentOrHook(tsNode)) {
+          return;
+        }
+
         if (validNode && getIsHook(validNode as TSESTree.Identifier) && tsNode.argument) {
           if (tsNode.argument.type === 'ObjectExpression') {
             if (context.options?.[0]?.checkHookReturnObject) {
@@ -195,6 +266,10 @@ const rule: CompatibleRuleModule = {
         const { callee } = tsNode;
         const ignoredNames = context.options?.[0]?.ignoredHookCallsNames ?? {};
         
+        if (isAsyncComponentOrHook(tsNode)) {
+          return;
+        }
+
         if (
           context.options?.[0]?.checkHookCalls === false
           || !getIsHook(callee as TSESTree.Node)
