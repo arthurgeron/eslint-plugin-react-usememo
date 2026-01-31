@@ -38,7 +38,7 @@ export function checkForErrors<Y extends CompatibleNode>(
 				? `${invalidContext.name}() callback`
 				: invalidContext?.kind === "iteration"
 					? `Array.${invalidContext.name}() iteration`
-					: "a hook callback or array iteration";
+					: invalidContext?.name ?? "a hook callback or array iteration";
 		report((statusData.node ?? node) as Y, MemoStatus.ErrorInvalidContext, {
 			context: contextLabel,
 		});

@@ -97,8 +97,12 @@ const rule: CompatibleRuleModule = {
         return;
       }
       if (expression.type === "LogicalExpression") {
-        !expression.left ? true : process(node, expression.left as ExpressionTypes);
-        !expression.right ? true : process(node, expression.right as ExpressionTypes);
+        !expression.left
+          ? true
+          : process(node, expression.left as ExpressionTypes, expressionData, checkContext);
+        !expression.right
+          ? true
+          : process(node, expression.right as ExpressionTypes, expressionData, checkContext);
         return;
       }
       checkForErrors(

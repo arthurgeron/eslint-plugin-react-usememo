@@ -52,12 +52,151 @@ export function getIsHook(node: TSESTree.Node | TSESTree.Identifier) {
 	return false;
 }
 
+type FunctionNode =
+	| TSESTree.FunctionDeclaration
+	| TSESTree.FunctionExpression
+	| TSESTree.ArrowFunctionExpression;
+
+function isFunctionNode(node: TSESTree.Node): node is FunctionNode {
+	return (
+		node.type === "FunctionDeclaration" ||
+		node.type === "FunctionExpression" ||
+		node.type === "ArrowFunctionExpression"
+	);
+}
+
+function getChildNodes(node: TSESTree.Node): TSESTree.Node[] {
+	const children: TSESTree.Node[] = [];
+	for (const [key, value] of Object.entries(node)) {
+		if (key === "parent" || !value) {
+			continue;
+		}
+		if (Array.isArray(value)) {
+			for (const item of value) {
+				if (item && typeof item === "object" && "type" in item) {
+					children.push(item as TSESTree.Node);
+				}
+			}
+			continue;
+		}
+		if (typeof value === "object" && "type" in value) {
+			children.push(value as TSESTree.Node);
+		}
+	}
+	return children;
+}
+
+function containsReturnStatement(node: TSESTree.Node): boolean {
+	if (isFunctionNode(node)) {
+		return false;
+	}
+	const stack = [node];
+	while (stack.length) {
+		const current = stack.pop();
+		if (!current) {
+			continue;
+		}
+		if (current.type === "ReturnStatement") {
+			return true;
+		}
+		if (isFunctionNode(current)) {
+			continue;
+		}
+		stack.push(...getChildNodes(current));
+	}
+	return false;
+}
+
+function containsNode(root: TSESTree.Node, target: TSESTree.Node): boolean {
+	if (root === target) {
+		return true;
+	}
+	if (isFunctionNode(root)) {
+		return false;
+	}
+	const stack = [root];
+	while (stack.length) {
+		const current = stack.pop();
+		if (!current) {
+			continue;
+		}
+		if (current === target) {
+			return true;
+		}
+		if (isFunctionNode(current)) {
+			continue;
+		}
+		stack.push(...getChildNodes(current));
+	}
+	return false;
+}
+
+function findParentFunction(
+	node: TSESTree.Node & Rule.NodeParentExtension,
+): FunctionNode | undefined {
+	let current = node.parent as (TSESTree.Node & Rule.NodeParentExtension) | null;
+	while (current) {
+		if (isFunctionNode(current)) {
+			return current;
+		}
+		current = current.parent as (TSESTree.Node & Rule.NodeParentExtension) | null;
+	}
+	return undefined;
+}
+
+function hasPriorReturnInFunction(
+	returnStatement: TSESTree.ReturnStatement,
+): boolean {
+	const functionNode = findParentFunction(returnStatement);
+	if (!functionNode || functionNode.body.type !== "BlockStatement") {
+		return false;
+	}
+	for (const statement of functionNode.body.body) {
+		if (containsNode(statement, returnStatement)) {
+			return false;
+		}
+		if (containsReturnStatement(statement)) {
+			return true;
+		}
+	}
+	return false;
+}
+
+function getConditionalContext(
+	node: TSESTree.Node,
+): InvalidContextInfo | undefined {
+	switch (node.type) {
+		case "IfStatement":
+			return { kind: "conditional", name: "an if/else branch" };
+		case "ConditionalExpression":
+			return { kind: "conditional", name: "a conditional (ternary) expression" };
+		case "LogicalExpression":
+			return { kind: "conditional", name: "a logical expression" };
+		case "SwitchCase":
+			return { kind: "conditional", name: "a switch case" };
+		case "SwitchStatement":
+			return { kind: "conditional", name: "a switch statement" };
+		case "ForStatement":
+		case "ForInStatement":
+		case "ForOfStatement":
+		case "WhileStatement":
+		case "DoWhileStatement":
+			return { kind: "loop", name: "a loop body" };
+		default:
+			return undefined;
+	}
+}
+
 export function isImpossibleToFix(
 	node: CompatibleNode,
 ): { result: false } | { result: true; node: CompatibleNode; invalidContext: InvalidContextInfo } {
 	let current = node as (TSESTree.Node & Rule.NodeParentExtension) | undefined;
+	let returnStatement: TSESTree.ReturnStatement | undefined;
 
 	while (current) {
+		if (current.type === "ReturnStatement" && !returnStatement) {
+			returnStatement = current;
+		}
 		if (current.type === "CallExpression") {
 			const callee = current.callee as TSESTree.CallExpression["callee"];
 			const iterationName =
@@ -92,11 +231,29 @@ export function isImpossibleToFix(
 			}
 			return { result: false };
 		}
+		const conditionalContext = getConditionalContext(current);
+		if (conditionalContext) {
+			return {
+				result: true,
+				node: current as CompatibleNode,
+				invalidContext: conditionalContext,
+			};
+		}
 		current = current.parent as
 			| (TSESTree.Node & Rule.NodeParentExtension)
 			| undefined;
 	}
 
+	if (returnStatement && hasPriorReturnInFunction(returnStatement)) {
+		return {
+			result: true,
+			node: returnStatement as CompatibleNode,
+			invalidContext: {
+				kind: "early-return",
+				name: "after a conditional return",
+			},
+		};
+	}
 	return { result: false };
 }
 
@@ -230,6 +387,13 @@ export function getExpressionMemoStatus(
 				}
 			);
 		}
+		case "ConditionalExpression":
+			return (
+				(checkContext && getInvalidContextReport(expression)) || {
+					node: expression as CompatibleNode,
+					status: MemoStatus.UnmemoizedOther,
+				}
+			);
 		case "Identifier":
 			return getIdentifierMemoStatus(context, expression);
 		case "BinaryExpression":

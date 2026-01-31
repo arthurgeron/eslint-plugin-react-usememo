@@ -1,7 +1,7 @@
 import type { CompatibleNode } from "./utils/compatibility";
 
 export type InvalidContextInfo = {
-	kind: "hook" | "iteration";
+	kind: "hook" | "iteration" | "conditional" | "loop" | "early-return";
 	name: string;
 };
 
