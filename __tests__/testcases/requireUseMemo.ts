@@ -425,6 +425,31 @@ export const createRequireUseMemoTestCases = () => {
     },
     {
       code: `
+        export function useBookDetails() {
+          const bookDetails = { title: 'Example', author: 'Author' };
+          const dataLoaded = true;
+
+          return {
+            ...bookDetails,
+            dataLoaded,
+          };
+        }`,
+      output: `import { useMemo } from 'react';
+
+        export function useBookDetails() {
+          const bookDetails = useMemo(() => ({ title: 'Example', author: 'Author' }), []);
+          const dataLoaded = true;
+
+          return {
+            ...bookDetails,
+            dataLoaded,
+          };
+        }`,
+      options: [{ strict: false, checkHookCalls: false }],
+      errors: [{ messageId: "object-usememo-hook" }],
+    },
+    {
+      code: `
         const Component = ({ props }) => {
           return <MyComponent data={props?.data || {}} />;
         }`,
