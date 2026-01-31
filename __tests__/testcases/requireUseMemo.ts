@@ -425,6 +425,30 @@ export const createRequireUseMemoTestCases = () => {
     },
     {
       code: `
+        const Component = ({ props }) => {
+          return <MyComponent data={props?.data || {}} />;
+        }`,
+      errors: [{ messageId: "error-in-invalid-context" }],
+    },
+    {
+      code: `
+        const Component = ({ condition }) => {
+          return <Child prop1={condition ? {} : {}} />;
+        }`,
+      errors: [{ messageId: "error-in-invalid-context" }],
+    },
+    {
+      code: `
+        const Component = ({ condition }) => {
+          if (condition) {
+            return <Child>1</Child>;
+          }
+          return <Child prop1={{}} />;
+        }`,
+      errors: [{ messageId: "error-in-invalid-context" }],
+    },
+    {
+      code: `
         const Component = () => {
           return <Child prop={<SomeComponent />} />;
         }`,
