@@ -1,29 +1,29 @@
-import typescript from '@rollup/plugin-typescript';
-import commonjs from '@rollup/plugin-commonjs';
-import resolve from '@rollup/plugin-node-resolve';
+const typescript = require("@rollup/plugin-typescript");
+const commonjs = require("@rollup/plugin-commonjs");
+const resolve = require("@rollup/plugin-node-resolve");
 
-export default [
+module.exports = [
   {
-    input: 'src/index.ts',
+    input: "src/index.ts",
     output: [
       {
-        file: 'dist/index.js',
-        format: 'esm',
+        file: "dist/index.js",
+        format: "esm",
         sourcemap: true,
       },
       {
-        file: 'dist/index.cjs',
-        format: 'cjs',
+        file: "dist/index.cjs",
+        format: "cjs",
         sourcemap: true,
       },
     ],
     plugins: [
-      resolve(), 
-      commonjs(), 
+      resolve(),
+      commonjs(),
       typescript({
-        exclude: ['**/__tests__/**', '**/*.test.ts', '**/testcases/**']
-      })
+        exclude: ["**/__tests__/**", "**/*.test.ts", "**/testcases/**"],
+      }),
     ],
-    external: ['eslint', '@typescript-eslint/types'],
+    external: ["eslint", "@typescript-eslint/types"],
   },
 ];
