@@ -145,9 +145,7 @@ function findParentFunction(
 	return undefined;
 }
 
-function hasPriorReturnInFunction(
-	returnStatement: TSESTree.ReturnStatement,
-): boolean {
+function hasPriorReturnInFunction(returnStatement: CompatibleNode): boolean {
 	const functionNode = findParentFunction(returnStatement);
 	if (!functionNode || functionNode.body.type !== "BlockStatement") {
 		return false;
@@ -192,7 +190,7 @@ export function isImpossibleToFix(
 	node: CompatibleNode,
 ): { result: false } | { result: true; node: CompatibleNode; invalidContext: InvalidContextInfo } {
 	let current = node as (CompatibleNode & Rule.NodeParentExtension) | undefined;
-	let returnStatement: TSESTree.ReturnStatement | undefined;
+	let returnStatement: CompatibleNode | undefined;
 
 	while (current) {
 		if (current.type === "ReturnStatement" && !returnStatement) {
