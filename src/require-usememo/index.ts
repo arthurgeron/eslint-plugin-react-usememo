@@ -167,9 +167,16 @@ const rule: CompatibleRuleModule = {
             for (const property of objExp.properties) {
               if (property.type === "Property") {
                 process(
-                  property, 
-                  property.value as ExpressionTypes, 
-                  hookReturnExpressionData
+                  property,
+                  property.value as ExpressionTypes,
+                  hookReturnExpressionData,
+                );
+              }
+              if (property.type === "SpreadElement") {
+                process(
+                  property as CompatibleNode,
+                  property.argument as ExpressionTypes,
+                  hookReturnExpressionData,
                 );
               }
             }
