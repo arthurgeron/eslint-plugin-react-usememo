@@ -1,78 +1,67 @@
 import type { Rule } from "eslint";
-import type { Rule as RuleV9 } from "eslint-v9";
-import type * as ESTree from "estree";
-import { isComponentName, shouldIgnoreNode } from "../utils";
+import type { TSESTree } from "@typescript-eslint/types";
+import { isComponentName, isReactCallExpression, shouldIgnoreNode } from "../utils";
 import * as path from "node:path";
-import { getCompatibleScope, getCompatibleFilename } from "../utils/compatibility";
+import { getCompatibleFilename } from "../utils/compatibility";
 
 import type { MemoFunctionExpression, MemoVariableIdentifier } from "./types";
-import type { ESNode } from "src/types";
 
-function isMemoCallExpression(node: Rule.Node) {
+type ParentNode = TSESTree.Node & Rule.NodeParentExtension;
+type VariableDeclaratorLike = {
+	type: "VariableDeclarator";
+	id: { type?: string; name?: string } | null;
+	init?: TSESTree.Expression | null;
+};
+
+function isMemoCallExpression(node: TSESTree.Node) {
 	if (node.type !== "CallExpression") return false;
-	if (node.callee?.type === "MemberExpression") {
-		const {
-			callee: { object, property },
-		} = node;
-		if (
-			object.type === "Identifier" &&
-			property.type === "Identifier" &&
-			object.name === "React" &&
-			property.name === "memo"
-		) {
-			return true;
-		}
-	} else if (
-		node.callee?.type === "Identifier" &&
-		node.callee?.name === "memo"
-	) {
-		return true;
-	}
-
-	return false;
+	return isReactCallExpression(node, "memo");
 }
 
 export function checkFunction(
-	context: Rule.RuleContext | RuleV9.RuleContext,
+	context: Rule.RuleContext,
 	node: (
-		| ESTree.ArrowFunctionExpression
-		| ESTree.FunctionExpression
-		| ESTree.FunctionDeclaration
-		| ESTree.Identifier
+		| TSESTree.ArrowFunctionExpression
+		| TSESTree.FunctionExpression
+		| TSESTree.FunctionDeclaration
+		| TSESTree.Identifier
 	) &
-		(Rule.NodeParentExtension | RuleV9.NodeParentExtension),
+		Rule.NodeParentExtension,
 ) {
 	const ignoredNames = context.options?.[0]?.ignoredComponents;
-	let currentNode = node.type === "FunctionDeclaration" ? node : node.parent;
-	while (currentNode.type === "CallExpression") {
+	let currentNode: ParentNode | null | undefined =
+		node.type === "FunctionDeclaration"
+			? (node as ParentNode)
+			: (node.parent as ParentNode | null | undefined);
+	while (currentNode?.type === "CallExpression") {
 		if (isMemoCallExpression(currentNode)) {
 			return;
 		}
 
-		currentNode = currentNode.parent;
+		currentNode = currentNode.parent as ParentNode | null | undefined;
 	}
 
 	if (
-		currentNode.type === "VariableDeclarator" ||
-		currentNode.type === "FunctionDeclaration"
+		currentNode?.type === "VariableDeclarator" ||
+		currentNode?.type === "FunctionDeclaration"
 	) {
 		const { id } = currentNode;
 		if (id?.type === "Identifier") {
 			if (
 				isComponentName(id?.name) &&
 				(!ignoredNames ||
-					!shouldIgnoreNode(id as unknown as ESNode, ignoredNames))
+					!shouldIgnoreNode(id, ignoredNames))
 			) {
-				context.report({ node, messageId: "memo-required" });
+				context.report({ node: node as Rule.Node, messageId: "memo-required" });
 			}
 		}
 	} else if (
 		node.type === "FunctionDeclaration" &&
-		currentNode.type === "Program"
+		(currentNode as TSESTree.Program | null | undefined)?.type === "Program"
 	) {
 		if (
 			ignoredNames &&
-			!shouldIgnoreNode(node as unknown as ESNode, ignoredNames)
+			!shouldIgnoreNode(node, ignoredNames)
 		) {
 			return;
 		}
@@ -89,28 +78,41 @@ export function checkFunction(
 }
 
 export function checkVariableDeclaration(
-	context: Rule.RuleContext | RuleV9.RuleContext,
-	declaration: any, // Using any to bypass type incompatibilities between ESLint v8 and v9
+	context: Rule.RuleContext,
+	declaration: unknown,
 ) {
-	if (declaration.init) {
-		if (declaration.init.type === "CallExpression") {
+	if (!declaration || typeof declaration !== "object") {
+		return;
+	}
+
+	if ((declaration as { type?: string }).type !== "VariableDeclarator") {
+		return;
+	}
+
+	const variableDeclaration = declaration as VariableDeclaratorLike;
+	if (variableDeclaration.init) {
+		if (variableDeclaration.init.type === "CallExpression") {
 			const declarationProperties = (
-				(declaration.init.callee as MemoVariableIdentifier).name
-					? declaration.init.callee
-					: (declaration.init.callee as ESTree.MemberExpression).property
+				(variableDeclaration.init.callee as MemoVariableIdentifier).name
+					? variableDeclaration.init.callee
+					: (variableDeclaration.init.callee as TSESTree.MemberExpression)
+							.property
 			) as MemoVariableIdentifier;
 			if (declarationProperties?.name === "memo") {
 				checkFunction(
 					context,
-					declaration.init.arguments[0] as MemoVariableIdentifier,
+					variableDeclaration.init.arguments[0] as MemoVariableIdentifier,
 				);
 				return;
 			}
 		} else if (
-			declaration.init.type === "ArrowFunctionExpression" ||
-			declaration.init.type === "FunctionExpression"
+			variableDeclaration.init.type === "ArrowFunctionExpression" ||
+			variableDeclaration.init.type === "FunctionExpression"
 		) {
-			checkFunction(context, declaration.init as MemoFunctionExpression);
+			checkFunction(
+				context,
+				variableDeclaration.init as MemoFunctionExpression,
+			);
 			return;
 		}
 	}

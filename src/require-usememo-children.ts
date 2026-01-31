@@ -1,6 +1,3 @@
-import type { Rule } from "eslint";
-import type { Rule as RuleV9 } from "eslint-v9";
-import type * as ESTree from "estree";
 import type { TSESTree } from "@typescript-eslint/types";
 import {
   getExpressionMemoStatus,
@@ -8,7 +5,8 @@ import {
 } from "./utils";
 import { MessagesRequireUseMemoChildren } from "./constants/messages";
 import { MemoStatus } from "src/types";
-import type { CompatibleContext } from "./require-usememo/utils";
+import type { CompatibleContext } from "./utils/compatibility";
+import type { Rule } from "eslint";
 import type { CompatibleNode, CompatibleRuleModule } from "./utils/compatibility";
 
 const rule: CompatibleRuleModule = {
@@ -25,7 +23,7 @@ const rule: CompatibleRuleModule = {
   create: (context: CompatibleContext) => {
     let isClass = false;
     function report(node: CompatibleNode, messageId: keyof typeof MessagesRequireUseMemoChildren) {
-      context.report({ node: node as any, messageId: messageId as string });
+      context.report({ node: node as Rule.Node, messageId });
     }
 
     return {
@@ -34,7 +32,7 @@ const rule: CompatibleRuleModule = {
       },
 
       JSXElement: (node: CompatibleNode) => {
-        const tsNode = node as unknown as TSESTree.JSXElement;
+        const tsNode = node as TSESTree.JSXElement;
         const {
           children,
           openingElement,

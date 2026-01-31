@@ -1,12 +1,9 @@
 import type { Rule, Scope } from "eslint";
-import type { Rule as RuleV9 } from "eslint-v9";
 import type { TSESTree } from "@typescript-eslint/types";
-import type * as ESTree from "estree";
-import { type ESNode, MemoStatus, type MemoStatusToReport } from "src/types";
-import { getIsHook, isImpossibleToFix } from "src/require-usememo/utils";
+import { MemoStatus, type MemoStatusToReport } from "src/types";
+import { type CompatibleContext, type CompatibleNode } from "src/utils/compatibility";
 import getVariableInScope from "src/utils/getVariableInScope";
 import { Minimatch } from "minimatch";
-import type { CompatibleContext } from "src/require-usememo/utils";
 
 export function isComplexComponent(
 	node: TSESTree.JSXOpeningElement | TSESTree.JSXIdentifier,
@@ -26,10 +23,58 @@ export function isComponentName(name: string | undefined) {
 	);
 }
 
-function isCallExpression(
+export function getIsHook(node: TSESTree.Node | TSESTree.Identifier) {
+	if (node.type === "Identifier") {
+		const { name } = node;
+		return (
+			name === "use" ||
+			((name?.length ?? 0) >= 4 &&
+				name[0] === "u" &&
+				name[1] === "s" &&
+				name[2] === "e" &&
+				name[3] === name[3]?.toUpperCase?.())
+		);
+	}
+
+	if (
+		node.type === "MemberExpression" &&
+		!node.computed &&
+		getIsHook(node.property)
+	) {
+		const { object: obj } = node;
+		return obj.type === "Identifier" && obj.name === "React";
+	}
+
+	return false;
+}
+
+export function isImpossibleToFix(node: CompatibleNode) {
+	let current = node as (TSESTree.Node & Rule.NodeParentExtension) | undefined;
+
+	while (current) {
+		if (current.type === "CallExpression") {
+			const callee = current.callee as TSESTree.CallExpression["callee"];
+			const isInsideIteration =
+				callee.type === "MemberExpression" &&
+				callee.property.type === "Identifier" &&
+				callee.property.name in Array.prototype;
+			const isInsideOtherHook =
+				callee.type === "Identifier" &&
+				(callee.name === "useMemo" || callee.name === "useCallback");
+			return { result: isInsideIteration || isInsideOtherHook, node: callee };
+		}
+		current = current.parent as
+			| (TSESTree.Node & Rule.NodeParentExtension)
+			| undefined;
+	}
+
+	return { result: false };
+}
+
+export function isReactCallExpression(
 	node: TSESTree.CallExpression,
-	name: "useMemo" | "useCallback",
-) {
+	name: string,
+): boolean {
 	if (node?.callee?.type === "MemberExpression") {
 		const {
 			callee: { object, property },
@@ -61,7 +106,7 @@ function getIdentifierMemoStatus(
 		node?.id?.type === "Identifier" &&
 		(isComponentName(node.id.name) || getIsHook(node.id));
 	if (isProps) {
-		return;
+		return undefined;
 	}
 
 	const isFunctionParameter = node?.id?.name !== name;
@@ -88,12 +133,12 @@ function getInvalidContextReport(
 	context: CompatibleContext,
 	expression: TSESTree.Expression,
 ) {
-	const impossibleFix = isImpossibleToFix(
-		expression as Rule.NodeParentExtension,
-		context,
-	);
+	const impossibleFix = isImpossibleToFix(expression);
 	if (impossibleFix?.result) {
-		return { node: impossibleFix.node, status: MemoStatus.ErrorInvalidContext };
+		return {
+			node: impossibleFix.node as CompatibleNode,
+			status: MemoStatus.ErrorInvalidContext,
+		};
 	}
 	return false;
 }
@@ -108,21 +153,21 @@ export function getExpressionMemoStatus(
 		case "ObjectExpression":
 			return (
 				(checkContext && getInvalidContextReport(context, expression)) || {
-					node: expression,
+					node: expression as CompatibleNode,
 					status: MemoStatus.UnmemoizedObject,
 				}
 			);
 		case "ArrayExpression":
 			return (
 				(checkContext && getInvalidContextReport(context, expression)) || {
-					node: expression,
+					node: expression as CompatibleNode,
 					status: MemoStatus.UnmemoizedArray,
 				}
 			);
 		case "NewExpression":
 			return (
 				(checkContext && getInvalidContextReport(context, expression)) || {
-					node: expression,
+					node: expression as CompatibleNode,
 					status: MemoStatus.UnmemoizedNew,
 				}
 			);
@@ -130,7 +175,7 @@ export function getExpressionMemoStatus(
 		case "ArrowFunctionExpression": {
 			return (
 				(checkContext && getInvalidContextReport(context, expression)) || {
-					node: expression,
+					node: expression as CompatibleNode,
 					status: MemoStatus.UnmemoizedFunction,
 				}
 			);
@@ -138,20 +183,20 @@ export function getExpressionMemoStatus(
 		case "JSXElement":
 			return (
 				(checkContext && getInvalidContextReport(context, expression)) || {
-					node: expression,
+					node: expression as CompatibleNode,
 					status: MemoStatus.UnmemoizedJSX,
 				}
 			);
 		case "CallExpression": {
 			const validCallExpression =
-				isCallExpression(expression, "useMemo") ||
-				isCallExpression(expression, "useCallback");
+				isReactCallExpression(expression, "useMemo") ||
+				isReactCallExpression(expression, "useCallback");
 
 			return (
 				(validCallExpression &&
 					checkContext &&
 					getInvalidContextReport(context, expression)) || {
-					node: expression,
+					node: expression as CompatibleNode,
 					status: validCallExpression
 						? MemoStatus.Memoized
 						: MemoStatus.UnmemoizedFunctionCall,
@@ -161,15 +206,18 @@ export function getExpressionMemoStatus(
 		case "Identifier":
 			return getIdentifierMemoStatus(context, expression);
 		case "BinaryExpression":
-			return { node: expression, status: MemoStatus.Memoized };
+			return { node: expression as CompatibleNode, status: MemoStatus.Memoized };
 		default:
-			return { node: expression, status: MemoStatus.UnmemoizedOther };
+			return {
+				node: expression as CompatibleNode,
+				status: MemoStatus.UnmemoizedOther,
+			};
 	}
 }
 
 export function findVariable(
 	scope: Scope.Scope,
-	node: ESTree.Identifier,
+	node: TSESTree.Identifier,
 ): Scope.Variable | undefined {
 	if (scope.variables.some((variable) => variable.name === node.name)) {
 		return scope.variables.find((variable) => variable.name === node.name);
@@ -183,17 +231,23 @@ export function findVariable(
 }
 
 export function shouldIgnoreNode(
-	node: ESNode,
+	node: CompatibleNode,
 	ignoredNames: Record<string, boolean | undefined>,
 ) {
-	const nodeName = (node as TSESTree.Node as TSESTree.Identifier)?.name;
-	const nodeCalleeName = (node?.callee as TSESTree.Identifier)?.name;
-	const nodeCalleePropertyName = (
-		(node?.callee as TSESTree.MemberExpression)?.property as TSESTree.Identifier
-	)?.name;
+	const nodeName = node.type === "Identifier" ? node.name : undefined;
+	const nodeCalleeName =
+		node.type === "CallExpression" && node.callee.type === "Identifier"
+			? node.callee.name
+			: undefined;
+	const nodeCalleePropertyName =
+		node.type === "CallExpression" &&
+		node.callee.type === "MemberExpression" &&
+		node.callee.property.type === "Identifier"
+			? node.callee.property.name
+			: undefined;
 	const nameToCheck = nodeName || nodeCalleeName || nodeCalleePropertyName;
 
-	const matchedValue = ignoredNames[nameToCheck];
+	const matchedValue = nameToCheck ? ignoredNames[nameToCheck] : undefined;
 
 	if (matchedValue !== undefined) {
 		return matchedValue;
@@ -219,4 +273,24 @@ export function shouldIgnoreNode(
 	});
 
 	return !!shouldIgnore;
+}
+
+type ParentNode = Rule.NodeParentExtension;
+
+export function findParentType(
+	node: CompatibleNode | null | undefined,
+	type: string,
+): CompatibleNode | undefined {
+	let current = node as ParentNode | null | undefined;
+	let parent = current?.parent as ParentNode | null | undefined;
+
+	while (parent) {
+		const parentNode = parent as CompatibleNode | undefined;
+		if (parentNode?.type === type) {
+			return parentNode;
+		}
+		parent = parent.parent as ParentNode | null | undefined;
+	}
+
+	return undefined;
 }

@@ -1,22 +1,20 @@
-import type { Rule } from "eslint";
-import type { TSESTree } from "@typescript-eslint/types";
+import type { CompatibleNode } from "./utils/compatibility";
 
 export type MemoStatusToReport = {
-  node?: Rule.RuleContext | TSESTree.Node,
-  status: MemoStatus
+	node?: CompatibleNode;
+	status: MemoStatus;
 } | undefined;
 
 export enum MemoStatus {
-  Memoized,
-  UnmemoizedObject,
-  UnmemoizedArray,
-  UnmemoizedNew,
-  UnmemoizedFunction,
-  UnmemoizedFunctionCall,
-  UnmemoizedJSX,
-  UnmemoizedOther,
-  UnsafeLet,
-  ErrorInvalidContext = 'error-in-invalid-context'
+	Memoized,
+	UnmemoizedObject,
+	UnmemoizedArray,
+	UnmemoizedNew,
+	UnmemoizedFunction,
+	UnmemoizedFunctionCall,
+	UnmemoizedJSX,
+	UnmemoizedOther,
+	UnsafeLet,
+	ErrorInvalidContext = "error-in-invalid-context",
 }
-
-export type ESNode = TSESTree.CallExpression & Rule.NodeParentExtension
+ 

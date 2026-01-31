@@ -1,7 +1,5 @@
 import type { Rule } from "eslint";
-import type { Rule as RuleV9 } from "eslint-v9";
 import type { TSESTree } from "@typescript-eslint/types";
-import type * as ESTree from "estree";
 import type { MessagesRequireUseMemo } from "../constants/messages";
 import type { ExpressionData, ReactImportInformation } from "./types";
 import { MemoStatus, type MemoStatusToReport } from "src/types";
@@ -10,43 +8,16 @@ import {
 	nameGeneratorUUID,
 	defaultImportRangeStart,
 } from "./constants";
+import { findParentType, getIsHook } from "src/utils";
 import getVariableInScope from "src/utils/getVariableInScope";
 import { v5 as uuidV5 } from "uuid";
-import type { CompatibleNode } from "../utils/compatibility";
+import {
+	getCompatibleSourceCode,
+	type CompatibleContext,
+	type CompatibleNode,
+} from "../utils/compatibility";
 
-export type CompatibleContext = Rule.RuleContext | RuleV9.RuleContext;
-
-export function isImpossibleToFix(
-	node: Rule.NodeParentExtension | RuleV9.NodeParentExtension,
-	context: CompatibleContext,
-) {
-	let current: TSESTree.Node | undefined = node as TSESTree.Node;
-
-	while (current) {
-		if (current.type === "CallExpression") {
-			const callee = current.callee;
-			const isInsideIteration =
-				callee.type === "MemberExpression" &&
-				callee.property.type === "Identifier" &&
-				callee.property.name in Array.prototype;
-			const isInsideOtherHook =
-				callee.type === "Identifier" &&
-				(callee.name === "useMemo" || callee.name === "useCallback");
-			return { result: isInsideIteration || isInsideOtherHook, node: callee };
-		}
-		current = current.parent;
-	}
-
-	return { result: false };
-}
-
-export function checkForErrors<
-	T,
-	Y extends
-		| Rule.NodeParentExtension
-		| RuleV9.NodeParentExtension
-		| TSESTree.MethodDefinitionComputedName,
->(
+export function checkForErrors<Y extends CompatibleNode>(
 	data: ExpressionData,
 	statusData: MemoStatusToReport,
 	context: CompatibleContext,
@@ -72,7 +43,7 @@ function addReactImports(
 	context: CompatibleContext,
 	kind: "useMemo" | "useCallback",
 	reactImportData: ReactImportInformation,
-	fixer: Rule.RuleFixer | RuleV9.RuleFixer,
+	fixer: Rule.RuleFixer,
 ) {
 	const importsDisabled = context.options?.[0]?.fix?.addImports === false;
 	let specifier: TSESTree.ImportClause | undefined = undefined;
@@ -159,59 +130,18 @@ function addReactImports(
 	return;
 }
 
-export function getIsHook(node: TSESTree.Node | TSESTree.Identifier) {
-	if (node.type === "Identifier") {
-		const { name } = node;
-		return (
-			name === "use" ||
-			((name?.length ?? 0) >= 4 &&
-				name[0] === "u" &&
-				name[1] === "s" &&
-				name[2] === "e" &&
-				name[3] === name[3]?.toUpperCase?.())
-		);
-	}
-
-	if (
-		node.type === "MemberExpression" &&
-		!node.computed &&
-		getIsHook(node.property)
-	) {
-		const { object: obj } = node; // Utilizing Object destructuring
-		return obj.type === "Identifier" && obj.name === "React";
-	}
-
-	return false;
-}
-
-// Helper function to find parent of a specified type.
-export function findParentType(
-	node: Rule.Node,
-	type: string,
-): Rule.Node | undefined {
-	let parent = node.parent;
-
-	while (parent) {
-		if (parent.type === type) return parent;
-
-		parent = parent.parent;
-	}
-
-	return undefined;
-}
-
 function fixFunction(
 	node:
 		| TSESTree.FunctionDeclaration
 		| TSESTree.FunctionExpression
 		| TSESTree.ArrowFunctionExpression,
-	context: Rule.RuleContext,
+	context: CompatibleContext,
 	shouldSetName?: boolean,
 ) {
-	const sourceCode = context.getSourceCode();
+	const sourceCode = getCompatibleSourceCode(context);
 	const { body, params = [] } = node;
-	const funcBody = sourceCode.getText(body as unknown as ESTree.Node);
-	const funcParams = (params as Array<ESTree.Node>).map((node) =>
+	const funcBody = sourceCode.getText(body as Rule.Node);
+	const funcParams = (params as Array<Rule.Node>).map((node) =>
 		sourceCode.getText(node),
 	);
 	let fixedCode = `useCallback(${node.async ? "async " : ""}(${funcParams.join(", ")}) => ${funcBody}, [])${shouldSetName ? ";" : ""}`;
@@ -223,7 +153,7 @@ function fixFunction(
 }
 
 function getSafeVariableName(
-	context: Rule.RuleContext,
+	context: CompatibleContext,
 	node: CompatibleNode | undefined,
 	name: string,
 	attempts = 0,
@@ -247,23 +177,21 @@ function getSafeVariableName(
 export function fixBasedOnMessageId(
 	node: CompatibleNode,
 	messageId: keyof typeof MessagesRequireUseMemo,
-	fixer: Rule.RuleFixer | RuleV9.RuleFixer,
+	fixer: Rule.RuleFixer,
 	context: CompatibleContext,
 	reactImportData: ReactImportInformation,
 ) {
 	// Get source code in a way that works with both v8 and v9
-	const sourceCode =
-		"getSourceCode" in context ? context.getSourceCode() : (context as RuleV9.RuleContext)?.sourceCode;
+	const sourceCode = getCompatibleSourceCode(context);
 
 	const hook = messageIdToHookDict[messageId] || "useMemo";
 	const isObjExpression = node.type === "ObjectExpression";
-	const isJSXElement =
-		(node as unknown as TSESTree.JSXElement).type === "JSXElement";
+	const isJSXElement = node.type === "JSXElement";
 	const isArrowFunctionExpression = node.type === "ArrowFunctionExpression";
 	const isFunctionExpression = node.type === "FunctionExpression";
 	const isCorrectableFunctionExpression =
 		isFunctionExpression || isArrowFunctionExpression;
-	const fixes: Array<Rule.Fix | RuleV9.Fix> = [];
+	const fixes: Array<Rule.Fix> = [];
 
 	// Determine what type of behavior to follow according to the error message
 	switch (messageId) {
@@ -272,19 +200,17 @@ export function fixBasedOnMessageId(
 				node.type === "FunctionExpression" ||
 				node.type === "ArrowFunctionExpression"
 			) {
+				const functionNode =
+					node as TSESTree.FunctionExpression | TSESTree.ArrowFunctionExpression;
 				const importStatementFixes = addReactImports(
 					context,
 					"useCallback",
 					reactImportData,
 					fixer,
 				);
-				const fixed = fixFunction(
-					node as TSESTree.FunctionExpression,
-					context as any,
-				);
+				const fixed = fixFunction(functionNode, context);
 				importStatementFixes && fixes.push(importStatementFixes);
-				// Use any cast to bypass type checking
-				fixes.push(fixer.replaceText(node as any, fixed));
+				fixes.push(fixer.replaceText(node as Rule.Node, fixed));
 				return fixes;
 			}
 			break;
@@ -298,10 +224,14 @@ export function fixBasedOnMessageId(
 					reactImportData,
 					fixer,
 				);
-				const fixed = `useMemo(() => (${sourceCode.getText(_returnNode.argument as any)}), [])`;
+				const fixed = `useMemo(() => (${sourceCode.getText(_returnNode.argument as Rule.Node)}), [])`;
 				importStatementFixes && fixes.push(importStatementFixes);
-				// Use any cast to bypass type checking
-				fixes.push(fixer.replaceText(_returnNode.argument as any, fixed));
+				fixes.push(
+					fixer.replaceText(
+						_returnNode.argument as Rule.Node,
+						fixed,
+					),
+				);
 				return fixes;
 			}
 			break;
@@ -312,15 +242,17 @@ export function fixBasedOnMessageId(
 		case "usememo-const": {
 			const variableDeclaration =
 				node.type === "VariableDeclaration"
-					? node
+					? (node as TSESTree.VariableDeclaration)
 					: (findParentType(
-							node as any,
+							node,
 							"VariableDeclaration",
-						) as TSESTree.VariableDeclaration);
+						) as TSESTree.VariableDeclaration | undefined);
 
 			// Check if it is a hook being stored in let/var, change to const if so
 			if (variableDeclaration && variableDeclaration.kind !== "const") {
-				const tokens = sourceCode.getTokens(variableDeclaration as any);
+				const tokens = sourceCode.getTokens(
+					variableDeclaration as Rule.Node,
+				);
 				const letKeywordToken = tokens?.[0];
 				if (letKeywordToken?.value !== "const") {
 					fixes.push(fixer.replaceTextRange(letKeywordToken.range, "const"));
@@ -336,28 +268,40 @@ export function fixBasedOnMessageId(
 				);
 				importStatementFixes && fixes.push(importStatementFixes);
 				const fixed = isCorrectableFunctionExpression
-					? fixFunction(node as any, context as any)
-					: `useMemo(() => (${sourceCode.getText(node as any)}), [])`;
-				const parent =
-					node.parent as unknown as TSESTree.JSXExpressionContainer;
+					? fixFunction(
+							node as
+								| TSESTree.FunctionExpression
+								| TSESTree.ArrowFunctionExpression,
+							context,
+						)
+					: `useMemo(() => (${sourceCode.getText(node as Rule.Node)}), [])`;
+				const parent = (node as Rule.NodeParentExtension).parent as
+					| CompatibleNode
+					| undefined;
 				// Means we have a object expression declared directly in jsx
-				if (parent.type === "JSXExpressionContainer") {
-					const parentPropName = (
-						parent?.parent as TSESTree.JSXAttribute
-					)?.name?.name.toString();
+				if (parent?.type === "JSXExpressionContainer") {
+					const parentAttribute =
+						parent.parent as TSESTree.JSXAttribute | undefined;
+					const parentPropName =
+						parentAttribute?.name.type === "JSXIdentifier"
+							? parentAttribute.name.name
+							: "value";
 					const newVarName = getSafeVariableName(
-						context as any,
-						parent.parent,
+						context,
+						parent.parent as CompatibleNode,
 						parentPropName,
 					);
-					const returnStatement = findParentType(
-						node as any,
-						"ReturnStatement",
-					) as TSESTree.ReturnStatement;
+					const returnStatement = findParentType(node, "ReturnStatement");
 
-					if (returnStatement) {
+					if (
+						returnStatement?.type === "ReturnStatement" &&
+						returnStatement.range &&
+						returnStatement.loc
+					) {
 						const indentationLevel =
-							sourceCode.lines[returnStatement.loc.start.line - 1].search(/\S/);
+							sourceCode.lines[
+								returnStatement.loc.start.line - 1
+							].search(/\S/);
 						const indentation = " ".repeat(indentationLevel);
 						// Creates a declaration for the variable and inserts it before the return statement
 						fixes.push(
@@ -367,10 +311,10 @@ export function fixBasedOnMessageId(
 							),
 						);
 						// Replaces the old inline object expression with the variable name
-						fixes.push(fixer.replaceText(node as any, newVarName));
+						fixes.push(fixer.replaceText(node as Rule.Node, newVarName));
 					}
 				} else {
-					fixes.push(fixer.replaceText(node as any, fixed));
+					fixes.push(fixer.replaceText(node as Rule.Node, fixed));
 				}
 			}
 
@@ -388,7 +332,7 @@ export function fixBasedOnMessageId(
 	// Simpler cases bellow, all of them are just adding useMemo/Callback
 	const functionPrefix = isArrowFunctionExpression ? "" : "() => ";
 	const expressionPrefix = isObjExpression || isJSXElement ? "(" : "";
-	const coreExpression = sourceCode.getText(node as any);
+	const coreExpression = sourceCode.getText(node as Rule.Node);
 	const expressionSuffix = isObjExpression ? ")" : "";
 
 	let fixed = `${hook}(${functionPrefix}${expressionPrefix}${coreExpression}${expressionSuffix}, [])`;
@@ -403,17 +347,24 @@ export function fixBasedOnMessageId(
 	if (node.type === "FunctionDeclaration") {
 		const _node = node as TSESTree.FunctionDeclaration;
 		if (_node && _node?.id?.type === "Identifier") {
-			fixed = fixFunction(_node, context as any, true);
+			fixed = fixFunction(_node, context, true);
 		}
 	}
 
-	if (
-		"computed" in node &&
-		(node as any)?.computed?.type === "ArrowFunctionExpression"
-	) {
-		fixes.push(fixer.replaceText((node as any).computed, fixed));
-	} else {
-		fixes.push(fixer.replaceText(node as any, fixed));
+	if ("computed" in node) {
+		const computed = (node as { computed?: unknown }).computed;
+		if (
+			computed &&
+			typeof computed === "object" &&
+			"type" in computed &&
+			(computed as TSESTree.Node).type === "ArrowFunctionExpression"
+		) {
+			fixes.push(
+				fixer.replaceText(computed as Rule.Node, fixed),
+			);
+			return fixes;
+		}
 	}
+	fixes.push(fixer.replaceText(node as Rule.Node, fixed));
 	return fixes;
 }
