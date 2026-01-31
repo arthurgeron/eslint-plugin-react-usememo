@@ -5,7 +5,7 @@
  * Note: When running tests with ESLint v9, you need to use ESLint v9 installed
  * This file is designed to work when you switch to ESLint v9
  */
-import { RuleTester } from "eslint-v9";
+import { RuleTester } from "eslint";
 
 export const createRuleTesterV9 = () => {
   // For ESLint v9, we need to use the flat config format with jsx support

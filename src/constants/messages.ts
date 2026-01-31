@@ -1,5 +1,5 @@
 export const MessagesRequireUseMemo = {
-  "error-in-invalid-context": "An error was identified inside this expression, but it can't be fixed because it'd break the rule of hooks. JSX logic should be extracted into a separate component.",
+  "error-in-invalid-context": "This expression is inside {{context}}. Auto-fix would insert a hook call there, which violates the Rules of Hooks. Extract the JSX into a separate component or move memoization outside.",
   "object-usememo-props":
     "Object literal should be wrapped in useMemo() or be static when used as a prop",
   "object-class-memo-props":

@@ -341,6 +341,24 @@ export const createRequireUseMemoTestCases = () => {
         }`,
       options: [{ ignoredPropNames: ["onClick"] }],
     },
+    {
+      code: `
+        const ComponentA = ({ comp }) => {
+          return <div>{comp}</div>;
+        };
+
+        const ComponentB = () => {
+          return <div>ComponentB</div>;
+        };
+
+        export const MyServerComponent = async () => {
+          return (
+            <div>
+              <ComponentA comp={<ComponentB />} />
+            </div>
+          );
+        };`,
+    },
   ];
 
   const invalidTestCases = [
@@ -389,6 +407,30 @@ export const createRequireUseMemoTestCases = () => {
     },
     {
       code: `
+          import React, { useMemo } from 'react';
+          const Component = ({ tabs, prop1 }) => {
+            const tabList = useMemo(
+              () => (
+                <TabList
+                  prop1={prop1}
+                  onClick={(next) => next}
+                >
+                  {tabs.map(({ id, text }) => (
+                    <Tab key={id} id={id}>
+                      {text}
+                    </Tab>
+                  ))}
+                </TabList>
+              ),
+              [tabs, prop1]
+            );
+            return tabList;
+          };
+        `,
+      errors: [{ messageId: "error-in-invalid-context" }],
+    },
+    {
+      code: `
           import React, { useCallback } from 'react';
           const MyComponent = () => {
             const handleClick = useCallback(() => {
@@ -397,6 +439,55 @@ export const createRequireUseMemoTestCases = () => {
             return <div onClick={handleClick}>Click me</div>;
           };
         `,
+      errors: [{ messageId: "error-in-invalid-context" }],
+    },
+    {
+      code: `
+        export function useBookDetails() {
+          const bookDetails = { title: 'Example', author: 'Author' };
+          const dataLoaded = true;
+
+          return {
+            ...bookDetails,
+            dataLoaded,
+          };
+        }`,
+      output: `import { useMemo } from 'react';
+
+        export function useBookDetails() {
+          const bookDetails = useMemo(() => ({ title: 'Example', author: 'Author' }), []);
+          const dataLoaded = true;
+
+          return {
+            ...bookDetails,
+            dataLoaded,
+          };
+        }`,
+      options: [{ strict: false, checkHookCalls: false }],
+      errors: [{ messageId: "object-usememo-hook" }],
+    },
+    {
+      code: `
+        const Component = ({ props }) => {
+          return <MyComponent data={props?.data || {}} />;
+        }`,
+      errors: [{ messageId: "error-in-invalid-context" }],
+    },
+    {
+      code: `
+        const Component = ({ condition }) => {
+          return <Child prop1={condition ? {} : {}} />;
+        }`,
+      errors: [{ messageId: "error-in-invalid-context" }],
+    },
+    {
+      code: `
+        const Component = ({ condition }) => {
+          if (condition) {
+            return <Child>1</Child>;
+          }
+          return <Child prop1={{}} />;
+        }`,
       errors: [{ messageId: "error-in-invalid-context" }],
     },
     {

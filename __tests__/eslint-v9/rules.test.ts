@@ -8,7 +8,7 @@ import requireMemo from "../../src/require-memo";
 import requireUseCallback from "../../src/require-usememo";
 import requireUseMemo from "../../src/require-usememo";
 import requireUseMemoChildren from "../../src/require-usememo-children";
-import type { Rule } from "eslint-v9";
+import type { Rule } from "eslint";
 
 const ruleTesterV9 = createRuleTesterV9();
 

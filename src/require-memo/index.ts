@@ -1,11 +1,14 @@
-import type { Rule } from "eslint-v9";
-import type { Rule as RuleV8 } from "eslint";
 import { findVariable, isComponentName } from "../utils";
 import { checkVariableDeclaration, checkFunction } from "./utils";
 import type { MemoFunctionDeclaration, MemoFunctionExpression } from "./types";
 import type { TSESTree } from "@typescript-eslint/types";
-import { getCompatibleScope, type CompatibleNode } from "../utils/compatibility";
-import type { CompatibleRuleModule } from "../utils/compatibility";
+import type { Rule } from "eslint";
+import {
+	getCompatibleScope,
+	type CompatibleContext,
+	type CompatibleNode,
+	type CompatibleRuleModule,
+} from "../utils/compatibility";
 
 const rule: CompatibleRuleModule = {
 	meta: {
@@ -20,7 +23,7 @@ const rule: CompatibleRuleModule = {
 			},
 		],
 	},
-	create: (context: RuleV8.RuleContext | Rule.RuleContext) => {
+	create: (context: CompatibleContext) => {
 		return {
 			ExportNamedDeclaration(node: CompatibleNode) {
 				// Use type assertions to help TypeScript understand the node structure
@@ -58,7 +61,7 @@ const rule: CompatibleRuleModule = {
 				) {
 					// Direct export default of a function should use memo
 					context.report({
-						node: tsNode.declaration as any,
+						node: tsNode.declaration as Rule.Node,
 						messageId: "memo-required",
 					});
 					return;

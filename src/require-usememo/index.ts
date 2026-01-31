@@ -1,18 +1,25 @@
-import type { Rule } from "eslint-v9";
-import type { Rule as RuleV8 } from "eslint";
+import type { Rule } from "eslint";
 import type { TSESTree } from "@typescript-eslint/types";
 import { defaultReactHookNames, jsxEmptyExpressionClassData, jsxEmptyExpressionData, callExpressionData, hookReturnExpressionData  } from './constants';
 import { MessagesRequireUseMemo  } from '../constants/messages';
 import {
   getExpressionMemoStatus,
+  getIsHook,
+  isFunctionNode,
+  isHookName,
   isComplexComponent,
+  isComponentName,
   shouldIgnoreNode,
 } from "../utils";
-import type {ExpressionTypes, NodeType, ExpressionData, ReactImportInformation, ImportNode} from './types';
-import { checkForErrors, fixBasedOnMessageId, getIsHook, type CompatibleContext } from './utils';
-import { type ESNode, MemoStatus } from "src/types";
-import { getCompatibleScope, type CompatibleNode } from "../utils/compatibility";
-import type { CompatibleRuleModule } from "../utils/compatibility";
+import type { ExpressionTypes, ExpressionData, ReactImportInformation } from './types';
+import { checkForErrors, fixBasedOnMessageId } from './utils';
+import { MemoStatus } from "src/types";
+import {
+	getCompatibleScope,
+	type CompatibleContext,
+	type CompatibleNode,
+	type CompatibleRuleModule,
+} from "../utils/compatibility";
 
 const rule: CompatibleRuleModule = {
   meta: {
@@ -41,56 +48,135 @@ const rule: CompatibleRuleModule = {
       useCallbackImported: false,
     }
 
-    function report<T extends Rule.NodeParentExtension | TSESTree.MethodDefinitionComputedName>(node: T, messageId: keyof typeof MessagesRequireUseMemo) {
-        context.report({
-          node: node as unknown as Rule.Node, 
-          messageId, 
-          fix(fixer) {
-            const disableFixer = isClass || messageId === MemoStatus.ErrorInvalidContext;
-            return disableFixer ? null : fixBasedOnMessageId(node as Rule.Node, messageId, fixer, context, importData);
-          }
-        });
+    function report(
+      node: CompatibleNode,
+      messageId: keyof typeof MessagesRequireUseMemo,
+      data?: Record<string, string>,
+    ) {
+      context.report({
+        node: node as Rule.Node,
+        messageId,
+        data,
+        fix(fixer) {
+          const disableFixer = isClass || messageId === MemoStatus.ErrorInvalidContext;
+          return disableFixer
+            ? null
+            : fixBasedOnMessageId(node, messageId, fixer, context, importData);
+        }
+      });
     }
 
-    function process(node: NodeType, _expression?: ExpressionTypes, expressionData?: ExpressionData, checkContext = false) {
+    function getNodeExpression(
+      node: CompatibleNode,
+      fallback?: ExpressionTypes,
+    ): ExpressionTypes | undefined {
+      if (fallback) return fallback;
+      if (node.type === "JSXAttribute") {
+        const value = node.value;
+        if (!value) return undefined;
+        if (value.type === "JSXExpressionContainer") {
+          return value.expression as ExpressionTypes;
+        }
+        return value as ExpressionTypes;
+      }
+      if (node.type === "ReturnStatement") {
+        return (node.argument ?? undefined) as ExpressionTypes | undefined;
+      }
+      if (node.type === "Property") {
+        return node.value as ExpressionTypes;
+      }
+      return undefined;
+    }
+
+    function getFunctionName(
+      node:
+        | TSESTree.FunctionDeclaration
+        | TSESTree.FunctionExpression
+        | TSESTree.ArrowFunctionExpression,
+    ): string | undefined {
+      if (node.type === "FunctionDeclaration") {
+        return node.id?.type === "Identifier" ? node.id.name : undefined;
+      }
+      const parent = node.parent;
+      if (parent?.type === "VariableDeclarator" && parent.id.type === "Identifier") {
+        return parent.id.name;
+      }
+      return undefined;
+    }
+
+    function isAsyncComponentOrHook(node: CompatibleNode): boolean {
+      let current: CompatibleNode | null | undefined = node;
+      while (current && "parent" in (current as Rule.NodeParentExtension)) {
+        const parent = (current as Rule.NodeParentExtension).parent as
+          | CompatibleNode
+          | null
+          | undefined;
+        if (!parent) {
+          break;
+        }
+        current = parent;
+        if (isFunctionNode(current)) {
+          if (!current.async) {
+            continue;
+          }
+          const name = getFunctionName(current);
+          if (!name) {
+            continue;
+          }
+          if (isComponentName(name) || isHookName(name)) {
+            return true;
+          }
+        }
+      }
+      return false;
+    }
+
+    function process(node: CompatibleNode, _expression?: ExpressionTypes, expressionData?: ExpressionData, checkContext = false) {
       const isGlobalScope = getCompatibleScope(context, node)?.block.type === 'Program';
       
       if (checkContext && isGlobalScope) {
         return;
       }
 
-      const expression = _expression ?? (node.value && Object.prototype.hasOwnProperty.call(node.value, 'expression') ? (node.value as unknown as TSESTree.JSXExpressionContainer).expression : node.value) ;
-      switch(expression?.type) {
-        case 'LogicalExpression':
-          !expression.left ? true : process(node, (expression as TSESTree.LogicalExpression).left);
-          !expression.right ? true : process(node, (expression as TSESTree.LogicalExpression).right);
-          return;
-        case 'JSXEmptyExpression':
-          return;
-        default:
-          checkForErrors(
-            expressionData || (isClass ? jsxEmptyExpressionClassData : jsxEmptyExpressionData), 
-            getExpressionMemoStatus(context as Rule.RuleContext, expression as TSESTree.Expression, checkContext),
-            context, 
-            node, 
-            report
-          );
-          return;
-      } 
+      const expression = getNodeExpression(node, _expression);
+      if (!expression || expression.type === "JSXEmptyExpression") {
+        return;
+      }
+      if (expression.type === "LogicalExpression") {
+        !expression.left
+          ? true
+          : process(node, expression.left as ExpressionTypes, expressionData, checkContext);
+        !expression.right
+          ? true
+          : process(node, expression.right as ExpressionTypes, expressionData, checkContext);
+        return;
+      }
+      checkForErrors(
+        expressionData || (isClass ? jsxEmptyExpressionClassData : jsxEmptyExpressionData), 
+        getExpressionMemoStatus(context, expression as TSESTree.Expression, checkContext),
+        context, 
+        node, 
+        report
+      );
     }
 
     function JSXAttribute(node: CompatibleNode) {
       const ignoredPropNames = context.options?.[0]?.ignoredPropNames ?? [];
-      const tsNode = node as unknown as TSESTree.JSXAttribute;
+      const tsNode = node as TSESTree.JSXAttribute;
+
+      if (isAsyncComponentOrHook(tsNode)) {
+        return null;
+      }
 
       const { parent, value } = tsNode;
       if (value === null) return null;
-      if (parent && !isComplexComponent(parent as TSESTree.JSXIdentifier)) return null;
+      if (!parent || parent.type !== "JSXOpeningElement") return null;
+      if (!isComplexComponent(parent)) return null;
       if ((value.type as string) === "JSXExpressionContainer") {
         if (ignoredPropNames.includes(tsNode.name?.name)) {
           return null;
         }
-        process(node as unknown as NodeType, undefined, undefined, true);
+        process(node, undefined, undefined, true);
       }
       return null;
     }
@@ -119,27 +205,40 @@ const rule: CompatibleRuleModule = {
         const anonFuncVariableDeclarationNode = tsNode.parent?.parent?.type === 'ArrowFunctionExpression' && tsNode?.parent?.parent?.parent?.type === 'VariableDeclarator' && tsNode?.parent?.parent?.parent?.id;
         const validNode = functionDeclarationNode || anonFuncVariableDeclarationNode;
         
+        if (isAsyncComponentOrHook(tsNode)) {
+          return;
+        }
+
         if (validNode && getIsHook(validNode as TSESTree.Identifier) && tsNode.argument) {
           if (tsNode.argument.type === 'ObjectExpression') {
             if (context.options?.[0]?.checkHookReturnObject) {
-              report(node as unknown as Rule.NodeParentExtension, "object-usememo-hook");
+              report(node, "object-usememo-hook");
               return;
             }
             const objExp = (tsNode.argument as TSESTree.ObjectExpression);
             
             // Replace forEach with for...of to fix linting error
-            for (const _node of objExp.properties) {
-              process(
-                _node as unknown as NodeType, 
-                (_node as TSESTree.Property).value as unknown as ExpressionTypes, 
-                hookReturnExpressionData
-              );
+            for (const property of objExp.properties) {
+              if (property.type === "Property") {
+                process(
+                  property,
+                  property.value as ExpressionTypes,
+                  hookReturnExpressionData,
+                );
+              }
+              if (property.type === "SpreadElement") {
+                process(
+                  property as CompatibleNode,
+                  property.argument as ExpressionTypes,
+                  hookReturnExpressionData,
+                );
+              }
             }
             return; 
           }
           process(
-            node as unknown as NodeType, 
-            tsNode.argument as unknown as ExpressionTypes, 
+            node, 
+            tsNode.argument as ExpressionTypes, 
             hookReturnExpressionData
           );
         }
@@ -150,21 +249,25 @@ const rule: CompatibleRuleModule = {
         const { callee } = tsNode;
         const ignoredNames = context.options?.[0]?.ignoredHookCallsNames ?? {};
         
+        if (isAsyncComponentOrHook(tsNode)) {
+          return;
+        }
+
         if (
           context.options?.[0]?.checkHookCalls === false
-          || !getIsHook(callee as ESNode)
+          || !getIsHook(callee as TSESTree.Node)
         ) {
           return;
         }
 
-        if(!shouldIgnoreNode(node as ESNode, {...defaultReactHookNames, ...ignoredNames})) {
+        if(!shouldIgnoreNode(node, {...defaultReactHookNames, ...ignoredNames})) {
           for (const argument of tsNode.arguments) {
             if (argument.type !== 'SpreadElement') {
               checkForErrors(
                 callExpressionData, 
-                getExpressionMemoStatus(context as Rule.RuleContext, (argument as TSESTree.Expression)), 
+                getExpressionMemoStatus(context, (argument as TSESTree.Expression)), 
                 context, 
-                node as Rule.Node, 
+                node, 
                 report
               );
             }

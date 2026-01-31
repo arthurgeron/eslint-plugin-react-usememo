@@ -1,71 +1,51 @@
-import type { Rule } from "eslint";
-import type { Rule as RuleV9 } from "eslint-v9";
+import type { Rule, Scope, SourceCode } from "eslint";
 import type { TSESTree } from "@typescript-eslint/types";
 
-// Type that represents a node from either ESLint v8 or v9
-export type CompatibleNode = Rule.Node | RuleV9.Node | TSESTree.Node;
+export type CompatibleNode = Rule.Node | TSESTree.Node;
+export type CompatibleContext = Rule.RuleContext;
+export type CompatibleScope = Scope.Scope;
+export type CompatibleSourceCode = SourceCode;
 
-/**
- * Utility to safely get scope in both ESLint v8 and v9
- */
 export function getCompatibleScope(
-	context: Rule.RuleContext | RuleV9.RuleContext,
-	node?: CompatibleNode,
-) {
-	if (typeof context.getScope === "function") {
-		// ESLint v8 approach
-		return context.getScope();
+	context: CompatibleContext,
+	node: CompatibleNode,
+): CompatibleScope {
+	const sourceCode = getCompatibleSourceCode(context);
+	if (typeof sourceCode.getScope === "function") {
+		return sourceCode.getScope(node as Rule.Node);
 	}
 
-	const v9Context = context as unknown as RuleV9.RuleContext;
-	if (
-		v9Context.sourceCode &&
-		typeof v9Context.sourceCode.getScope === "function"
-	) {
-		// ESLint v9 approach
-
-		if (!node) {
-			throw new Error("Node is required for ESLint v9");
-		}
-		return v9Context.sourceCode.getScope(node as RuleV9.Node);
+	const scope =
+		sourceCode.scopeManager.acquire(node as Rule.Node, true) ??
+		sourceCode.scopeManager.globalScope;
+	if (!scope) {
+		throw new Error("Failed to fetch scope");
 	}
-
-	throw new Error("Failed to fetch scope method");
+	return scope;
 }
 
-/**
- * Safely get the filename in a way that works with both ESLint v8 and v9
- */
 export function getCompatibleFilename(
-	context: Rule.RuleContext | RuleV9.RuleContext,
+	context: CompatibleContext,
 ): string {
-	if (typeof context.getFilename === "function") {
-		// ESLint v8 approach
+	if ("getFilename" in context && typeof context.getFilename === "function") {
 		return context.getFilename();
 	}
 
-	const v9Context = context as RuleV9.RuleContext;
-	return v9Context.filename || "<input>";
+	return "filename" in context && context.filename ? context.filename : "<input>";
 }
 
-/**
- * Create a type that works for both ESLint v8 and v9 rule modules
- * This relaxes the typing to allow both versions to work together
- */
-export type CompatibleRuleModule = {
-	meta: {
-		messages?: Record<string, string>;
-		type?: string;
-		docs?: {
-			description?: string;
-			category?: string;
-			recommended?: boolean;
-			url?: string;
-		};
-		fixable?: "code" | "whitespace";
-		schema?: unknown[];
-	};
-	create: (
-		context: Rule.RuleContext | RuleV9.RuleContext,
-	) => Record<string, (node: CompatibleNode) => unknown>;
-};
+export function getCompatibleSourceCode(
+	context: CompatibleContext,
+): CompatibleSourceCode {
+	if ("getSourceCode" in context && typeof context.getSourceCode === "function") {
+		return context.getSourceCode();
+	}
+
+	if ("sourceCode" in context && context.sourceCode) {
+		return context.sourceCode as CompatibleSourceCode;
+	}
+
+	throw new Error("Failed to fetch source code");
+}
+
+export type CompatibleRuleModule = Rule.RuleModule;
