@@ -389,6 +389,30 @@ export const createRequireUseMemoTestCases = () => {
     },
     {
       code: `
+          import React, { useMemo } from 'react';
+          const Component = ({ tabs, prop1 }) => {
+            const tabList = useMemo(
+              () => (
+                <TabList
+                  prop1={prop1}
+                  onClick={(next) => next}
+                >
+                  {tabs.map(({ id, text }) => (
+                    <Tab key={id} id={id}>
+                      {text}
+                    </Tab>
+                  ))}
+                </TabList>
+              ),
+              [tabs, prop1]
+            );
+            return tabList;
+          };
+        `,
+      errors: [{ messageId: "error-in-invalid-context" }],
+    },
+    {
+      code: `
           import React, { useCallback } from 'react';
           const MyComponent = () => {
             const handleClick = useCallback(() => {
