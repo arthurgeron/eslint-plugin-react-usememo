@@ -57,7 +57,7 @@ type FunctionNode =
 	| TSESTree.FunctionExpression
 	| TSESTree.ArrowFunctionExpression;
 
-function isFunctionNode(node: TSESTree.Node): node is FunctionNode {
+function isFunctionNode(node: CompatibleNode): node is FunctionNode {
 	return (
 		node.type === "FunctionDeclaration" ||
 		node.type === "FunctionExpression" ||
@@ -65,8 +65,8 @@ function isFunctionNode(node: TSESTree.Node): node is FunctionNode {
 	);
 }
 
-function getChildNodes(node: TSESTree.Node): TSESTree.Node[] {
-	const children: TSESTree.Node[] = [];
+function getChildNodes(node: CompatibleNode): CompatibleNode[] {
+	const children: CompatibleNode[] = [];
 	for (const [key, value] of Object.entries(node)) {
 		if (key === "parent" || !value) {
 			continue;
@@ -74,23 +74,23 @@ function getChildNodes(node: TSESTree.Node): TSESTree.Node[] {
 		if (Array.isArray(value)) {
 			for (const item of value) {
 				if (item && typeof item === "object" && "type" in item) {
-					children.push(item as TSESTree.Node);
+					children.push(item as CompatibleNode);
 				}
 			}
 			continue;
 		}
 		if (typeof value === "object" && "type" in value) {
-			children.push(value as TSESTree.Node);
+			children.push(value as CompatibleNode);
 		}
 	}
 	return children;
 }
 
-function containsReturnStatement(node: TSESTree.Node): boolean {
+function containsReturnStatement(node: CompatibleNode): boolean {
 	if (isFunctionNode(node)) {
 		return false;
 	}
-	const stack = [node];
+	const stack: CompatibleNode[] = [node];
 	while (stack.length) {
 		const current = stack.pop();
 		if (!current) {
@@ -107,14 +107,14 @@ function containsReturnStatement(node: TSESTree.Node): boolean {
 	return false;
 }
 
-function containsNode(root: TSESTree.Node, target: TSESTree.Node): boolean {
+function containsNode(root: CompatibleNode, target: CompatibleNode): boolean {
 	if (root === target) {
 		return true;
 	}
 	if (isFunctionNode(root)) {
 		return false;
 	}
-	const stack = [root];
+	const stack: CompatibleNode[] = [root];
 	while (stack.length) {
 		const current = stack.pop();
 		if (!current) {
@@ -132,14 +132,15 @@ function containsNode(root: TSESTree.Node, target: TSESTree.Node): boolean {
 }
 
 function findParentFunction(
-	node: TSESTree.Node & Rule.NodeParentExtension,
+	node: CompatibleNode,
 ): FunctionNode | undefined {
-	let current = node.parent as (TSESTree.Node & Rule.NodeParentExtension) | null;
+	const parent = (node as Rule.NodeParentExtension).parent;
+	let current = parent as (CompatibleNode & Rule.NodeParentExtension) | null;
 	while (current) {
 		if (isFunctionNode(current)) {
 			return current;
 		}
-		current = current.parent as (TSESTree.Node & Rule.NodeParentExtension) | null;
+		current = current.parent as (CompatibleNode & Rule.NodeParentExtension) | null;
 	}
 	return undefined;
 }
@@ -163,7 +164,7 @@ function hasPriorReturnInFunction(
 }
 
 function getConditionalContext(
-	node: TSESTree.Node,
+	node: CompatibleNode,
 ): InvalidContextInfo | undefined {
 	switch (node.type) {
 		case "IfStatement":
@@ -190,7 +191,7 @@ function getConditionalContext(
 export function isImpossibleToFix(
 	node: CompatibleNode,
 ): { result: false } | { result: true; node: CompatibleNode; invalidContext: InvalidContextInfo } {
-	let current = node as (TSESTree.Node & Rule.NodeParentExtension) | undefined;
+	let current = node as (CompatibleNode & Rule.NodeParentExtension) | undefined;
 	let returnStatement: TSESTree.ReturnStatement | undefined;
 
 	while (current) {
