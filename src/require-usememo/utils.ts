@@ -8,7 +8,7 @@ import {
 	nameGeneratorUUID,
 	defaultImportRangeStart,
 } from "./constants";
-import { findParentType, getIsHook } from "src/utils";
+import { findParentType } from "src/utils";
 import getVariableInScope from "src/utils/getVariableInScope";
 import { v5 as uuidV5 } from "uuid";
 import {
@@ -22,13 +22,26 @@ export function checkForErrors<Y extends CompatibleNode>(
 	statusData: MemoStatusToReport,
 	context: CompatibleContext,
 	node: Y | undefined,
-	report: (node: Y, error: keyof typeof MessagesRequireUseMemo) => void,
+	report: (
+		node: Y,
+		error: keyof typeof MessagesRequireUseMemo,
+		data?: Record<string, string>,
+	) => void,
 ) {
 	if (!statusData) {
 		return;
 	}
 	if (statusData.status === MemoStatus.ErrorInvalidContext) {
-		report((statusData.node ?? node) as Y, MemoStatus.ErrorInvalidContext);
+		const invalidContext = statusData.invalidContext;
+		const contextLabel =
+			invalidContext?.kind === "hook"
+				? `${invalidContext.name}() callback`
+				: invalidContext?.kind === "iteration"
+					? `Array.${invalidContext.name}() iteration`
+					: "a hook callback or array iteration";
+		report((statusData.node ?? node) as Y, MemoStatus.ErrorInvalidContext, {
+			context: contextLabel,
+		});
 	}
 	const errorName = data?.[statusData.status.toString()];
 	if (errorName) {

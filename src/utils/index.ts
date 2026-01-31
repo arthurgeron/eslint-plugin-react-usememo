@@ -1,7 +1,11 @@
 import type { Rule, Scope } from "eslint";
 import type { TSESTree } from "@typescript-eslint/types";
-import { MemoStatus, type MemoStatusToReport } from "src/types";
-import { type CompatibleContext, type CompatibleNode } from "src/utils/compatibility";
+import {
+	MemoStatus,
+	type MemoStatusToReport,
+	type InvalidContextInfo,
+} from "src/types";
+import type { CompatibleContext, CompatibleNode } from "src/utils/compatibility";
 import getVariableInScope from "src/utils/getVariableInScope";
 import { Minimatch } from "minimatch";
 
@@ -48,20 +52,45 @@ export function getIsHook(node: TSESTree.Node | TSESTree.Identifier) {
 	return false;
 }
 
-export function isImpossibleToFix(node: CompatibleNode) {
+export function isImpossibleToFix(
+	node: CompatibleNode,
+): { result: false } | { result: true; node: CompatibleNode; invalidContext: InvalidContextInfo } {
 	let current = node as (TSESTree.Node & Rule.NodeParentExtension) | undefined;
 
 	while (current) {
 		if (current.type === "CallExpression") {
 			const callee = current.callee as TSESTree.CallExpression["callee"];
-			const isInsideIteration =
+			const iterationName =
 				callee.type === "MemberExpression" &&
-				callee.property.type === "Identifier" &&
-				callee.property.name in Array.prototype;
+				callee.property.type === "Identifier"
+					? callee.property.name
+					: undefined;
+			const isInsideIteration =
+				!!iterationName && iterationName in Array.prototype;
 			const isInsideOtherHook =
 				callee.type === "Identifier" &&
 				(callee.name === "useMemo" || callee.name === "useCallback");
-			return { result: isInsideIteration || isInsideOtherHook, node: callee };
+			if (isInsideIteration && iterationName) {
+				return {
+					result: true,
+					node: callee,
+					invalidContext: {
+						kind: "iteration",
+						name: iterationName,
+					},
+				};
+			}
+			if (isInsideOtherHook) {
+				return {
+					result: true,
+					node: callee,
+					invalidContext: {
+						kind: "hook",
+						name: callee.name,
+					},
+				};
+			}
+			return { result: false };
 		}
 		current = current.parent as
 			| (TSESTree.Node & Rule.NodeParentExtension)
@@ -129,15 +158,13 @@ function getIdentifierMemoStatus(
 	return getExpressionMemoStatus(context, node.init);
 }
 
-function getInvalidContextReport(
-	context: CompatibleContext,
-	expression: TSESTree.Expression,
-) {
+function getInvalidContextReport(expression: TSESTree.Expression) {
 	const impossibleFix = isImpossibleToFix(expression);
 	if (impossibleFix?.result) {
 		return {
 			node: impossibleFix.node as CompatibleNode,
 			status: MemoStatus.ErrorInvalidContext,
+			invalidContext: impossibleFix.invalidContext,
 		};
 	}
 	return false;
@@ -152,21 +179,21 @@ export function getExpressionMemoStatus(
 		case undefined:
 		case "ObjectExpression":
 			return (
-				(checkContext && getInvalidContextReport(context, expression)) || {
+				(checkContext && getInvalidContextReport(expression)) || {
 					node: expression as CompatibleNode,
 					status: MemoStatus.UnmemoizedObject,
 				}
 			);
 		case "ArrayExpression":
 			return (
-				(checkContext && getInvalidContextReport(context, expression)) || {
+				(checkContext && getInvalidContextReport(expression)) || {
 					node: expression as CompatibleNode,
 					status: MemoStatus.UnmemoizedArray,
 				}
 			);
 		case "NewExpression":
 			return (
-				(checkContext && getInvalidContextReport(context, expression)) || {
+				(checkContext && getInvalidContextReport(expression)) || {
 					node: expression as CompatibleNode,
 					status: MemoStatus.UnmemoizedNew,
 				}
@@ -174,7 +201,7 @@ export function getExpressionMemoStatus(
 		case "FunctionExpression":
 		case "ArrowFunctionExpression": {
 			return (
-				(checkContext && getInvalidContextReport(context, expression)) || {
+				(checkContext && getInvalidContextReport(expression)) || {
 					node: expression as CompatibleNode,
 					status: MemoStatus.UnmemoizedFunction,
 				}
@@ -182,7 +209,7 @@ export function getExpressionMemoStatus(
 		}
 		case "JSXElement":
 			return (
-				(checkContext && getInvalidContextReport(context, expression)) || {
+				(checkContext && getInvalidContextReport(expression)) || {
 					node: expression as CompatibleNode,
 					status: MemoStatus.UnmemoizedJSX,
 				}
@@ -195,7 +222,7 @@ export function getExpressionMemoStatus(
 			return (
 				(validCallExpression &&
 					checkContext &&
-					getInvalidContextReport(context, expression)) || {
+					getInvalidContextReport(expression)) || {
 					node: expression as CompatibleNode,
 					status: validCallExpression
 						? MemoStatus.Memoized
@@ -281,7 +308,7 @@ export function findParentType(
 	node: CompatibleNode | null | undefined,
 	type: string,
 ): CompatibleNode | undefined {
-	let current = node as ParentNode | null | undefined;
+	const current = node as ParentNode | null | undefined;
 	let parent = current?.parent as ParentNode | null | undefined;
 
 	while (parent) {

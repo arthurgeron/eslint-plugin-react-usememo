@@ -45,10 +45,15 @@ const rule: CompatibleRuleModule = {
       useCallbackImported: false,
     }
 
-    function report(node: CompatibleNode, messageId: keyof typeof MessagesRequireUseMemo) {
+    function report(
+      node: CompatibleNode,
+      messageId: keyof typeof MessagesRequireUseMemo,
+      data?: Record<string, string>,
+    ) {
       context.report({
         node: node as Rule.Node,
         messageId,
+        data,
         fix(fixer) {
           const disableFixer = isClass || messageId === MemoStatus.ErrorInvalidContext;
           return disableFixer
