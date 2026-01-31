@@ -1,29 +1,34 @@
 module.exports = {
-  preset: 'ts-jest',
-  testEnvironment: 'node',
-  globals: {
-    'ts-jest': {
-      diagnostics: false,
-    },
+  preset: "ts-jest",
+  testEnvironment: "node",
+  transform: {
+    "^.+\\.(t|j)sx?$": [
+      "ts-jest",
+      {
+        diagnostics: false,
+        tsconfig: { allowJs: true },
+      },
+    ],
   },
+  transformIgnorePatterns: ["node_modules/(?!(uuid)/)"],
   moduleNameMapper: {
-    "src/(.*)": "<rootDir>/src/$1"
+    "src/(.*)": "<rootDir>/src/$1",
   },
-  testPathIgnorePatterns : [
-    "<rootDir>/src/index.ts", 
-    "<rootDir>/__tests__/(.*)/ruleTester.ts", 
-    "<rootDir>/__tests__/testcases/(.*)", 
+  testPathIgnorePatterns: [
+    "<rootDir>/src/index.ts",
+    "<rootDir>/__tests__/(.*)/ruleTester.ts",
+    "<rootDir>/__tests__/testcases/(.*)",
   ],
   collectCoverage: true,
   collectCoverageFrom: [
-    '<rootDir>/src/*',
-    '<rootDir>/src/**/*',
-    '!<rootDir>/src/index.{js,ts}',
-    '!<rootDir>/src/**/constants.{js,ts}',
-    '!<rootDir>/src/**/flat-config.{js,ts}',
-    '!<rootDir>/src/**/traditional-config.{js,ts}',
+    "<rootDir>/src/*",
+    "<rootDir>/src/**/*",
+    "!<rootDir>/src/index.{js,ts}",
+    "!<rootDir>/src/**/constants.{js,ts}",
+    "!<rootDir>/src/**/flat-config.{js,ts}",
+    "!<rootDir>/src/**/traditional-config.{js,ts}",
   ],
-  cacheDirectory: '.jest-cache',
+  cacheDirectory: ".jest-cache",
   coverageThreshold: {
     global: {
       branches: 75,
