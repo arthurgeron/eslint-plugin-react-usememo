@@ -15,21 +15,20 @@ The primary goal of this project is to provide an ESLint plugin that helps devel
 - `docs/`: Contains documentation for the plugin and its rules.
 - `examples/`: Contains example React projects demonstrating the use of the plugin with different ESLint configurations.
 - `__tests__/`: Contains test cases for the plugin rules.
-- `src/utils/compatibility.ts`: Provides compatibility utilities for ESLint v8 and v9.
+- `src/utils/compatibility.ts`: Provides compatibility utilities for ESLint APIs.
 
 ## Key Dependencies
 
 - `yarn`: Package manager
-- `eslint`: The core ESLint library. Both V8 and V9 (eslint-v9).
+- `eslint`: The core ESLint library (v9).
 - `react`: The React library (used in examples and tests).
 
 ## ESLint Version Support
 
-The project is designed to work with both ESLint v8 and v9. The `src/utils/compatibility.ts` file provides utilities to handle differences between the two versions.
+The project targets ESLint v9 and uses flat config.
 
 ## Configuration Files
 
-- ESLint v8: `.eslintrc.json`
 - ESLint v9: `eslint.config.js`
 
 ## Documentation

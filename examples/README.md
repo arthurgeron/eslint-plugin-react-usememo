@@ -26,16 +26,13 @@ yarn lint
 
 ### ESLint v9 Flat Config
 
-While the plugin exports the correct flat config structure for ESLint v9, there are some compatibility issues with the current implementation and ESLint v9's new architecture. The example tests verify that the plugin's structure is correctly exported but the full integration with ESLint v9 requires further updates to the rule implementations.
+The v9 flat config example is expected to report rule violations (the example intentionally includes cases that should be flagged).
 
-The test script confirms that the plugin correctly exports:
-- All three rules: `require-memo`, `require-usememo`, and `require-usememo-children`
-- The recommended configuration
-
-You can run the basic structure test with:
+You can run the linter in this example with:
 ```
 cd v9-flat
-node test-plugin.js
+yarn install
+yarn lint
 ```
 
 ## Key Differences

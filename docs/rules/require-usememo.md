@@ -46,6 +46,11 @@ You can use strict 1:1 comparisons (e.g., `"useCustomHook"`) or employ Minimatch
 
 - `ignoredPropNames`: This allows you to add specific prop name, thereby disabling them to be checked when used.
 
+## Autofix Limitations
+
+- Auto-fix is skipped in conditional, loop, or early-return contexts to avoid violating the Rules of Hooks.
+- Async components or hooks (server components) are ignored; the rule does not report or auto-fix there.
+
 ## Autofix Examples (Function Components & Hooks only)
 
 To illustrate the autofix feature in action, below are some examples with input code and the corresponding fixed output:
