@@ -2,6 +2,7 @@
 /dist/
 .vscode
 yarn-error.log
+package-lock.json
 .jest-cache
 coverage
 .cursor/commands
