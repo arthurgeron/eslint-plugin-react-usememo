@@ -238,6 +238,10 @@ This rule requires complex values (objects, arrays, functions, and JSX) that get
 
 For detailed examples and options available for this rule, please refer to our [rules documentation](https://github.com/arthurgeron/eslint-plugin-react-usememo/blob/main/docs/rules/require-usememo-children.md).
 
+## Contributing
+
+This project uses **Yarn** as its package manager. A `preinstall` script will reject `npm install` to keep the lockfile consistent — please use `yarn install` when working locally.
+
 ## Conclusion
 
 By efficiently using `useMemo`, `useCallback`, and `React.memo()`, we can optimize our React and React Native applications. It allows us to control the re-calculation and re-rendering of components, offering better scalability and performance.
