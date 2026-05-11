@@ -1,6 +1,6 @@
 import type { Rule } from "eslint";
 import type { TSESTree } from "@typescript-eslint/types";
-import { isComponentName, isReactCallExpression, shouldIgnoreNode } from "../utils";
+import { isComponentName, isLikelyComponentFunction, isReactCallExpression, shouldIgnoreNode } from "../utils";
 import * as path from "node:path";
 import { getCompatibleFilename } from "../utils/compatibility";
 
@@ -49,6 +49,7 @@ export function checkFunction(
 		if (id?.type === "Identifier") {
 			if (
 				isComponentName(id?.name) &&
+				isLikelyComponentFunction(node) &&
 				(!ignoredNames ||
 					!shouldIgnoreNode(id, ignoredNames))
 			) {
@@ -65,6 +66,7 @@ export function checkFunction(
 		) {
 			return;
 		}
+		if (!isLikelyComponentFunction(node)) return;
 		if (node.id !== null && isComponentName(node.id?.name)) {
 			context.report({ node, messageId: "memo-required" });
 		} else {
