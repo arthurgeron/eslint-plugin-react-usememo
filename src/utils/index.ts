@@ -27,6 +27,13 @@ export function isComponentName(name: string | undefined) {
 	);
 }
 
+export function isLikelyComponentFunction(
+	node: TSESTree.Node | null | undefined,
+) {
+	if (!node || !isFunctionNode(node)) return true;
+	return node.params.length <= 2;
+}
+
 export function isHookName(name: string): boolean {
 	return (
 		name === "use" ||

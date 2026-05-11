@@ -85,6 +85,12 @@ export const createRequireMemoTestCases = () => {
         }
       }]
     },
+    // PascalCase function with 3+ params is not a component
+    { code: "export const Test = (a, b, c) => `${a}${b}${c}`;" },
+    { code: "export function Test(a, b, c) { return `${a}${b}${c}`; }" },
+    { code: "const Test = (a, b, c) => `${a}${b}${c}`; export default Test;" },
+    // forwardRef-shape (2 params) inside memo wrapper stays valid
+    { code: "export const Comp = React.memo(React.forwardRef((props, ref) => <div ref={ref} />));" },
   ];
 
   const invalidTestCases = [
