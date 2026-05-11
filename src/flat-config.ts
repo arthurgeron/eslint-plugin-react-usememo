@@ -14,7 +14,7 @@ export const rules = {
 export const flatConfig = {
 	meta: {
 		name: "@arthurgeron/eslint-plugin-react-usememo",
-		version: "2.5.0",
+		version: "3.0.1",
 	},
 	rules,
 };
